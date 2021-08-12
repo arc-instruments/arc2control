@@ -1,0 +1,15 @@
+/target
+.*.swp
+*.pyc
+*.tmp
+/dist
+/build
+/*.egg-info
+__pycache__
+*.so
+*.dll
+*.lib
+*.pyc
+*.bin
+arc2control/widgets/generated/*py
+!arc2control/widgets/generated/__init__.py
