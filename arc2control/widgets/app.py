@@ -35,11 +35,23 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         self.setupUi(self)
         self._setupControlWidgets()
         self._setupPlottingWidgets()
+
         shape = self.mainCrossbarWidget.size
         data = np.zeros((32, 32))
         data[:] = np.NaN
         self.mainCrossbarWidget.setData(data)
+
         self.rampOpsWidget = self.addExperimentTab(RampOpsWidget, "Ramping")
+
+        self._connectSignals()
+
+        self.setWindowTitle("ArC2 Control Panel")
+        self.setWindowIcon(graphics.getIcon('arc2-logo'))
+        self.resize(950, 800)
+
+        self.show()
+
+    def _connectSignals(self):
 
         self.selectAllButton.clicked.connect(lambda: self.mainCrossbarWidget.selectAll())
 
@@ -60,11 +72,6 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
 
         self.rampOpsWidget.rampSelectedClicked.connect(self.rampSelectedClicked)
         self.selectionChanged()
-        self.setWindowTitle("ArC2 Control Panel")
-        self.setWindowIcon(graphics.getIcon('arc2-logo'))
-        self.resize(950, 800)
-
-        self.show()
 
     def _setupControlWidgets(self):
         self.arc2ConnectionWidget = ArC2ConnectionWidget()
