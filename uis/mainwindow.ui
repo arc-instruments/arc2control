@@ -14,7 +14,7 @@
    <string>ArC2 Control Panel</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QGridLayout" name="gridLayout_2" rowstretch="3,2" columnstretch="2,0" columnminimumwidth="0,300">
+   <layout class="QGridLayout" name="gridLayout_2" rowstretch="4,2" columnstretch="2,0" columnminimumwidth="0,300">
     <item row="0" column="0">
      <widget class="GraphicsLayoutWidget" name="mainPlotWidget" native="true">
       <property name="maximumSize">
