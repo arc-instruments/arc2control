@@ -109,6 +109,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
             self._arc = self.arc2ConnectionWidget.arc2
         else:
             del self._arc
+            self._arc = None
 
     def selectionChanged(self):
         cells = self.mainCrossbarWidget.selectedCells
