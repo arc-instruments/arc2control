@@ -5,6 +5,10 @@ import types
 from enum import Enum
 
 
+_H5DS_VERSION_MAJOR = 0
+_H5DS_VERSION_MINOR = 1
+
+
 class H5Mode(Enum):
     READ = 'r'
     WRITE = 'w'
@@ -178,8 +182,8 @@ class H5DataStore:
 
         self._h5.attrs['CLASS'] = 'GROUP'
         self._h5.attrs['PYTABLES_FORMAT_VERSION'] = '2.1'
-        self._h5.attrs['H5DS_VERSION_MAJOR'] = 0
-        self._h5.attrs['H5DS_VERSION_MINOR'] = 1
+        self._h5.attrs['H5DS_VERSION_MAJOR'] = _H5DS_VERSION_MAJOR
+        self._h5.attrs['H5DS_VERSION_MINOR'] = _H5DS_VERSION_MINOR
         self._h5.attrs['TITLE'] = name
 
         self._h5.attrs['words'] = shape[0]
