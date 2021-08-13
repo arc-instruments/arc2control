@@ -52,13 +52,17 @@ class PlottingOptionsWidget(Ui_PlottingOptionsWidget, QtWidgets.QWidget):
 
     def __displayIndexChanged(self, idx):
         data = self.displayTypeComboBox.itemData(idx)
+        self.logScaleRadio.setEnabled(data != DisplayType.Current)
+
         self.displayTypeChanged.emit(data)
 
     def __scaleRadioChecked(self, *args):
         if self.linearScaleRadio.isChecked():
             self.yScaleChanged.emit(YScale.Linear)
+            self.__enableDisplayType(DisplayType.Current, True)
         else:
             self.yScaleChanged.emit(YScale.Log)
+            self.__enableDisplayType(DisplayType.Current, False)
 
     def __xRangeRadioChecked(self, *args):
         if self.fullRangeRadioButton.isChecked():
@@ -70,6 +74,18 @@ class PlottingOptionsWidget(Ui_PlottingOptionsWidget, QtWidgets.QWidget):
 
     def __rangePointsValueChanged(self, value):
         self.xRangeChanged.emit(value)
+
+    def __enableDisplayType(self, typ, enable):
+        model = self.displayTypeComboBox.model()
+        for i in range(self.displayTypeComboBox.count()):
+            itemData = self.displayTypeComboBox.itemData(i)
+            if itemData == typ:
+                item = model.item(i)
+                if enable:
+                    item.setFlags(item.flags() | QtCore.Qt.ItemFlag.ItemIsEnabled)
+                else:
+                    item.setFlags(item.flags() & ~QtCore.Qt.ItemFlag.ItemIsEnabled)
+                break
 
     @property
     def xRange(self):
