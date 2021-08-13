@@ -10,6 +10,18 @@ class DisplayType(Enum):
     AbsCurrent = 0b100
     Conductance = 0b1000
 
+    def plotLabel(self):
+        if self == DisplayType.Resistance:
+            return {'text': 'Resistance', 'units': 'Ω'}
+        elif self == DisplayType.Current:
+            return {'text': 'Current', 'units': 'A'}
+        elif self == DisplayType.AbsCurrent:
+            return {'text': 'Abs. Current', 'units': 'A'}
+        elif self == DisplayType.Conductance:
+            return {'text': 'Conductance', 'units': 'S'}
+        else:
+            return None
+
 
 class YScale(Enum):
     Linear = 0b1
