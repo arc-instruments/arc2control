@@ -13,9 +13,9 @@ class H5Mode(Enum):
 
 
 class OpType(Enum):
-    READ      =  0x1
-    PULSE     =  0x10
-    PULSEREAD =  0x100
+    READ      =  0b01
+    PULSE     =  0b10
+    PULSEREAD =  0b11
 
 
 class H5AccessError(Exception):
