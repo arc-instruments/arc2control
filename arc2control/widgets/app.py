@@ -188,36 +188,6 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
 
         self._pulseOpInner(v, pw, _single, _slice, _all)
 
-        # cells = self.mainCrossbarWidget.selectedCells
-
-        # if self.lockPulseCheckBox.isChecked():
-        #     vbox = self.positivePulseSpinBox
-        #     pbox = self.positiveDurationWidget
-        # else:
-        #     if polarity == Polarity.POSITIVE:
-        #         vbox = self.positivePulseSpinBox
-        #         pbox = self.positiveDurationWidget
-        #     elif polarity == Polarity.NEGATIVE:
-        #         vbox = self.negativePulseSpinBox
-        #         pbox = self.negativeDurationWidget
-        #     else:
-        #         raise Exception("Unknown polarity?")
-
-        # voltage = polarity.multiplier() * vbox.value()
-        # pulsewidth = pbox.getDuration()
-
-        # # first check if we can use the PulseAll operation
-        # # from libarc2, this can only be applied to the full
-        # # crossbar
-        # if len(cells) == self.mapper.total_devices:
-        #     self.pulseAll(voltage, pulsewidth)
-        # # otherwise either do single pulse or slice pulse
-        # else:
-        #     if len(cells) != 1:
-        #         self.pulseSelectedSlices(cells, voltage, pulsewidth)
-        #     else:
-        #         self.pulseSelectedCell(cells, voltage, pulsewidth)
-
     def pulseReadSelectedClicked(self, polarity):
         vread = self.readOpsWidget.readoutVoltage()
         _single = partial(self.pulseReadSelectedCell, vread=vread)
