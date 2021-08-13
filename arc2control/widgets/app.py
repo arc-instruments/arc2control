@@ -20,9 +20,12 @@ from .readops_widget import ReadOpsWidget
 from .rampops_widget import RampOpsWidget
 from .pulseops_widget import PulseOpsWidget
 from .plottingoptions_widget import DisplayType as PlotDisplayType
+from .plottingoptions_widget import YScale as PlotYScale
 from .plottingoptions_widget import PlottingOptionsWidget
 from .. import graphics
+from ..h5utils import H5DataStore, OpType, H5Mode
 import weakref
+import os, tempfile
 
 
 class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
@@ -37,14 +40,16 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         self._setupControlWidgets()
         self._setupPlottingWidgets()
 
-        shape = self.mainCrossbarWidget.size
-        data = np.zeros((32, 32))
-        data[:] = np.NaN
-        self.mainCrossbarWidget.setData(data)
-
         self.rampOpsWidget = self.addExperimentTab(RampOpsWidget, "Ramping")
 
         self._connectSignals()
+
+        self._datastore = H5DataStore(tempfile.NamedTemporaryFile(\
+            suffix='.h5', delete=False).name,\
+            mode=H5Mode.WRITE)
+        # initialise an empty crossbar (all zeros)
+        self._crossbarRefresh(np.zeros(self._datastore.shape),\
+            np.zeros(self._datastore.shape))
 
         self.setWindowTitle("ArC2 Control Panel")
         self.setWindowIcon(graphics.getIcon('arc2-logo'))
@@ -72,6 +77,11 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
             partial(self.pulseReadSelectedClicked, polarity=Polarity.POSITIVE))
 
         self.rampOpsWidget.rampSelectedClicked.connect(self.rampSelectedClicked)
+
+        self.plottingOptionsWidget.xRangeChanged.connect(self._refreshCurrentPlot)
+        self.plottingOptionsWidget.displayTypeChanged.connect(self._refreshCurrentPlot)
+        self.plottingOptionsWidget.yScaleChanged.connect(self._changePlotScale)
+
         self.selectionChanged()
 
     def _setupControlWidgets(self):
@@ -91,17 +101,26 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
 
     def _setupPlottingWidgets(self):
         self.tracePlot = self.mainPlotWidget.addPlot(name='trace')
+        self.tracePlot.showGrid(x=True, y=True)
         self.tracePlot.getAxis('left').setStyle(tickTextWidth=30,\
             autoExpandTextSpace=False)
+        self.tracePlot.getAxis('left').setGrid(50)
+        self.tracePlot.getAxis('bottom').setGrid(50)
+        self.tracePlot.getAxis('left').setLabel('Resistance', units='Ω')
         self.tracePlot.getAxis('right').setStyle(tickTextWidth=30,\
             autoExpandTextSpace=False)
         self.mainPlotWidget.nextRow()
         self.pulsePlot = self.mainPlotWidget.addPlot(name='pulse')
+        self.pulsePlot.showGrid(x=True, y=True)
         self.pulsePlot.getAxis('left').setStyle(tickTextWidth=30,\
             autoExpandTextSpace=False)
+        self.pulsePlot.getAxis('left').setGrid(50)
+        self.pulsePlot.getAxis('bottom').setGrid(50)
+        self.pulsePlot.getAxis('left').setLabel('Amplitude', units='V')
         self.pulsePlot.getAxis('right').setStyle(tickTextWidth=30,\
             autoExpandTextSpace=False)
         self.pulsePlot.setXLink('trace')
+        self.pulsePlot.getAxis('bottom').setLabel('Pulse')
         self.mainPlotWidget.ci.layout.setRowStretchFactor(0, 2)
         self.mainPlotWidget.ci.layout.setRowStretchFactor(1, 1)
 
@@ -136,6 +155,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
             cell = cells[0]
             value = self.mainCrossbarWidget.valueOf(cell)
             self.readOpsWidget.setValue(cell.w, cell.b, value, suffix='Ω')
+            self._updateSinglePlot(*cells[0])
 
     def mousePositionChanged(self, cell):
         if cell.w < 0 or cell.b < 0:
@@ -381,16 +401,11 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
             voltage = self.readOpsWidget.readoutVoltage()
             current = self._arc().read_one(low, high, voltage)
             self._finaliseOperation()
-            self.mainCrossbarWidget.updateData(w, b, voltage/abs(current))
+            self.mainCrossbarWidget.updateData(w, b, abs(voltage/current))
 
-            self._dataset.update_status(w, b, current, voltage, 0.0,
+            self._datastore.update_status(w, b, current, voltage, 0.0,
                 self.readOpsWidget.readoutVoltage(), OpType.READ)
-            timeseries = self._dataset.timeseries(w, b)[:100]
-            self.tracePlot.plot(np.abs(timeseries['voltage']/timeseries['current']),\
-                clear=True)
-            self.pulsePlot.plot(timeseries['voltage'], pen=None,\
-                symbolPen=None, symbolBrush=(0, 0, 255),  symbol='+',\
-                symbolSize=6, clear=True)
+            self._updateSinglePlot(w, b)
 
         self.selectionChanged()
 
@@ -405,9 +420,11 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         data = np.empty(shape=(self.mapper.nbits, self.mapper.nwords))
         for (row, channel) in enumerate(sorted(self.mapper.ch2b.keys())):
             bitline = self.mapper.ch2b[channel]
-            data[bitline] = voltage/np.abs(raw[row][self.mapper.word_idxs])
+            data[bitline] = raw[row][self.mapper.word_idxs]
 
-        self.mainCrossbarWidget.setData(data.T)
+        shape = data.shape
+        actual_voltage = np.repeat([voltage], shape[0]*shape[1]).reshape(*shape)
+        self._crossbarRefresh(data, actual_voltage)
 
     def pulseSelectedCell(self, cells, voltage, pulsewidth):
         if self._arc is None:
@@ -486,6 +503,83 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
 
         return obj
 
+    def _clearPlots(self):
+        dispType = self.plottingOptionsWidget.displayType
+
+        self.tracePlot.plot([0],[0])
+        self.tracePlot.clear()
+        self.pulsePlot.plot([0],[0])
+        self.pulsePlot.clear()
+        self.tracePlot.getAxis('left').setLabel(**dispType.plotLabel())
+
+    def _changePlotScale(self, scale):
+        if scale == PlotYScale.Linear:
+            self.tracePlot.setLogMode(False, False)
+        elif scale == PlotYScale.Log:
+            self.tracePlot.setLogMode(False, True)
+
+    def _refreshCurrentPlot(self, *args):
+        cells = self.mainCrossbarWidget.selectedCells
+        if len(cells) == 1:
+            (w, b) = cells[0]
+            self._updateSinglePlot(w, b)
+        else:
+            self._clearPlots()
+
+    def _updateSinglePlot(self, w, b):
+
+        xRange = self.plottingOptionsWidget.xRange
+        dispType = self.plottingOptionsWidget.displayType
+
+        try:
+            full_timeseries = self._datastore.timeseries(w, b)
+            len_timeseries = full_timeseries.shape[0]
+        except KeyError: # no dataset exists
+            self._clearPlots()
+            return
+
+        if xRange is None:
+            timeseries = full_timeseries
+            idxes = np.arange(0, len_timeseries)
+        else:
+            timeseries = full_timeseries[-xRange:]
+            idxes = np.arange(max(len_timeseries-xRange, 0), len_timeseries)
+
+        if dispType == PlotDisplayType.Resistance:
+            self.tracePlot.plot(idxes, np.abs(timeseries['voltage']/timeseries['current']),\
+                pen={'color': '#F00', 'width': 1}, symbol='+', symbolPen=None, \
+                symbolSize=6, symbolBrush='#F00',\
+                clear=True)
+        elif dispType == PlotDisplayType.Conductance:
+            self.tracePlot.plot(idxes, np.abs(timeseries['current']/timeseries['voltage']),\
+                pen={'color': '#F00', 'width': 1}, symbol='x', symbolPen=None, \
+                symbolSize=6, symbolBrush='#F00',\
+                clear=True)
+        elif dispType == PlotDisplayType.Current:
+            self.tracePlot.plot(idxes, timeseries['current'], \
+                pen={'color': '#F00', 'width': 1}, symbol='t', symbolPen=None, \
+                symbolSize=6, symbolBrush='#F00',\
+                clear=True)
+        elif dispType == PlotDisplayType.AbsCurrent:
+            self.tracePlot.plot(idxes, np.abs(timeseries['current']), \
+                pen={'color': '#F00', 'width': 1}, symbol='t1', symbolPen=None, \
+                symbolSize=6, symbolBrush='#F00',\
+                clear=True)
+        else:
+            # unknown plot type, nothing to show
+            return
+        self.tracePlot.getAxis('left').setLabel(**dispType.plotLabel())
+        self.pulsePlot.plot(idxes, timeseries['voltage'], pen=None,\
+            symbolPen=None, symbolBrush=(0, 0, 255),  symbol='+',\
+            symbolSize=6, clear=True)
+
+    def _crossbarRefresh(self, current, voltage):
+        vdset = self._datastore.dataset('crossbar/voltage')
+        cdset = self._datastore.dataset('crossbar/current')
+        cdset[:] = current
+        vdset[:] = voltage
+        self.mainCrossbarWidget.setData(np.abs(vdset[:]/cdset[:]).T)
+
     def closeEvent(self, evt):
         try:
             if self._arc is not None:
@@ -494,10 +588,10 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         except Exception:
             pass
 
-        if self._dataset is not None:
-            self._dataset.close()
+        if self._datastore is not None:
+            self._datastore.close()
             res = QtWidgets.QMessageBox.question(self, "Quit ArC2", "Delete temporary dataset?")
             if res == QtWidgets.QMessageBox.StandardButton.Yes:
-                os.remove(self._dataset.fname)
+                os.remove(self._datastore.fname)
 
         evt.accept()
