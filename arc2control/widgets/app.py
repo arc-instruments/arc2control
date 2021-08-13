@@ -14,9 +14,13 @@ pg.setConfigOption('foreground', 'k')
 from pyarc2 import Instrument, BiasOrder, ControlMode, ReadAt, \
     ReadAfter, DataMode
 from .common import Polarity
-from .arc2connection_widget import ArC2IdleMode, ArC2ControlMode
+from .arc2connection_widget import ArC2IdleMode, ArC2ControlMode, \
+    ArC2ConnectionWidget
+from .readops_widget import ReadOpsWidget
 from .rampops_widget import RampOpsWidget
+from .pulseops_widget import PulseOpsWidget
 from .plottingoptions_widget import DisplayType as PlotDisplayType
+from .plottingoptions_widget import PlottingOptionsWidget
 from .. import graphics
 
 
@@ -29,6 +33,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         QtWidgets.QWidget.__init__(self, parent=parent)
 
         self.setupUi(self)
+        self._setupControlWidgets()
         self._setupPlottingWidgets()
         shape = self.mainCrossbarWidget.size
         data = np.zeros((32, 32))
@@ -60,6 +65,21 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         self.resize(950, 800)
 
         self.show()
+
+    def _setupControlWidgets(self):
+        self.arc2ConnectionWidget = ArC2ConnectionWidget()
+        self.readOpsWidget = ReadOpsWidget()
+        self.pulseOpsWidget = PulseOpsWidget()
+        self.plottingOptionsWidget = PlottingOptionsWidget()
+
+        self.controlCollapsibleTreeWidget.addWidget("ArC2 Connection",\
+            self.arc2ConnectionWidget)
+        self.controlCollapsibleTreeWidget.addWidget("Read Operations",\
+            self.readOpsWidget)
+        self.controlCollapsibleTreeWidget.addWidget("Pulse Operations",\
+            self.pulseOpsWidget)
+        self.controlCollapsibleTreeWidget.addWidget("Plotting Options",\
+            self.plottingOptionsWidget)
 
     def _setupPlottingWidgets(self):
         self.tracePlot = self.mainPlotWidget.addPlot(name='trace')
