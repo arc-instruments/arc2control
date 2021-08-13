@@ -22,6 +22,7 @@ from .pulseops_widget import PulseOpsWidget
 from .plottingoptions_widget import DisplayType as PlotDisplayType
 from .plottingoptions_widget import PlottingOptionsWidget
 from .. import graphics
+import weakref
 
 
 class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
@@ -106,9 +107,9 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
 
     def connectionChanged(self, connected):
         if connected:
-            self._arc = self.arc2ConnectionWidget.arc2
+            self._arc = weakref.ref(self.arc2ConnectionWidget.arc2)
+            pass
         else:
-            del self._arc
             self._arc = None
 
     def selectionChanged(self):
@@ -242,7 +243,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
             print("arc2 is not connected")
         else:
             voltage = self.readOpsWidget.readoutVoltage()
-            current = self._arc.pulseread_one(low, high, vpulse, int(pulsewidth*1.0e9),
+            current = self._arc().pulseread_one(low, high, vpulse, int(pulsewidth*1.0e9),
                 vread)
             self._finaliseOperation()
             self.mainCrossbarWidget.updateData(w, b, voltage/abs(current))
@@ -278,7 +279,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
             return
 
         voltage = self.readOpsWidget.readoutVoltage()
-        raw = self._arc.pulseread_all(vpulse, int(pulsewidth*1.0e9), voltage,
+        raw = self._arc().pulseread_all(vpulse, int(pulsewidth*1.0e9), voltage,
             BiasOrder.Cols)
         self._finaliseOperation()
         data = np.empty(shape=(self.mapper.nbits, self.mapper.nwords))
@@ -333,7 +334,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
             "Vend: %.2f; PW: %d ns I: %d ns N: %d"
             % (w, b, low, high, vstart, vstep, vstop, pw, interpulse, pulses))
 
-        self._arc.generate_ramp(low, high, vstart, vstep, vstop, pw, interpulse,
+        self._arc().generate_ramp(low, high, vstart, vstep, vstop, pw, interpulse,
             pulses, ReadAt.Bias, ReadAfter.Pulse)
         if vstop < vstart:
             voltages = np.arange(vstop-vstep/2.0, vstart, vstep)\
@@ -342,11 +343,11 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
             voltages = np.arange(vstart, vstop+vstep/2.0, vstep)\
                          .repeat(np.max((pulses, 1)))
 
-        self._arc.execute()
+        self._arc().execute()
         self._finaliseOperation()
-        self._arc.wait()
+        self._arc().wait()
         currents = np.empty(shape=voltages.shape)
-        for (i, (v, d)) in enumerate(zip(voltages, self._arc.get_iter(DataMode.Bits))):
+        for (i, (v, d)) in enumerate(zip(voltages, self._arc().get_iter(DataMode.Bits))):
             curr = d[0][self.mapper.bit_idxs][b]
             if v != 0.0:
                 print("V = %.2f V; I = %.2e A; R = %s" % (v, curr,
@@ -365,7 +366,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
             return
 
         voltage = self.readOpsWidget.readoutVoltage()
-        data = self._arc.read_slice_masked(low, highs, voltage)
+        data = self._arc().read_slice_masked(low, highs, voltage)
         bitline = self.mapper.ch2b[low]
         # convert channel order to word order
         data = voltage/abs(data[self.mapper.word_idxs])
@@ -380,7 +381,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
             return
 
         voltage = self.readOpsWidget.readoutVoltage()
-        data = self._arc.pulseread_slice_masked(low, highs, vpulse,
+        data = self._arc().pulseread_slice_masked(low, highs, vpulse,
             int(pulsewidth*1.0e9), voltage)
         bitline = self.mapper.ch2b[low]
         # convert channel order to word order
@@ -395,9 +396,9 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
             return
 
         if self.arc2ConnectionWidget.idleMode == ArC2IdleMode.Float:
-            self._arc.ground_all_fast().float_all().execute()
+            self._arc().ground_all_fast().float_all().execute()
         elif self.arc2ConnectionWidget.idleMode == ArC2IdleMode.Gnd:
-            self._arc.ground_all().execute()
+            self._arc().ground_all().execute()
 
     def readSelectedCell(self, cells):
         cell = cells[0]
@@ -408,9 +409,19 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
             print("arc2 is not connected")
         else:
             voltage = self.readOpsWidget.readoutVoltage()
-            current = self._arc.read_one(low, high, voltage)
+            current = self._arc().read_one(low, high, voltage)
             self._finaliseOperation()
             self.mainCrossbarWidget.updateData(w, b, voltage/abs(current))
+
+            self._dataset.update_status(w, b, current, voltage, 0.0,
+                self.readOpsWidget.readoutVoltage(), OpType.READ)
+            timeseries = self._dataset.timeseries(w, b)[:100]
+            self.tracePlot.plot(np.abs(timeseries['voltage']/timeseries['current']),\
+                clear=True)
+            self.pulsePlot.plot(timeseries['voltage'], pen=None,\
+                symbolPen=None, symbolBrush=(0, 0, 255),  symbol='+',\
+                symbolSize=6, clear=True)
+
         self.selectionChanged()
 
     def readAllClicked(self):
@@ -419,7 +430,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
             return
 
         voltage = self.readOpsWidget.readoutVoltage()
-        raw = self._arc.read_all(voltage, BiasOrder.Cols)
+        raw = self._arc().read_all(voltage, BiasOrder.Cols)
         self._finaliseOperation()
         data = np.empty(shape=(self.mapper.nbits, self.mapper.nwords))
         for (row, channel) in enumerate(sorted(self.mapper.ch2b.keys())):
@@ -440,8 +451,8 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         print("Pulsing channel lowV: %d; highV: %d | V = %g; PW = %g ns" %
             (low, high, voltage, pulsewidth*1.0e9))
 
-        self._arc.pulse_one(low, high, voltage, int(pulsewidth*1.0e9))\
-                 .execute()
+        self._arc().pulse_one(low, high, voltage, int(pulsewidth*1.0e9))\
+                   .execute()
         self._finaliseOperation()
 
     def pulseSelectedSlices(self, cells, voltage, pulsewidth):
@@ -461,9 +472,9 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
             low = self.mapper.b2ch[k]
             highs = np.array([self.mapper.w2ch[x] for x in v], dtype=np.uint64)
             print(("lowV channel: %d; highV channels:" % low), highs)
-            self._arc.pulse_slice_masked(low, voltage, int(pulsewidth*1.0e9), highs)\
-                     .ground_all()\
-                     .execute()
+            self._arc().pulse_slice_masked(low, voltage, int(pulsewidth*1.0e9), highs)\
+                       .ground_all()\
+                       .execute()
             self._finaliseOperation()
 
     def pulseAll(self, voltage, pulsewidth):
@@ -471,9 +482,9 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
             print("arc2 is not connected")
             return
 
-        self._arc.pulse_all(voltage, int(pulsewidth*1.0e9), BiasOrder.Cols)\
-                 .ground_all()\
-                 .execute()
+        self._arc().pulse_all(voltage, int(pulsewidth*1.0e9), BiasOrder.Cols)\
+                   .ground_all()\
+                   .execute()
         self._finaliseOperation()
 
     def _plotData(self, x, y, xlabel, ylabel, xunit=None, yunit=None, logscale=False):
@@ -508,10 +519,15 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
     def closeEvent(self, evt):
         try:
             if self._arc is not None:
-                # we need to delete all refs to ArC2
-                del self._arc
-                del self.arc2ConnectionWidget
-        except:
+                self.arc2ConnectionWidget.disconnectArC2()
+                self._arc = None
+        except Exception:
             pass
+
+        if self._dataset is not None:
+            self._dataset.close()
+            res = QtWidgets.QMessageBox.question(self, "Quit ArC2", "Delete temporary dataset?")
+            if res == QtWidgets.QMessageBox.StandardButton.Yes:
+                os.remove(self._dataset.fname)
 
         evt.accept()

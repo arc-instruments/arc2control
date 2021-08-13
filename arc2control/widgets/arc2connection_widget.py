@@ -113,6 +113,11 @@ class ArC2ConnectionWidget(Ui_ArC2ConnectionWidget, QtWidgets.QWidget):
             self.__idleModeChanged()
             self.selectedFirmwareEdit.setEnabled(False)
 
+    def disconnectArC2(self):
+        if self._arc is not None:
+            del self._arc
+            self._arc = None
+
     @property
     def arc2(self):
         return self._arc
