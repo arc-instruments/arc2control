@@ -132,6 +132,7 @@ class H5DataStore:
         >>>     ds.update_status(0, 0, 10e-6, 1.0, 100e-6, 0.2)
         >>> # file is saved here
         """
+        self._fname = fname
         if name is None:
             name = os.path.basename(fname)
 
@@ -202,6 +203,13 @@ class H5DataStore:
         except ValueError:
             # group exists, it's probably ok
             pass
+
+    @property
+    def fname(self):
+        """
+        Return the filename associated with this data store
+        """
+        return self._fname
 
     @property
     def name(self):
