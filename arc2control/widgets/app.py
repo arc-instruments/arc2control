@@ -154,10 +154,10 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         if len(cells) != 1:
             return
         else:
-            cell = cells[0]
+            cell = list(cells)[0]
             value = self.mainCrossbarWidget.valueOf(cell)
             self.readOpsWidget.setValue(cell.w, cell.b, value, suffix='Ω')
-            self._updateSinglePlot(*cells[0])
+            self._updateSinglePlot(*list(cells)[0])
 
     def mousePositionChanged(self, cell):
         if cell.w < 0 or cell.b < 0:
