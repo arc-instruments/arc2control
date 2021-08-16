@@ -144,6 +144,7 @@ def main():
     mods = _discover_modules(basemodmod.__path__)
 
     app = QtWidgets.QApplication([])
+    app.setApplicationName('arc2control')
     graphics.initialise()
     wdg = App(mapper, modules=mods)
     wdg.show()
