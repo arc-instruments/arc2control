@@ -12,10 +12,9 @@ pg.setConfigOption('background', 'w')
 pg.setConfigOption('foreground', 'k')
 
 from pyarc2 import Instrument, BiasOrder, ControlMode, ReadAt, \
-    ReadAfter, DataMode
+    ReadAfter, DataMode, IdleMode
 from .common import Polarity
-from .arc2connection_widget import ArC2IdleMode, ArC2ControlMode, \
-    ArC2ConnectionWidget
+from .arc2connection_widget import ArC2ConnectionWidget
 from .readops_widget import ReadOpsWidget
 from .rampops_widget import RampOpsWidget
 from .pulseops_widget import PulseOpsWidget
@@ -66,6 +65,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         self.readOpsWidget.readSelectedClicked.connect(self.readSelectedClicked)
         self.readOpsWidget.readAllClicked.connect(self.readAllClicked)
         self.arc2ConnectionWidget.connectionChanged.connect(self.connectionChanged)
+        self.arc2ConnectionWidget.arc2ConfigChanged.connect(signals.arc2ConfigChanged.emit)
 
         self.pulseOpsWidget.positivePulseClicked.connect(\
             partial(self.pulseSelectedClicked, polarity=Polarity.POSITIVE))
@@ -127,9 +127,9 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
     def connectionChanged(self, connected):
         if connected:
             self._arc = weakref.ref(self.arc2ConnectionWidget.arc2)
-            pass
         else:
             self._arc = None
+        signals.arc2ConnectionChanged.emit(connected, self._arc)
 
     def selectionChanged(self, cells):
         # cells = self.mainCrossbarWidget.selectedCells
@@ -387,10 +387,8 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         if self._arc is None:
             return
 
-        if self.arc2ConnectionWidget.idleMode == ArC2IdleMode.Float:
-            self._arc().ground_all_fast().float_all().execute()
-        elif self.arc2ConnectionWidget.idleMode == ArC2IdleMode.Gnd:
-            self._arc().ground_all().execute()
+        idleMode = self.arc2ConnectionWidget.idleMode
+        self._arc().finalise_operation(idleMode)
 
     def readSelectedCell(self, cells):
         cell = cells[0]
