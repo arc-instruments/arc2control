@@ -82,7 +82,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         self.plottingOptionsWidget.displayTypeChanged.connect(self._refreshCurrentPlot)
         self.plottingOptionsWidget.yScaleChanged.connect(self._changePlotScale)
 
-        self.selectionChanged()
+        self.selectionChanged(self.mainCrossbarWidget.selection)
 
     def _setupControlWidgets(self):
         self.arc2ConnectionWidget = ArC2ConnectionWidget()
@@ -131,8 +131,10 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         else:
             self._arc = None
 
-    def selectionChanged(self):
-        cells = self.mainCrossbarWidget.selectedCells
+    def selectionChanged(self, cells):
+        # cells = self.mainCrossbarWidget.selectedCells
+
+        signals.crossbarSelectionChanged.emit(cells)
 
         if len(cells) == 0:
             self.readOpsWidget.setReadSelectedEnabled(False)
@@ -407,7 +409,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
                 self.readOpsWidget.readoutVoltage(), OpType.READ)
             self._updateSinglePlot(w, b)
 
-        self.selectionChanged()
+        self.selectionChanged(self.mainCrossbarWidget.selection)
 
     def readAllClicked(self):
         if self._arc is None:

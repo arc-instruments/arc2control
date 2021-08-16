@@ -175,9 +175,7 @@ class CachedBackground:
 class PaintWidget(QtWidgets.QWidget):
 
     mousePositionChanged = QtCore.pyqtSignal(Cell)
-    selectionChanged = QtCore.pyqtSignal()
-
-    __pyqtSignals__ = ("selectionChanged()")
+    selectionChanged = QtCore.pyqtSignal(set)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -297,7 +295,7 @@ class PaintWidget(QtWidgets.QWidget):
         for w in range(self._words):
             for b in range(self._bits):
                 self.selection.add(Cell(w, b))
-        self.selectionChanged.emit()
+        self.selectionChanged.emit(self.selection)
         self.repaint()
 
     def mouseDoubleClickEvent(self, evt):
@@ -326,7 +324,7 @@ class PaintWidget(QtWidgets.QWidget):
             return
         else:
             self.selection.update(cells)
-            self.selectionChanged.emit()
+            self.selectionChanged.emit(self.selection)
 
         self.repaint()
 
@@ -338,7 +336,7 @@ class PaintWidget(QtWidgets.QWidget):
             self.selection.clear()
             self.rangeStart = None
             self.rangeEnd = None
-            self.selectionChanged.emit()
+            self.selectionChanged.emit(self.selection)
             self.repaint()
             return
 
@@ -382,7 +380,7 @@ class PaintWidget(QtWidgets.QWidget):
                 self.selection.update(selection)
 
             if emit:
-                self.selectionChanged.emit()
+                self.selectionChanged.emit(self.selection)
 
             self.repaint()
 
