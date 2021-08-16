@@ -103,6 +103,26 @@ class ChannelMapper:
         return self._nwords * self._nbits
 
 
+def _discover_modules(path):
+
+    from pkgutil import iter_modules
+    import importlib
+
+    mods = {}
+
+    for (finder, name, ispkg) in iter_modules(path):
+
+        if name == 'base':
+            # we don't care about the abstract base module
+            continue
+
+        loader = finder.find_module(name)
+        mod = importlib.import_module('arc2control.modules.%s' % name)
+        mods[mod.MOD_NAME] = mod.ENTRY_POINT
+
+    return mods
+
+
 def main():
     realpath = os.path.dirname(os.path.realpath(__file__))
     mapfile = os.path.join(realpath, 'mappings', 'resarray32.toml')
@@ -112,17 +132,11 @@ def main():
     bits = mapraw['config']['bits']
     wordarr = mapraw['mapping']['words']
     bitarr = mapraw['mapping']['bits']
-    # print("Words: %d, Bits: %d" % (words, bits))
 
     mapper = ChannelMapper(words, bits, wordarr, bitarr)
 
-    # for word in range(0, words):
-    #     for bit in range(0, bits):
-    #         print("(W: %2d; B: %2d) → (%2d, %2d)" % \
-    #             (word, bit, *mapper.wb2ch[word][bit]))
-
-    # print("bitline ←→ channel", mapper.ch2b)
-    # print("wordline ←→ channel", mapper.ch2w)
+    from . import modules as basemodmod
+    mods = _discover_modules(basemodmod.__path__)
 
     app = QtWidgets.QApplication([])
     graphics.initialise()

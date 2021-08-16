@@ -54,7 +54,7 @@ class BuildUIs(Command):
         uic.compileUi(src, out, execute=False, indent=4)
         out.close()
 
-    def compile_all_uis(self):
+    def compile_base_uis(self):
 
         # Find the current working directory (ie. the folder this script resides
         # in). Then find out where the UI files are stored and setup the output
@@ -83,6 +83,40 @@ class BuildUIs(Command):
             self.compile_ui(ui, target)
             generated.append(target)
 
+    def compile_module_uis(self):
+        basedir = os.path.join(__HERE__, 'arc2control', 'modules')
+
+        for moddir in glob.glob(os.path.join(basedir, '*')):
+            if not os.path.isdir(moddir):
+                continue
+
+            uidir = os.path.join(moddir, 'uis')
+
+            if not os.path.isdir(uidir):
+                print("[UIC] Module %s does not specify any uis, skipping" % \
+                    os.path.basename(moddir), file=sys.stderr)
+                continue
+
+            outdir = os.path.join(moddir, 'generated')
+            if not os.path.isdir(outdir):
+                os.mkdir(outdir)
+
+            initfile = os.path.join(outdir, '__init__.py')
+            if os.path.exists(initfile) and (not os.path.isfile(initfile)):
+                print("[UIC] Module %s initfile exists but it's not a file? Skipping" % \
+                    initfile)
+                continue
+            if not os.path.exists(initfile):
+                with open(initfile, mode='w') as f:
+                    f.write('# arc2control.modules.%s' % os.path.basename(moddir))
+
+            for ui in glob.glob(os.path.join(uidir, '*.ui')):
+                fname = os.path.splitext(os.path.basename(ui))[0]
+                target = os.path.join(outdir, "%s.py" % fname)
+                print("[UIC] Generating %s" % target, file=sys.stderr)
+                self.compile_ui(ui, target)
+
+
     def initialize_options(self):
         self.cwd = None
 
@@ -90,7 +124,8 @@ class BuildUIs(Command):
         self.cwd = os.getcwd()
 
     def run(self):
-        self.compile_all_uis()
+        self.compile_base_uis()
+        self.compile_module_uis()
 
 
 class Build(build):
