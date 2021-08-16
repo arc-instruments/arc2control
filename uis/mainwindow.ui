@@ -35,31 +35,31 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="1,0,0,0,0">
           <item>
-           <widget class="QComboBox" name="comboBox"/>
+           <widget class="QComboBox" name="moduleListComboBox"/>
           </item>
           <item>
-           <widget class="QPushButton" name="pushButton">
+           <widget class="QPushButton" name="addModuleButton">
             <property name="text">
              <string>Add</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="pushButton_2">
+           <widget class="QPushButton" name="removeModuleButton">
             <property name="text">
              <string>Remove</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="pushButton_3">
+           <widget class="QPushButton" name="saveModuleButton">
             <property name="text">
              <string>Save</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="pushButton_4">
+           <widget class="QPushButton" name="loadModuleButton">
             <property name="text">
              <string>Load</string>
             </property>
@@ -68,10 +68,43 @@
          </layout>
         </item>
         <item>
-         <widget class="QTabWidget" name="experimentTabWidget">
+         <widget class="QStackedWidget" name="moduleWrapStackedWidget">
           <property name="currentIndex">
-           <number>-1</number>
+           <number>1</number>
           </property>
+          <widget class="QWidget" name="experimentPageWidget">
+           <layout class="QVBoxLayout" name="verticalLayout">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="QTabWidget" name="experimentTabWidget"/>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="experimentPlaceHolderWidget">
+           <layout class="QVBoxLayout" name="verticalLayout_2">
+            <item>
+             <widget class="QLabel" name="label_3">
+              <property name="text">
+               <string>Add a module to get started</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
          </widget>
         </item>
        </layout>

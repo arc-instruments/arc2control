@@ -16,7 +16,6 @@ from pyarc2 import Instrument, BiasOrder, ControlMode, ReadAt, \
 from .common import Polarity
 from .arc2connection_widget import ArC2ConnectionWidget
 from .readops_widget import ReadOpsWidget
-from .rampops_widget import RampOpsWidget
 from .pulseops_widget import PulseOpsWidget
 from .plottingoptions_widget import DisplayType as PlotDisplayType
 from .plottingoptions_widget import YScale as PlotYScale
@@ -30,17 +29,17 @@ from .. import signals
 
 class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
 
-    def __init__(self, mapping, parent=None):
+    def __init__(self, mapping, modules={}, parent=None):
         self._arc = None
         self.mapper = mapping
+        self._modules = modules
         Ui_ArC2MainWindow.__init__(self)
         QtWidgets.QWidget.__init__(self, parent=parent)
 
         self.setupUi(self)
         self._setupControlWidgets()
         self._setupPlottingWidgets()
-
-        self.rampOpsWidget = self.addExperimentTab(RampOpsWidget, "Ramping")
+        self._populateModuleComboBox()
 
         self._connectSignals()
 
@@ -76,8 +75,6 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
             partial(self.pulseReadSelectedClicked, polarity=Polarity.POSITIVE))
         self.pulseOpsWidget.negativePulseReadClicked.connect(\
             partial(self.pulseReadSelectedClicked, polarity=Polarity.POSITIVE))
-
-        self.rampOpsWidget.rampSelectedClicked.connect(self.rampSelectedClicked)
 
         self.plottingOptionsWidget.xRangeChanged.connect(self._refreshCurrentPlot)
         self.plottingOptionsWidget.displayTypeChanged.connect(self._refreshCurrentPlot)
@@ -125,6 +122,13 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         self.mainPlotWidget.ci.layout.setRowStretchFactor(0, 2)
         self.mainPlotWidget.ci.layout.setRowStretchFactor(1, 1)
 
+    def _populateModuleComboBox(self):
+        for (name, mod) in self._modules.items():
+            self.moduleListComboBox.addItem(name, mod)
+
+        self.addModuleButton.clicked.connect(partial(self.addModuleTab, mod))
+        self.removeModuleButton.clicked.connect(self.removeCurrentModuleTab)
+
     def connectionChanged(self, connected):
         if connected:
             self._arc = weakref.ref(self.arc2ConnectionWidget.arc2)
@@ -143,14 +147,12 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
             self.pulseOpsWidget.setPulseEnabled(Polarity.NEGATIVE, False)
             self.pulseOpsWidget.setPulseReadEnabled(Polarity.POSITIVE, False)
             self.pulseOpsWidget.setPulseReadEnabled(Polarity.NEGATIVE, False)
-            self.rampOpsWidget.setRampEnabled(False)
         else:
             self.readOpsWidget.setReadSelectedEnabled(True)
             self.pulseOpsWidget.setPulseEnabled(Polarity.POSITIVE, True)
             self.pulseOpsWidget.setPulseEnabled(Polarity.NEGATIVE, True)
             self.pulseOpsWidget.setPulseReadEnabled(Polarity.POSITIVE, True)
             self.pulseOpsWidget.setPulseReadEnabled(Polarity.NEGATIVE, True)
-            self.rampOpsWidget.setRampEnabled(len(cells) == 1)
 
         if len(cells) != 1:
             return
@@ -305,54 +307,6 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
 
         self.mainCrossbarWidget.setData(data.T)
 
-    def rampSelectedClicked(self):
-
-        if self._arc is None:
-            return
-
-        cell = self.mainCrossbarWidget.selectedCells[0]
-
-        (vstart, vstep, vstop, pw, interpulse, pulses) = \
-            self.rampOpsWidget.rampParams()
-
-        # in nanoseconds
-        pw = int(pw * 1e9)
-        # in nanoseconds
-        interpulse = int(interpulse * 1e9)
-
-        (w, b) = (cell.w, cell.b)
-        (low, high) = self.mapper.wb2ch[w][b]
-
-        print("W: %02d B: %02d (low: %02d high: %02d); Vstart: %.2f V Vstep: %.2f V "
-            "Vend: %.2f; PW: %d ns I: %d ns N: %d"
-            % (w, b, low, high, vstart, vstep, vstop, pw, interpulse, pulses))
-
-        self._arc().generate_ramp(low, high, vstart, vstep, vstop, pw, interpulse,
-            pulses, ReadAt.Bias, ReadAfter.Pulse)
-        if vstop < vstart:
-            voltages = np.arange(vstop-vstep/2.0, vstart, vstep)\
-                         .repeat(np.max((pulses, 1)))
-        else:
-            voltages = np.arange(vstart, vstop+vstep/2.0, vstep)\
-                         .repeat(np.max((pulses, 1)))
-
-        self._arc().execute()
-        self._finaliseOperation()
-        self._arc().wait()
-        currents = np.empty(shape=voltages.shape)
-        for (i, (v, d)) in enumerate(zip(voltages, self._arc().get_iter(DataMode.Bits))):
-            curr = d[0][self.mapper.bit_idxs][b]
-            if v != 0.0:
-                print("V = %.2f V; I = %.2e A; R = %s" % (v, curr,
-                    pg.siFormat(np.abs(v/curr), suffix='Ω')))
-            else:
-                print("V = %.2f V; I = %.2e A; R = N/A" % (v, curr))
-            currents[i] = curr
-        print("===")
-        if self.rampOpsWidget.showResultChecked():
-            self._plotData(voltages, currents, 'Voltage', 'Current',
-                xunit='V', yunit='A')
-
     def _readSlice(self, low, highs):
         if self._arc is None:
             print("arc2 is not connected")
@@ -475,34 +429,33 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
                    .execute()
         self._finaliseOperation()
 
-    def _plotData(self, x, y, xlabel, ylabel, xunit=None, yunit=None, logscale=False):
-        dialog = QtWidgets.QDialog(self)
-        box = QtWidgets.QHBoxLayout()
-        dialog.setWindowTitle("Ramp results")
-
-        gv = pg.GraphicsLayoutWidget()
-        plot = gv.addPlot()
-        plot.plot(x, y, pen=None, symbol='+')
-        plot.getAxis('bottom').setLabel(xlabel, units=xunit)
-        plot.getAxis('left').setLabel(ylabel, units=yunit)
-
-        box.addWidget(gv)
-        dialog.setLayout(box)
-
-        dialog.show()
-
-    def addExperimentTab(self, kls, title):
-        obj = kls()
+    def addModuleTab(self, kls):
+        obj = kls(self._arc, self.arc2ConnectionWidget.arc2Config, \
+            self.mainCrossbarWidget.selection, self.mapper)
         wdg = QtWidgets.QWidget()
         layout = QtWidgets.QVBoxLayout()
         layout.addWidget(obj)
-        #layout.addItem(QtWidgets.QSpacerItem(20, 20, QtWidgets.QSizePolicy.Policy.Fixed,\
-        #    QtWidgets.QSizePolicy.Policy.Expanding))
-        #layout.setStretch(1,1)
         wdg.setLayout(layout)
-        self.experimentTabWidget.addTab(wdg, title)
+        self.experimentTabWidget.addTab(wdg, obj.name)
+
+        if self.experimentTabWidget.count() > 0:
+            self.moduleWrapStackedWidget.setCurrentIndex(0)
+        else:
+            self.moduleWrapStackedWidget.setCurrentIndex(1)
 
         return obj
+
+    def removeCurrentModuleTab(self):
+        wdg = self.experimentTabWidget.currentWidget()
+        idx = self.experimentTabWidget.currentIndex()
+        self.experimentTabWidget.removeTab(idx)
+        wdg.setParent(None)
+        del wdg
+
+        if self.experimentTabWidget.count() > 0:
+            self.moduleWrapStackedWidget.setCurrentIndex(0)
+        else:
+            self.moduleWrapStackedWidget.setCurrentIndex(1)
 
     def _clearPlots(self):
         dispType = self.plottingOptionsWidget.displayType

@@ -140,7 +140,7 @@ def main():
 
     app = QtWidgets.QApplication([])
     graphics.initialise()
-    wdg = App(mapper)
+    wdg = App(mapper, modules=mods)
     wdg.show()
     app.exec()
 
