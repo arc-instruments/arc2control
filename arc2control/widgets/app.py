@@ -25,6 +25,7 @@ from .. import graphics
 from ..h5utils import H5DataStore, OpType, H5Mode
 import weakref
 import os, tempfile
+from .. import signals
 
 
 class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
