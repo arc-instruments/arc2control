@@ -231,7 +231,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
     def pulseReadSelectedCell(self, cells, vpulse, pulsewidth, vread):
         cell = cells[0]
         (w, b) = (cell.w, cell.b)
-        (low, high) = self.mapper.wb2ch[w][b]
+        (high, low) = self.mapper.wb2ch[w][b]
         print("pulseread (word: %2d bit: %2d ←→ low: %2d high: %2d)" % (w, b, low, high))
         print("pulseread (V = %g, PW = %g ns)" % (vpulse, pulsewidth*1.0e9))
         if self._arc is None:
@@ -258,10 +258,10 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
 
         for (k, v) in slices.items():
             try:
-                (res, idx) = self._pulseReadSlice(self.mapper.b2ch[k],
+                (volt, curr, idx) = self._pulseReadSlice(self.mapper.b2ch[k],
                     np.array([self.mapper.w2ch[x] for x in v], dtype=np.uint64),
                     vpulse, pulsewidth)
-                data[k][idx] = res[idx]
+                data[k][idx] = np.abs(volt/curr[idx])
             except TypeError:
                 # arc not connected
                 return
@@ -335,11 +335,11 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
             int(pulsewidth*1.0e9), voltage)
         bitline = self.mapper.ch2b[low]
         # convert channel order to word order
-        data = voltage/abs(data[self.mapper.word_idxs])
+        currents = data[self.mapper.word_idxs]
 
         # find the non-nan indices
-        idx = np.where(~np.isnan(data))[0]
-        return (data, idx)
+        idx = np.where(~np.isnan(currents))[0]
+        return (vpulse, currents, idx)
 
     def _finaliseOperation(self):
         if self._arc is None:
