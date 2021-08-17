@@ -301,6 +301,9 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
                 (volt, curr, idx) = self._readSlice(self.mapper.b2ch[k],
                     np.array([self.mapper.w2ch[x] for x in v], dtype=np.uint64))
                 data[k][idx] = np.abs(volt/curr[idx])
+                for w in idx:
+                    self._datastore.update_status(w, k, curr[w], volt, 0.0,\
+                        volt, OpType.READ)
             except TypeError:
                 # arc not connected
                 return
