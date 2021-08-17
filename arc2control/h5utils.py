@@ -242,7 +242,7 @@ class H5DataStore:
         self._h5.close()
 
     def __enter__(self):
-        return self._h5
+        return self
 
     def __exit__(self, type, value, traceback):
         self._h5.flush()
