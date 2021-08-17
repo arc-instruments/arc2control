@@ -237,13 +237,14 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         if self._arc is None:
             print("arc2 is not connected")
         else:
-            voltage = self.readOpsWidget.readoutVoltage()
             current = self._arc().pulseread_one(low, high, vpulse, int(pulsewidth*1.0e9),
                 vread)
             self._finaliseOperation()
-            self.mainCrossbarWidget.updateData(w, b, voltage/abs(current))
-            self.readOpsWidget.setValue(w, b, voltage/abs(current))
-        self.selectionChanged()
+            self.mainCrossbarWidget.updateData(w, b, np.abs(vread/current))
+            self.readOpsWidget.setValue(w, b, np.abs(vread/current))
+            self._datastore.update_status(w, b, current, vpulse, pulsewidth, \
+                vread, OpType.PULSEREAD)
+        self.selectionChanged(self.mainCrossbarWidget.selection)
 
     def pulseReadSelectedSlices(self, cells, vpulse, pulsewidth, vread):
         slices = {}
@@ -262,6 +263,10 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
                     np.array([self.mapper.w2ch[x] for x in v], dtype=np.uint64),
                     vpulse, pulsewidth)
                 data[k][idx] = np.abs(volt/curr[idx])
+                for w in idx:
+                    self._datastore.update_status(w, k, curr[w], volt, \
+                        pulsewidth, self.readOpsWidget.readoutVoltage(),\
+                        OpType.PULSEREAD)
             except TypeError:
                 # arc not connected
                 return
