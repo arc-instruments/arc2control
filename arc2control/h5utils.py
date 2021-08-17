@@ -2,7 +2,7 @@ import numpy as np
 import h5py
 import os.path
 import types
-from enum import Enum
+from enum import Enum, IntEnum
 
 
 _H5DS_VERSION_MAJOR = 0
@@ -16,7 +16,7 @@ class H5Mode(Enum):
     READEX = 'r+'
 
 
-class OpType(Enum):
+class OpType(IntEnum):
     READ      =  0b01
     PULSE     =  0b10
     PULSEREAD =  0b11
@@ -317,13 +317,14 @@ class H5DataStore:
         dset = self._h5['crosspoints'][wbid]['timeseries']
         idx = dset.attrs['NROWS']
 
-        dset[idx] = (current, voltage, pulse, read_voltage, optype.value)
+        dset[idx] = (current, voltage, pulse, read_voltage, optype)
 
         dset.attrs['NROWS'] = idx + 1
 
         # and the crossbar raster
         self._h5['crossbar']['current'][bit,word] = current
         self._h5['crossbar']['voltage'][bit,word] = voltage
+
 
     def make_wb_table(self, word, bit, name, shape, dtype, maxshape=None):
         """
