@@ -325,6 +325,38 @@ class H5DataStore:
         self._h5['crossbar']['current'][bit,word] = current
         self._h5['crossbar']['voltage'][bit,word] = voltage
 
+    def update_status_bulk(self, word, bit, currents, voltages, pulses, read_voltages, optypes):
+        """
+        Similar to ``update_status`` but with bulk insertion of values. All parameters must
+        be equally sized numpy arrays. Arguments ``read_voltages`` and ``optypes`` can be
+        scalar and their values will be brodcasted over the relevant rows
+        """
+
+        self.__create_timeseries(word, bit)
+        wbid = 'W%02dB%02d' % (word, bit)
+
+        dlen = len(currents)
+        for a in [voltages, pulses]:
+            if len(a) != dlen:
+                raise ValueError("""Currents, Voltages and Pulse Widths must have the same """
+                                 """length when bulk inserting data""")
+
+        dset = self._h5['crosspoints'][wbid]['timeseries']
+        idx = dset.attrs['NROWS']
+
+        dset[idx:idx+dlen, 'current'] = currents
+        dset[idx:idx+dlen, 'voltage'] = voltages
+        dset[idx:idx+dlen, 'pulse_width'] = pulses
+        dset[idx:idx+dlen, 'read_voltage'] = read_voltages
+        dset[idx:idx+dlen, 'op_type'] = optypes
+
+        dset.attrs['NROWS'] = idx + dlen
+
+        self._h5['crossbar']['current'][bit, word] = currents[-1]
+        try:
+            self._h5['crossbar']['voltage'][bit, word] = read_voltages[-1]
+        except TypeError: # read_voltages is probably a scalar
+            self._h5['crossbar']['voltage'][bit, word] = read_voltages
 
     def make_wb_table(self, word, bit, name, shape, dtype, maxshape=None):
         """
