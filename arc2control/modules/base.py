@@ -65,7 +65,7 @@ class BaseModule(QtWidgets.QWidget):
             return None
 
     @property
-    def selection(self):
+    def cells(self):
         """
         Return the currently selected cells
         """
