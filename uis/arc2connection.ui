@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>262</width>
+    <width>292</width>
     <height>111</height>
    </rect>
   </property>
@@ -33,7 +33,7 @@
     <number>0</number>
    </property>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,1">
+    <layout class="QHBoxLayout" name="horizontalLayout" stretch="2,1,1,1">
      <item>
       <widget class="QPushButton" name="connectArC2Button">
        <property name="text">
@@ -42,7 +42,42 @@
       </widget>
      </item>
      <item>
+      <widget class="QComboBox" name="efmIDsComboBox">
+       <property name="maximumSize">
+        <size>
+         <width>50</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>ArC2 address</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolButton" name="refreshIDsButton">
+       <property name="toolTip">
+        <string>Refresh Addresses</string>
+       </property>
+       <property name="text">
+        <string>↺</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QLabel" name="connectionArC2StatusLabel">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>85</width>
+         <height>0</height>
+        </size>
+       </property>
        <property name="styleSheet">
         <string notr="true">QLabel { color: red; font-weight: bold; }</string>
        </property>

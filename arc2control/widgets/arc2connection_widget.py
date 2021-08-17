@@ -8,7 +8,7 @@ from .generated.arc2connection import Ui_ArC2ConnectionWidget
 from enum import Enum
 
 from pyarc2 import Instrument, BiasOrder, ControlMode, ReadAt, \
-    ReadAfter, DataMode, IdleMode
+    ReadAfter, DataMode, IdleMode, find_ids
 
 _CONNECTED_LABEL_STYLE = "QLabel { color: green; font-weight: bold }"
 _DISCONNECTED_LABEL_STYLE = "QLabel { color: red; font-weight: bold }"
@@ -40,8 +40,15 @@ class ArC2ConnectionWidget(Ui_ArC2ConnectionWidget, QtWidgets.QWidget):
         self.gndDevsRadio.toggled.connect(self.__idleModeChanged)
         self.selectFirmwareButton.clicked.connect(self.__openFirmware)
         self.connectArC2Button.clicked.connect(self.__arc2Connect)
+        self.refreshIDsButton.clicked.connect(self.__find_efm_ids)
+        self.__find_efm_ids()
 
         self._arc = None
+
+    def __find_efm_ids(self):
+        self.efmIDsComboBox.clear()
+        for i in find_ids():
+            self.efmIDsComboBox.addItem('%2d' % i, i)
 
     def __controlModeChanged(self, *args):
 
@@ -102,10 +109,16 @@ class ArC2ConnectionWidget(Ui_ArC2ConnectionWidget, QtWidgets.QWidget):
             self.connectionChanged.emit(False)
             self.selectedFirmwareEdit.setEnabled(True)
             self.selectFirmwareButton.setEnabled(True)
+            self.efmIDsComboBox.setEnabled(True)
+            self.refreshIDsButton.setEnabled(True)
         else:
             thisdir = os.path.dirname(os.path.realpath(__file__))
             fw = os.path.realpath(self.selectedFirmwareEdit.text())
-            self._arc = Instrument(0, fw)
+            efmid = self.efmIDsComboBox.currentData()
+            try:
+                self._arc = Instrument(efmid, fw)
+            except:
+                return
             self.connectionArC2StatusLabel.setText("Connected")
             self.connectionArC2StatusLabel.setStyleSheet(_CONNECTED_LABEL_STYLE)
             self.connectArC2Button.setText("Disconnect ArC2")
@@ -114,6 +127,8 @@ class ArC2ConnectionWidget(Ui_ArC2ConnectionWidget, QtWidgets.QWidget):
             self.__idleModeChanged()
             self.selectedFirmwareEdit.setEnabled(False)
             self.selectFirmwareButton.setEnabled(False)
+            self.efmIDsComboBox.setEnabled(False)
+            self.refreshIDsButton.setEnabled(False)
 
     def disconnectArC2(self):
         if self._arc is not None:
