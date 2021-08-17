@@ -267,14 +267,14 @@ class H5DataStore:
         """
         Resistance view of the crossbar raster
         """
-        return self.voltage/np.abs(self.current)
+        return np.abs(self.voltage/self.current)
 
     @property
     def conductance(self):
         """
         Conductance view of the crossbar raster
         """
-        return np.abs(self.current)/self.voltage
+        return np.abs(self.current/self.voltage)
 
     @property
     def shape(self):
