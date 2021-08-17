@@ -4,6 +4,7 @@ from pyarc2 import ReadAt, ReadAfter, DataMode
 from arc2control.modules.base import BaseModule, BaseOperation
 from .generated.curvetracer import Ui_CurveTracerWidget
 from . import MOD_NAME, MOD_TAG
+from arc2control import signals
 
 from PyQt6 import QtWidgets
 
@@ -75,6 +76,12 @@ class CurveTracer(BaseModule, Ui_CurveTracerWidget):
         self.setupUi(self)
 
         self.rampSelectedButton.clicked.connect(self.rampSelectedClicked)
+        self.rampSelectedButton.setEnabled((len(self.cells) == 1) and (self.arc is not None))
+        signals.crossbarSelectionChanged.connect(self.crossbarSelectionChanged)
+        signals.arc2ConnectionChanged.connect(self.crossbarSelectionChanged)
+
+    def crossbarSelectionChanged(self, cells):
+        self.rampSelectedButton.setEnabled((len(self.cells) == 1) and (self.arc is not None))
 
     def rampSelectedClicked(self):
         self._thread = CurveTracerOperation(self._rampParams(), self)
