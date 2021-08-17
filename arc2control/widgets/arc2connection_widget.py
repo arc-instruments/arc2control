@@ -101,6 +101,7 @@ class ArC2ConnectionWidget(Ui_ArC2ConnectionWidget, QtWidgets.QWidget):
             self.connectArC2Button.setText("Connect ArC2")
             self.connectionChanged.emit(False)
             self.selectedFirmwareEdit.setEnabled(True)
+            self.selectFirmwareButton.setEnabled(True)
         else:
             thisdir = os.path.dirname(os.path.realpath(__file__))
             fw = os.path.realpath(self.selectedFirmwareEdit.text())
@@ -112,6 +113,7 @@ class ArC2ConnectionWidget(Ui_ArC2ConnectionWidget, QtWidgets.QWidget):
             self.__controlModeChanged()
             self.__idleModeChanged()
             self.selectedFirmwareEdit.setEnabled(False)
+            self.selectFirmwareButton.setEnabled(False)
 
     def disconnectArC2(self):
         if self._arc is not None:
