@@ -513,12 +513,12 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
             idxes = np.arange(max(len_timeseries-xRange, 0), len_timeseries)
 
         if dispType == PlotDisplayType.Resistance:
-            self.tracePlot.plot(idxes, np.abs(timeseries['voltage']/timeseries['current']),\
+            self.tracePlot.plot(idxes, np.abs(timeseries['read_voltage']/timeseries['current']),\
                 pen={'color': '#F00', 'width': 1}, symbol='+', symbolPen=None, \
                 symbolSize=6, symbolBrush='#F00',\
                 clear=True)
         elif dispType == PlotDisplayType.Conductance:
-            self.tracePlot.plot(idxes, np.abs(timeseries['current']/timeseries['voltage']),\
+            self.tracePlot.plot(idxes, np.abs(timeseries['current']/timeseries['read_voltage']),\
                 pen={'color': '#F00', 'width': 1}, symbol='x', symbolPen=None, \
                 symbolSize=6, symbolBrush='#F00',\
                 clear=True)
