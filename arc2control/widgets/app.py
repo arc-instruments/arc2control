@@ -64,6 +64,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         self.mainCrossbarWidget.mousePositionChanged.connect(self.mousePositionChanged)
         self.readOpsWidget.readSelectedClicked.connect(self.readSelectedClicked)
         self.readOpsWidget.readAllClicked.connect(self.readAllClicked)
+        self.readOpsWidget.readoutVoltageChanged.connect(self.readoutVoltageChanged)
         self.arc2ConnectionWidget.connectionChanged.connect(self.connectionChanged)
         self.arc2ConnectionWidget.arc2ConfigChanged.connect(signals.arc2ConfigChanged.emit)
 
@@ -174,6 +175,9 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         else:
             value = "N/A"
         self.hoverLabel.setText("W = %d | B = %d – %s" % (cell.w+1, cell.b+1, value))
+
+    def readoutVoltageChanged(self, voltage):
+        signals.readoutVoltageChanged.emit(voltage)
 
     def readSelectedClicked(self):
         cells = self.mainCrossbarWidget.selectedCells

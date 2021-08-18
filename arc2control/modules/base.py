@@ -52,6 +52,7 @@ class BaseModule(QtWidgets.QWidget):
         signals.arc2ConnectionChanged.connect(self.__arc2ConnectionChanged)
         signals.crossbarSelectionChanged.connect(self.__crossbarSelectionChanged)
         signals.arc2ConfigChanged.connect(self.__arc2ConfigChanged)
+        signals.readoutVoltageChanged.connect(self.__readoutVoltageChanged)
 
     @property
     def arc(self):
@@ -101,3 +102,6 @@ class BaseModule(QtWidgets.QWidget):
 
     def __arc2ConfigChanged(self, config):
         self._arcconf = config
+
+    def __readoutVoltageChanged(self, voltage):
+        self._readoutVoltage = voltage
