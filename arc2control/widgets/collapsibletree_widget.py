@@ -46,11 +46,17 @@ class CollapsibleTreeWidget(QtWidgets.QWidget):
         self.widgets = []
 
         self.tree = QtWidgets.QTreeWidget()
+        self.tree.setStyleSheet(\
+            'QTreeWidget::item:hover { background-color: transparent; }')
         self.tree.setHeaderHidden(True)
         layout = QtWidgets.QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self.tree)
         self.tree.setIndentation(0)
+
+    def _baseColorHex(self):
+        color = self.tree.palette().base().color()
+        return "#%2x%2x%2x" % (color.red(), color.green(), color.blue())
 
     def addWidget(self, title, wdg, expanded=True):
 
@@ -64,6 +70,7 @@ class CollapsibleTreeWidget(QtWidgets.QWidget):
         section = QtWidgets.QTreeWidgetItem(buttonTreeItem)
         section.setDisabled(True)
         frame = QtWidgets.QFrame()
+        frame.setStyleSheet('QFrame:hover { background-color: %s; }' % self._baseColorHex())
         flayout = QtWidgets.QVBoxLayout(frame)
         flayout.addWidget(wdg)
         self.tree.setItemWidget(section, 0, frame)
