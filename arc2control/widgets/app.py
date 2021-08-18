@@ -41,11 +41,12 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         self._setupPlottingWidgets()
         self._populateModuleComboBox()
 
-        self._connectSignals()
-
         self._datastore = H5DataStore(tempfile.NamedTemporaryFile(\
             suffix='.h5', delete=False).name,\
             mode=H5Mode.WRITE)
+
+        self._connectSignals()
+
         # initialise an empty crossbar (all zeros)
         self._crossbarRefresh(np.zeros(self._datastore.shape),\
             np.zeros(self._datastore.shape))
@@ -82,6 +83,10 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         self.plottingOptionsWidget.yScaleChanged.connect(self._changePlotScale)
 
         self.selectionChanged(self.mainCrossbarWidget.selection)
+
+        signals.valueUpdate.connect(self._valueUpdate)
+        signals.valueBulkUpdate.connect(self._valueUpdateBulk)
+        signals.dataDisplayUpdate.connect(self._updateSinglePlot)
 
     def _setupControlWidgets(self):
         self.arc2ConnectionWidget = ArC2ConnectionWidget()
@@ -244,11 +249,11 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
             current = self._arc().pulseread_one(low, high, vpulse, int(pulsewidth*1.0e9),
                 vread)
             self._finaliseOperation()
-            self.mainCrossbarWidget.updateData(w, b, np.abs(vread/current))
+            #self.mainCrossbarWidget.updateData(w, b, np.abs(vread/current))
             self.readOpsWidget.setValue(w, b, np.abs(vread/current))
-            self._datastore.update_status(w, b, current, vpulse, pulsewidth, \
-                vread, OpType.PULSEREAD)
-        self.selectionChanged(self.mainCrossbarWidget.selection)
+            signals.valueUpdate.emit(w, b, current, vpulse, pulsewidth, vread,\
+                OpType.PULSEREAD)
+        signals.dataDisplayUpdate.emit(w, b)
 
     def pulseReadSelectedSlices(self, cells, vpulse, pulsewidth, vread):
         slices = {}
@@ -268,7 +273,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
                     vpulse, pulsewidth)
                 data[k][idx] = np.abs(volt/curr[idx])
                 for w in idx:
-                    self._datastore.update_status(w, k, curr[w], volt, \
+                    signals.valueUpdate.emit(w, k, curr[w], volt, \
                         pulsewidth, self.readOpsWidget.readoutVoltage(),\
                         OpType.PULSEREAD)
             except TypeError:
@@ -311,7 +316,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
                     np.array([self.mapper.w2ch[x] for x in v], dtype=np.uint64))
                 data[k][idx] = np.abs(volt/curr[idx])
                 for w in idx:
-                    self._datastore.update_status(w, k, curr[w], volt, 0.0,\
+                    signals.valueUpdate.emit(w, k, curr[w], volt, 0.0,\
                         volt, OpType.READ)
             except TypeError:
                 # arc not connected
@@ -368,13 +373,10 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
             voltage = self.readOpsWidget.readoutVoltage()
             current = self._arc().read_one(low, high, voltage)
             self._finaliseOperation()
-            self.mainCrossbarWidget.updateData(w, b, abs(voltage/current))
 
-            self._datastore.update_status(w, b, current, voltage, 0.0,
+            signals.valueUpdate.emit(w, b, current, voltage, 0.0, \
                 self.readOpsWidget.readoutVoltage(), OpType.READ)
-            self._updateSinglePlot(w, b)
-
-        self.selectionChanged(self.mainCrossbarWidget.selection)
+            signals.dataDisplayUpdate.emit(w, b)
 
     def readAllClicked(self):
         if self._arc is None:
@@ -407,6 +409,8 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
 
         self._arc().pulse_one(low, high, voltage, int(pulsewidth*1.0e9))\
                    .execute()
+        signals.valueUpdate.emit(w, b, np.NaN, voltage, pulsewidth, \
+            np.NaN, OpType.PULSE)
         self._finaliseOperation()
 
     def pulseSelectedSlices(self, cells, voltage, pulsewidth):
@@ -429,6 +433,9 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
             self._arc().pulse_slice_masked(low, voltage, int(pulsewidth*1.0e9), highs)\
                        .ground_all()\
                        .execute()
+            for w in idx:
+                signals.valueUpdate.emit(w, k, np.NaN, voltage, pulsewidth,\
+                    np.NaN, OpType.PULSE)
             self._finaliseOperation()
 
     def pulseAll(self, voltage, pulsewidth):
@@ -492,6 +499,16 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
             self._updateSinglePlot(w, b)
         else:
             self._clearPlots()
+
+    def _valueUpdate(self, w, b, curr, volt, pw, vread, optype):
+        self._datastore.update_status(w, b, curr, volt, pw, vread, optype)
+        self.mainCrossbarWidget.updateData(w, b, np.abs(vread/curr))
+        self.selectionChanged(self.mainCrossbarWidget.selection)
+
+    def _valueUpdateBulk(self, w, b, curr, volt, pw, vread, optype):
+        self._datastore.update_status_bulk(w, b, curr, volt, pw, vread, optype)
+        self.mainCrossbarWidget.updateData(w, b, np.abs(vread[-1]/curr[-1]))
+        self.selectionChanged(self.mainCrossbarWidget.selection)
 
     def _updateSinglePlot(self, w, b):
 
