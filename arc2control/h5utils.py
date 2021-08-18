@@ -249,6 +249,9 @@ class H5DataStore:
         self._h5.flush()
         self._h5.close()
 
+    def __getitem__(self, key):
+        return self.dataset(key)
+
     @property
     def current(self):
         """
