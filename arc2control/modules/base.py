@@ -38,7 +38,7 @@ class BaseOperation(QtCore.QThread):
 
 class BaseModule(QtWidgets.QWidget):
 
-    def __init__(self, arcref, arcconf, vread, name, tag, cells, mapper, parent=None):
+    def __init__(self, arcref, arcconf, vread, store, name, tag, cells, mapper, parent=None):
         super().__init__(parent=parent)
 
         self.name = name
@@ -48,6 +48,7 @@ class BaseModule(QtWidgets.QWidget):
         self._readoutVoltage = vread
         self._selectedCells = cells
         self._mapper = mapper
+        self._datastore = store
 
         signals.arc2ConnectionChanged.connect(self.__arc2ConnectionChanged)
         signals.crossbarSelectionChanged.connect(self.__crossbarSelectionChanged)
@@ -96,6 +97,10 @@ class BaseModule(QtWidgets.QWidget):
             self._arc = ref
         else:
             self._arc = None
+
+    @property
+    def datastore(self):
+        return self._datastore
 
     def __crossbarSelectionChanged(self, cb):
         self._selectedCells = cb

@@ -66,11 +66,11 @@ class CurveTracerOperation(BaseOperation):
 
 class CurveTracer(BaseModule, Ui_CurveTracerWidget):
 
-    def __init__(self, arc, arcconf, vread, cells, mapper, parent=None):
+    def __init__(self, arc, arcconf, vread, store, cells, mapper, parent=None):
 
         Ui_CurveTracerWidget.__init__(self)
-        BaseModule.__init__(self, arc, arcconf, vread, MOD_NAME, MOD_TAG, \
-            cells, mapper, parent=parent)
+        BaseModule.__init__(self, arc, arcconf, vread, store, \
+            MOD_NAME, MOD_TAG, cells, mapper, parent=parent)
         self._thread = None
 
         self.setupUi(self)

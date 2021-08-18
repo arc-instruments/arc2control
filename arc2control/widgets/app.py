@@ -443,7 +443,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
 
     def addModuleTab(self, kls):
         obj = kls(self._arc, self.arc2ConnectionWidget.arc2Config, \
-            self.readOpsWidget.readoutVoltage(), \
+            self.readOpsWidget.readoutVoltage(), self._datastore, \
             self.mainCrossbarWidget.selection, self.mapper)
         wdg = QtWidgets.QWidget()
         layout = QtWidgets.QVBoxLayout()
