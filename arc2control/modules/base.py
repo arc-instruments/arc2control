@@ -38,13 +38,14 @@ class BaseOperation(QtCore.QThread):
 
 class BaseModule(QtWidgets.QWidget):
 
-    def __init__(self, arcref, arcconf, name, tag, cells, mapper, parent=None):
+    def __init__(self, arcref, arcconf, vread, name, tag, cells, mapper, parent=None):
         super().__init__(parent=parent)
 
         self.name = name
         self.tag = tag
         self._arc = arcref
         self._arcconf = arcconf
+        self._readoutVoltage = vread
         self._selectedCells = cells
         self._mapper = mapper
 
@@ -84,6 +85,10 @@ class BaseModule(QtWidgets.QWidget):
         Return the current arc2 configuration
         """
         return self._arcconf
+
+    @property
+    def readoutVoltage(self):
+        return self._readoutVoltage
 
     def __arc2ConnectionChanged(self, connected, ref):
         if connected:
