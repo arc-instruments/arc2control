@@ -75,7 +75,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         self.pulseOpsWidget.positivePulseReadClicked.connect(\
             partial(self.pulseReadSelectedClicked, polarity=Polarity.POSITIVE))
         self.pulseOpsWidget.negativePulseReadClicked.connect(\
-            partial(self.pulseReadSelectedClicked, polarity=Polarity.POSITIVE))
+            partial(self.pulseReadSelectedClicked, polarity=Polarity.NEGATIVE))
 
         self.plottingOptionsWidget.xRangeChanged.connect(self._refreshCurrentPlot)
         self.plottingOptionsWidget.displayTypeChanged.connect(self._refreshCurrentPlot)
