@@ -507,10 +507,12 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
 
         if xRange is None:
             timeseries = full_timeseries
-            idxes = np.arange(0, len_timeseries)
+            offset = 0
         else:
             timeseries = full_timeseries[-xRange:]
-            idxes = np.arange(max(len_timeseries-xRange, 0), len_timeseries)
+            offset = max(len_timeseries - xRange, 0)
+
+        idxes = np.arange(offset, len_timeseries)
 
         if dispType == PlotDisplayType.Resistance:
             self.tracePlot.plot(idxes, np.abs(timeseries['read_voltage']/timeseries['current']),\
@@ -535,10 +537,65 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         else:
             # unknown plot type, nothing to show
             return
+
         self.tracePlot.getAxis('left').setLabel(**dispType.plotLabel())
-        self.pulsePlot.plot(idxes, timeseries['voltage'], pen=None,\
+
+        # find points with pulse operations
+        idxp = np.where((timeseries['op_type'] & OpType.PULSE) == OpType.PULSE)[0]
+        # find points with read operations
+        idxr = np.where((timeseries['op_type'] & OpType.READ) == OpType.READ)[0]
+
+        # plot the pulse points
+        self.pulsePlot.plot(offset+idxp, timeseries['voltage'][idxp], pen=None,\
+            symbolPen=None, symbolBrush=(0, 150, 150),  symbol='s',\
+            symbolSize=6, clear=True )
+
+        # this ugly hack is required because pyqtgraph has no way to plot a dataset
+        # with impulses. The only way remotely resembling this setup is by using
+        # this monstrosity which duplicates the indices ([2, 3, 5] → [2, 2, 3, 3, 5, 5])
+        # and recreates the y-axis data with zero points in between (so for instance
+        # [1e-6, 1.1e-6, 1.2e-6] → [0, 1e-6, 0, 1.1e-6, 0, 1.2e-6]). Now there are two
+        # points per x-value (0.0 and the actual value). That way we can use the
+        # `connect='pairs'` option of pyqtgraph to plot every other point
+        # So instead of having this (default)
+        #
+        # |
+        # |    +
+        # | +  |
+        # | |\ | +
+        # | | \|/|
+        # o-+--+-+---->
+        #
+        # we are getting this
+        #
+        # |
+        # |    +
+        # | +  |
+        # | |  | +
+        # | |  | |
+        # o-+--+-+---->
+        #
+        # and by also omitting the symbols we finally get the impulse lines
+        #
+        # |
+        # |
+        # |    |
+        # | |  |
+        # | |  | |
+        # o----------->
+
+        # plot the impulse lines
+        self.pulsePlot.plot(offset+np.repeat(idxp, 2), \
+            np.dstack((\
+                np.zeros(len(timeseries['voltage'][idxp])), timeseries['voltage'][idxp])
+            ).flatten(), \
+            pen=(0, 150, 150),\
+            connect='pairs')
+
+        # plot the read points
+        self.pulsePlot.plot(offset+idxr, timeseries['read_voltage'][idxr], pen=None,\
             symbolPen=None, symbolBrush=(0, 0, 255),  symbol='+',\
-            symbolSize=6, clear=True)
+            symbolSize=6)
 
     def _crossbarRefresh(self, current, voltage):
         vdset = self._datastore.dataset('crossbar/voltage')
