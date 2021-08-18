@@ -2,6 +2,7 @@ import numpy as np
 import h5py
 import os.path
 import types
+import time
 from enum import Enum, IntEnum
 
 
@@ -376,12 +377,14 @@ class H5DataStore:
         except TypeError: # read_voltages is probably a scalar
             self._h5['crossbar']['voltage'][bit, word] = read_voltages
 
-    def make_wb_table(self, word, bit, name, shape, dtype, maxshape=None):
+    def make_wb_table(self, word, bit, name, shape, dtype, maxshape=None, tstamp=True):
         """
         Create a new experiment table tied to a specific crosspoint. Arguments
         `shape` and `dtype` follow numpy conventions. This will return the
         underlying HDF dataset. If `maxshape` is `None` the dataset will
-        always be chunked but will allow appends (default).
+        always be chunked but will allow appends (default). Unless `tstamp` is set
+        to `False` the current timestamp with ns precision will be added to the
+        dataset names.
         """
         # make sure time series exists
         try:
@@ -390,19 +393,24 @@ class H5DataStore:
             # exists already, no problem
             pass
 
-        dsetname = 'crosspoints/W%02dB%02d/%s' % (word, bit, name)
+        if tstamp:
+            dsetname = 'crosspoints/W%02dB%02d/%s_%d' % (word, bit, name, time.time_ns())
+        else:
+            dsetname = 'crosspoints/W%02dB%02d/%s' % (word, bit, name)
         dset = self.__make_table(dsetname, shape, dtype, maxshape)
         #dset.attrs['crosspoints'] = "[[%d,%d]]" % (word, bit)
         dset.attrs['crosspoints'] = [[word, bit]]
 
         return dset
 
-    def make_synthetic_table(self, crosspoints, name, shape, dtype, maxshape=None):
+    def make_synthetic_table(self, crosspoints, name, shape, dtype, maxshape=None, tstamp=True):
         """
         Create a new experiment table encompassing many crosspoints. Arguments
         `shape` and `dtype` follow numpy conventions. This will return the
         underlying HDF dataset. If `maxshape` is `None` the dataset will
-        always be chunked but will allow appends (default).
+        always be chunked but will allow appends (default). Unless `tstamp` is set
+        to `False` the current timestamp with ns precision will be added to the
+        dataset names.
         """
         # make sure individual time series exists
         for (w, b) in crosspoints:
@@ -412,7 +420,10 @@ class H5DataStore:
                 # exists already, no problem
                 continue
 
-        dsetname = 'synthetics/%s' % name
+        if tstamp:
+            dsetname = 'synthetics/%s_%d' % (name, time.time_ns())
+        else:
+            dsetname = 'synthetics/%s' % name
         dset = self.__make_table(dsetname, shape, dtype, maxshape)
 
         dset.attrs['crosspoints'] = [[x[0], x[1]] for x in crosspoints]
