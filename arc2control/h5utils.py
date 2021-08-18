@@ -341,6 +341,24 @@ class H5DataStore:
                 raise ValueError("""Currents, Voltages and Pulse Widths must have the same """
                                  """length when bulk inserting data""")
 
+        # if len(read_voltages) is 1 and dlen > 1, ensure
+        # read_voltages is a scalar to be properly broadcasted
+        try:
+            if dlen > 1 and len(read_voltages) == 1:
+                read_voltages = read_voltages[0]
+        except TypeError:
+            # scalars do not have __len__
+            pass
+
+        # same with optypes
+        try:
+            if dlen > 1 and len(optypes) == 1:
+                optypes = optypes[0]
+        except TypeError:
+            # scalars do not have __len__
+            pass
+
+
         dset = self._h5['crosspoints'][wbid]['timeseries']
         idx = dset.attrs['NROWS']
 
