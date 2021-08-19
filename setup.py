@@ -180,7 +180,7 @@ setup(
     python_requires = '>=3.7',
     install_requires = requirements,
     entry_points = {
-        'console_scripts': ['arc1pyqt = arc2control.main:main']
+        'console_scripts': ['arc2control = arc2control.main:main']
     },
     package_data = {
         'arc2control': ['graphics/*png', 'graphics/*svg', 'version.txt',
