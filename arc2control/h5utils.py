@@ -436,12 +436,16 @@ class H5DataStore:
                 continue
 
         if tstamp:
-            dsetname = 'synthetics/%s_%d' % (name, time.time_ns())
+            ts = time.time_ns()
+            dsetname = 'synthetics/%s_%d' % (name, ts)
         else:
             dsetname = 'synthetics/%s' % name
         dset = self.__make_table(dsetname, shape, dtype, maxshape)
 
         dset.attrs['crosspoints'] = [[x[0], x[1]] for x in crosspoints]
+
+        if tstamp:
+            dset.attrs['TSTAMP'] = ts
 
         return dset
 
