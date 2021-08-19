@@ -8,6 +8,11 @@ from PyQt6 import QtCore, QtGui, QtSvg
 
 
 _pixmap_files = [
+    'action-open.png',
+    'action-save.png',
+    'action-save-as.png',
+    'action-new-dataset.png',
+    'action-exit.png'
 ]
 
 _svg_files = [

@@ -5,6 +5,7 @@ from .generated.mainwindow import Ui_ArC2MainWindow
 import sys
 import time
 import os.path
+import shutil
 import numpy as np
 from functools import partial
 import pyqtgraph as pg
@@ -27,6 +28,10 @@ import os, tempfile
 from .. import signals
 
 
+_APP_TITLE = 'ArC2 Control Panel'
+_H5_FILE_FILTER = 'Datasets (*.h5);;All files (*.*)'
+
+
 class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
 
     def __init__(self, mapping, modules={}, parent=None):
@@ -40,10 +45,12 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         self._setupControlWidgets()
         self._setupPlottingWidgets()
         self._populateModuleComboBox()
+        self._loadIcons()
 
         self._datastore = H5DataStore(tempfile.NamedTemporaryFile(\
             suffix='.h5', delete=False).name,\
             mode=H5Mode.WRITE)
+        self._datastore.__setattr__('is_temporary', True)
 
         self._connectSignals()
 
@@ -51,8 +58,8 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         self._crossbarRefresh(np.zeros(self._datastore.shape),\
             np.zeros(self._datastore.shape))
 
-        self.setWindowTitle("ArC2 Control Panel")
-        self.setWindowIcon(graphics.getIcon('arc2-logo'))
+        self.setWindowTitle('%s [%s]' % \
+            (_APP_TITLE, os.path.basename(self._datastore.fname)))
         self.resize(950, 800)
 
         self.show()
@@ -81,6 +88,12 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         self.plottingOptionsWidget.xRangeChanged.connect(self._refreshCurrentPlot)
         self.plottingOptionsWidget.displayTypeChanged.connect(self._refreshCurrentPlot)
         self.plottingOptionsWidget.yScaleChanged.connect(self._changePlotScale)
+
+        self.newDatasetAction.triggered.connect(self._newDataset)
+        self.openDatasetAction.triggered.connect(self._openDataset)
+        self.saveDatasetAction.triggered.connect(self._saveDataset)
+        self.saveDatasetAsAction.triggered.connect(self._saveDatasetAs)
+        self.quitAction.triggered.connect(self.close)
 
         self.selectionChanged(self.mainCrossbarWidget.selection)
 
@@ -134,6 +147,14 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
 
         self.addModuleButton.clicked.connect(partial(self.addModuleTab, mod))
         self.removeModuleButton.clicked.connect(self.removeCurrentModuleTab)
+
+    def _loadIcons(self):
+        self.setWindowIcon(graphics.getIcon('arc2-logo'))
+        self.openDatasetAction.setIcon(graphics.getIcon('action-open'))
+        self.saveDatasetAction.setIcon(graphics.getIcon('action-save'))
+        self.saveDatasetAsAction.setIcon(graphics.getIcon('action-save-as'))
+        self.newDatasetAction.setIcon(graphics.getIcon('action-new-dataset'))
+        self.quitAction.setIcon(graphics.getIcon('action-exit'))
 
     def connectionChanged(self, connected):
         if connected:
@@ -621,7 +642,118 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         vdset[:] = voltage
         self.mainCrossbarWidget.setData(np.abs(vdset[:]/cdset[:]).T)
 
-    def closeEvent(self, evt):
+    def _newDataset(self):
+        if self._datastore is not None:
+            # save existing data
+            self._datastore.close()
+
+            # and ask if we want to keep the temporary dataset
+            if self._datastore.is_temporary:
+                res = QtWidgets.QMessageBox.question(self, "Quit ArC2", \
+                    "Save current dataset?")
+                if res == QtWidgets.QMessageBox.StandardButton.Yes:
+                    fname = QtWidgets.QFileDialog.getSaveFileName(self, \
+                        "Save dataset", '', _H5_FILE_FILTER)
+                    if fname is not None and len(fname[0]) > 0:
+                        shutil.move(self._datastore.fname, fname[0])
+                    else:
+                        os.remove(self._datastore.fname)
+                else:
+                    os.remove(self._datastore.fname)
+
+        # create a new temp dataset
+        self._datastore = H5DataStore(tempfile.NamedTemporaryFile(\
+            suffix='.h5', delete=False).name,\
+            mode=H5Mode.WRITE)
+        self._datastore.__setattr__('is_temporary', True)
+        self.saveDatasetAction.setEnabled(True)
+        self.saveDatasetAction.setToolTip('Save')
+        self.saveDatasetAsAction.setEnabled(False)
+        self._reloadFromDataset()
+
+    def _openDataset(self):
+        if self._datastore is not None and self._datastore.is_temporary:
+            self._datastore.close()
+
+            res = QtWidgets.QMessageBox.question(self, "Quit ArC2", \
+                "Save current dataset?")
+            if res == QtWidgets.QMessageBox.StandardButton.Yes:
+                fname = QtWidgets.QFileDialog.getSaveFileName(self, \
+                    "Save dataset", '', _H5_FILE_FILTER)
+                if fname is not None and len(fname[0]) > 0:
+                    shutil.move(self._datastore.fname, fname[0])
+                else:
+                    os.remove(self._datastore.fname)
+            else:
+                os.remove(self._datastore.fname)
+
+        fname = QtWidgets.QFileDialog.getOpenFileName(self, "Open dataset",\
+            '', _H5_FILE_FILTER)
+        if fname is not None and len(fname[0]) > 0:
+
+            self._datastore = None
+            self._datastore = H5DataStore(fname[0], mode=H5Mode.APPEND)
+            self._datastore.__setattr__('is_temporary', False)
+            self.saveDatasetAction.setEnabled(False)
+            self.saveDatasetAction.setToolTip('Dataset is saved automatically')
+            self.saveDatasetAsAction.setEnabled(True)
+        else:
+            # if no specific dataset has been opened, create a new
+            # temporary one
+            self._datastore = H5DataStore(tempfile.NamedTemporaryFile(\
+                suffix='.h5', delete=False).name,\
+                mode=H5Mode.WRITE)
+            self._datastore.__setattr__('is_temporary', True)
+            self.saveDatasetAction.setEnabled(True)
+            self.saveDatasetAction.setToolTip('Save')
+            self.saveDatasetAsAction.setEnabled(False)
+
+        self._reloadFromDataset()
+
+    def _saveDataset(self):
+        fname = QtWidgets.QFileDialog.getSaveFileName(self, "Save dataset as",\
+            '', _H5_FILE_FILTER)
+        if fname is not None and len(fname[0]) > 0:
+            if self._datastore is None or not self._datastore.is_temporary:
+                return
+
+            self._datastore.close()
+            shutil.move(self._datastore.fname, fname[0])
+            self._datastore = None
+            self._datastore = H5DataStore(fname[0], mode=H5Mode.APPEND)
+            self._datastore.__setattr__('is_temporary', False)
+            self.saveDatasetAction.setEnabled(False)
+            self.saveDatasetAction.setToolTip('Dataset is saved automatically')
+            self.saveDatasetAsAction.setEnabled(True)
+            self._reloadFromDataset()
+
+    def _saveDatasetAs(self):
+        fname = QtWidgets.QFileDialog.getSaveFileName(self, "Save dataset as",\
+            '', _H5_FILE_FILTER)
+        if fname is not None and len(fname[0]) > 0:
+            self._datastore.close()
+            if self._datastore is not None and self._datastore.is_temporary:
+                shutil.move(self._datastore.fname, fname[0])
+            else:
+                shutil.copy2(self._datastore.fname, fname[0])
+
+            self._datastore = None
+
+            self._datastore = H5DataStore(fname[0], mode=H5Mode.APPEND)
+            self._datastore.__setattr__('is_temporary', False)
+            self.saveDatasetAction.setEnabled(False)
+            self.saveDatasetAction.setToolTip('Dataset is saved automatically')
+            self._reloadFromDataset()
+
+    def _reloadFromDataset(self):
+        self._refreshCurrentPlot()
+        vdset = self._datastore.dataset('crossbar/voltage')
+        cdset = self._datastore.dataset('crossbar/current')
+        self.mainCrossbarWidget.setData(np.abs(vdset[:]/cdset[:]).T)
+        self.setWindowTitle('%s [%s]' % \
+            (_APP_TITLE, os.path.basename(self._datastore.fname)))
+
+    def _quit(self):
         try:
             if self._arc is not None:
                 self.arc2ConnectionWidget.disconnectArC2()
@@ -631,8 +763,19 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
 
         if self._datastore is not None:
             self._datastore.close()
-            res = QtWidgets.QMessageBox.question(self, "Quit ArC2", "Delete temporary dataset?")
-            if res == QtWidgets.QMessageBox.StandardButton.Yes:
-                os.remove(self._datastore.fname)
+            if self._datastore.is_temporary:
+                res = QtWidgets.QMessageBox.question(self, "Quit ArC2", \
+                    "Save current dataset?")
+                if res == QtWidgets.QMessageBox.StandardButton.Yes:
+                    fname = QtWidgets.QFileDialog.getSaveFileName(self, \
+                        "Save dataset", '', _H5_FILE_FILTER)
+                    if fname is not None and len(fname[0]) > 0:
+                        shutil.move(self._datastore.fname, fname[0])
+                    else:
+                        os.remove(self._datastore.fname)
+                else:
+                    os.remove(self._datastore.fname)
 
+    def closeEvent(self, evt):
+        self._quit()
         evt.accept()
