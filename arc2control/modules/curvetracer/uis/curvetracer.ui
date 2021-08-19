@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>334</width>
-    <height>237</height>
+    <height>233</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -39,25 +39,57 @@
      </property>
     </spacer>
    </item>
+   <item row="3" column="1">
+    <widget class="QDoubleSpinBox" name="rampVNegMaxSpinBox">
+     <property name="suffix">
+      <string> V</string>
+     </property>
+     <property name="maximum">
+      <double>10.000000000000000</double>
+     </property>
+     <property name="value">
+      <double>1.000000000000000</double>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="label_9">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+       <horstretch>1</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string>Initial Voltage</string>
+     </property>
+     <property name="buddy">
+      <cstring>rampVStartSpinBox</cstring>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="1">
+    <widget class="DurationWidget" name="rampPwDurationWidget" native="true">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+       <horstretch>1</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="focusPolicy">
+      <enum>Qt::TabFocus</enum>
+     </property>
+    </widget>
+   </item>
    <item row="1" column="0">
     <widget class="QLabel" name="label">
      <property name="text">
       <string>Positive Vmax</string>
      </property>
+     <property name="buddy">
+      <cstring>rampVPosMaxSpinBox</cstring>
+     </property>
     </widget>
-   </item>
-   <item row="6" column="4">
-    <spacer name="horizontalSpacer_2">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>0</width>
-       <height>20</height>
-      </size>
-     </property>
-    </spacer>
    </item>
    <item row="0" column="1">
     <widget class="QDoubleSpinBox" name="rampVStartSpinBox">
@@ -91,21 +123,8 @@
      </property>
     </widget>
    </item>
-   <item row="3" column="1">
-    <widget class="QDoubleSpinBox" name="rampVNegMaxSpinBox">
-     <property name="suffix">
-      <string> V</string>
-     </property>
-     <property name="maximum">
-      <double>10.000000000000000</double>
-     </property>
-     <property name="value">
-      <double>1.000000000000000</double>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="0">
-    <widget class="QLabel" name="label_9">
+   <item row="5" column="0">
+    <widget class="QLabel" name="label_12">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
        <horstretch>1</horstretch>
@@ -113,16 +132,25 @@
       </sizepolicy>
      </property>
      <property name="text">
-      <string>Initial Voltage</string>
+      <string>PW</string>
+     </property>
+     <property name="buddy">
+      <cstring>rampPwDurationWidget</cstring>
      </property>
     </widget>
    </item>
-   <item row="3" column="0">
-    <widget class="QLabel" name="label_2">
-     <property name="text">
-      <string>Negative Vmax</string>
+   <item row="6" column="4">
+    <spacer name="horizontalSpacer_2">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
      </property>
-    </widget>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>0</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
    </item>
    <item row="13" column="0" colspan="5">
     <layout class="QHBoxLayout" name="horizontalLayout">
@@ -161,22 +189,6 @@
      </item>
     </layout>
    </item>
-   <item row="1" column="1">
-    <widget class="QDoubleSpinBox" name="rampVPosMaxSpinBox">
-     <property name="suffix">
-      <string> V</string>
-     </property>
-     <property name="minimum">
-      <double>0.000000000000000</double>
-     </property>
-     <property name="maximum">
-      <double>10.000000000000000</double>
-     </property>
-     <property name="value">
-      <double>1.000000000000000</double>
-     </property>
-    </widget>
-   </item>
    <item row="4" column="1">
     <widget class="QDoubleSpinBox" name="rampVStepSpinBox">
      <property name="sizePolicy">
@@ -202,28 +214,39 @@
      </property>
     </widget>
    </item>
-   <item row="6" column="1">
-    <widget class="QDoubleSpinBox" name="rampVStopSpinBox">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-       <horstretch>1</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
+   <item row="1" column="1">
+    <widget class="QDoubleSpinBox" name="rampVPosMaxSpinBox">
      <property name="suffix">
       <string> V</string>
      </property>
      <property name="minimum">
-      <double>-10.000000000000000</double>
+      <double>0.000000000000000</double>
      </property>
      <property name="maximum">
       <double>10.000000000000000</double>
      </property>
-     <property name="singleStep">
-      <double>0.100000000000000</double>
-     </property>
      <property name="value">
       <double>1.000000000000000</double>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="2">
+    <widget class="QLabel" name="label_3">
+     <property name="text">
+      <string>Cycles</string>
+     </property>
+     <property name="buddy">
+      <cstring>rampCyclesSpinBox</cstring>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0">
+    <widget class="QLabel" name="label_2">
+     <property name="text">
+      <string>Negative Vmax</string>
+     </property>
+     <property name="buddy">
+      <cstring>rampVNegMaxSpinBox</cstring>
      </property>
     </widget>
    </item>
@@ -238,25 +261,8 @@
      <property name="text">
       <string>Voltage step</string>
      </property>
-    </widget>
-   </item>
-   <item row="6" column="0">
-    <widget class="QLabel" name="label_11">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-       <horstretch>1</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="text">
-      <string>Vstop</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="2">
-    <widget class="QLabel" name="label_3">
-     <property name="text">
-      <string>Cycles</string>
+     <property name="buddy">
+      <cstring>rampVStepSpinBox</cstring>
      </property>
     </widget>
    </item>
@@ -270,30 +276,7 @@
      </property>
     </widget>
    </item>
-   <item row="5" column="0">
-    <widget class="QLabel" name="label_12">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-       <horstretch>1</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="text">
-      <string>PW</string>
-     </property>
-    </widget>
-   </item>
-   <item row="5" column="1">
-    <widget class="DurationWidget" name="rampPwDurationWidget" native="true">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-       <horstretch>1</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="2">
+   <item row="6" column="0">
     <widget class="QLabel" name="label_13">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
@@ -304,12 +287,19 @@
      <property name="text">
       <string>Inter</string>
      </property>
+     <property name="buddy">
+      <cstring>rampInterDurationWidget</cstring>
+     </property>
     </widget>
    </item>
-   <item row="1" column="3">
-    <widget class="DurationWidget" name="rampInterDurationWidget" native="true"/>
+   <item row="6" column="1">
+    <widget class="DurationWidget" name="rampInterDurationWidget" native="true">
+     <property name="focusPolicy">
+      <enum>Qt::TabFocus</enum>
+     </property>
+    </widget>
    </item>
-   <item row="3" column="2">
+   <item row="1" column="2">
     <widget class="QLabel" name="label_14">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
@@ -320,9 +310,12 @@
      <property name="text">
       <string>Pulses</string>
      </property>
+     <property name="buddy">
+      <cstring>rampPulsesSpinBox</cstring>
+     </property>
     </widget>
    </item>
-   <item row="3" column="3">
+   <item row="1" column="3">
     <widget class="QSpinBox" name="rampPulsesSpinBox">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
@@ -341,34 +334,43 @@
      </property>
     </widget>
    </item>
-   <item row="4" column="2">
+   <item row="3" column="2">
     <widget class="QLabel" name="label_4">
      <property name="text">
       <string>Bias Type</string>
      </property>
+     <property name="buddy">
+      <cstring>biasTypeComboBox</cstring>
+     </property>
     </widget>
    </item>
-   <item row="4" column="3">
+   <item row="3" column="3">
     <widget class="QComboBox" name="biasTypeComboBox"/>
    </item>
-   <item row="5" column="2">
+   <item row="4" column="2">
     <widget class="QLabel" name="label_5">
      <property name="text">
       <string>IV direction</string>
      </property>
+     <property name="buddy">
+      <cstring>ivTypeComboBox</cstring>
+     </property>
     </widget>
    </item>
-   <item row="5" column="3">
+   <item row="4" column="3">
     <widget class="QComboBox" name="ivTypeComboBox"/>
    </item>
-   <item row="6" column="2">
+   <item row="5" column="2">
     <widget class="QLabel" name="label_6">
      <property name="text">
       <string>Read At</string>
      </property>
+     <property name="buddy">
+      <cstring>readAtComboBox</cstring>
+     </property>
     </widget>
    </item>
-   <item row="6" column="3">
+   <item row="5" column="3">
     <widget class="QComboBox" name="readAtComboBox"/>
    </item>
   </layout>
@@ -381,6 +383,21 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>rampVStartSpinBox</tabstop>
+  <tabstop>rampVPosMaxSpinBox</tabstop>
+  <tabstop>rampVNegMaxSpinBox</tabstop>
+  <tabstop>rampVStepSpinBox</tabstop>
+  <tabstop>rampPwDurationWidget</tabstop>
+  <tabstop>rampInterDurationWidget</tabstop>
+  <tabstop>rampCyclesSpinBox</tabstop>
+  <tabstop>rampPulsesSpinBox</tabstop>
+  <tabstop>biasTypeComboBox</tabstop>
+  <tabstop>ivTypeComboBox</tabstop>
+  <tabstop>readAtComboBox</tabstop>
+  <tabstop>showResultCheckBox</tabstop>
+  <tabstop>rampSelectedButton</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>
