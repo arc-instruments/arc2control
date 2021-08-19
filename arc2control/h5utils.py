@@ -288,6 +288,12 @@ class H5DataStore:
         attrs = self._h5.attrs
         return (attrs['words'], attrs['bits'])
 
+    def keys(self):
+        """
+        Return all top-level keys of this dataset
+        """
+        return self._h5.keys()
+
     def __create_timeseries(self, word, bit):
         grp_name = 'W%02dB%02d' % (word, bit)
         if grp_name not in self._h5['crosspoints']:
