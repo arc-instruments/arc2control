@@ -87,7 +87,9 @@ class BuildUIs(Command):
         basedir = os.path.join(__HERE__, 'arc2control', 'modules')
 
         for moddir in glob.glob(os.path.join(basedir, '*')):
-            if not os.path.isdir(moddir):
+            # skip non dirs or __pycache__ directories
+            if not os.path.isdir(moddir) or \
+                os.path.basename(moddir) == '__pycache__':
                 continue
 
             uidir = os.path.join(moddir, 'uis')
