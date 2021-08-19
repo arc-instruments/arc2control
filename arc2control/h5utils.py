@@ -403,11 +403,17 @@ class H5DataStore:
             pass
 
         if tstamp:
-            dsetname = 'crosspoints/W%02dB%02d/%s_%d' % (word, bit, name, time.time_ns())
+            ts = time.time_ns()
+            dsetname = 'crosspoints/W%02dB%02d/experiments/%s_%d' % \
+                (word, bit, name, ts)
         else:
-            dsetname = 'crosspoints/W%02dB%02d/%s' % (word, bit, name)
+            dsetname = 'crosspoints/W%02dB%02d/experiments/%s' % \
+                (word, bit, name)
         dset = self.__make_table(dsetname, shape, dtype, maxshape)
-        #dset.attrs['crosspoints'] = "[[%d,%d]]" % (word, bit)
+
+        if tstamp:
+            dset.attrs['TSTAMP'] = ts
+
         dset.attrs['crosspoints'] = [[word, bit]]
 
         return dset
