@@ -1,12 +1,34 @@
 import numpy as np
 import pyqtgraph as pg
+from enum import Enum
 from pyarc2 import ReadAt, ReadAfter, DataMode
 from arc2control.modules.base import BaseModule, BaseOperation
 from .generated.curvetracer import Ui_CurveTracerWidget
 from . import MOD_NAME, MOD_TAG
 from arc2control import signals
+from arc2control.h5utils import OpType
 
-from PyQt6 import QtWidgets
+from PyQt6 import QtWidgets, QtGui
+
+
+class BiasType(Enum):
+    Staircase = 1
+    Pulsed = 2
+
+
+class Direction(Enum):
+    V0_VP = 1
+    VP_V0 = 2
+    V0_VM = 3
+    VM_V0 = 4
+    V0_VP_V0 = 5
+    VP_V0_VP = 6
+    V0_VM_V0 = 7
+    VM_V0_VM = 8
+    V0_VP_VM_V0 = 9
+    V0_VM_VP_V0 = 10
+    VM_VP_V0 = 11
+    VP_VM_V0 = 12
 
 
 class CurveTracerOperation(BaseOperation):
@@ -15,33 +37,49 @@ class CurveTracerOperation(BaseOperation):
         super().__init__(parent=parent)
         self.params = params
         self.arcconf = self.arc2Config
-        self._data = None
+        self._voltages = []
+        self._currents = []
 
     def run(self):
         if len(self.cells) != 1:
             return
 
-        (vstart, vstep, vstop, pw, interpulse, pulses) = self.params
+        (ramps, vstep, pw, interpulse, pulses, readat, cycles) = self.params
         cell = list(self.cells)[0]
 
+        (w, b) = (cell.w, cell.b)
+
+        for (idx, (vstart, vstop)) in enumerate(ramps):
+            if vstop < vstart:
+                st = -vstep
+            else:
+                st = vstep
+
+            if idx == (len(ramps) - 1):
+                (v, i) = self.do_ramp(w, b, vstart, st, vstop+st/2, pw, \
+                    interpulse, pulses, readat, ReadAfter.Block)
+            else:
+                (v, i) = self.do_ramp(w, b, vstart, st, vstop-st/2, pw, \
+                    interpulse, pulses, readat, ReadAfter.Block)
+
+            self._voltages.extend(v)
+            self._currents.extend(i)
+
+        self.finished.emit()
+
+
+    def do_ramp(self, w, b, vstart, vstep, vstop, pw, interpulse, pulses, readat, readafter):
+
+        # convert pulse width and interpulses to ns
         pw = int(pw*1e9)
         interpulse = int(interpulse * 1e9)
-        (w, b) = (cell.w, cell.b)
-        (low, high) = self.parent.mapper.wb2ch[w][b]
-
-        print("W: %02d B: %02d (low: %02d high: %02d); Vstart: %.2f V Vstep: %.2f V "
-            "Vend: %.2f; PW: %d ns I: %d ns N: %d"
-            % (w, b, low, high, vstart, vstep, vstop, pw, interpulse, pulses))
+        (low, high) = self.mapper.wb2ch[w][b]
 
         self.arc.generate_ramp(low, high, vstart, vstep, vstop, pw, interpulse,
-            pulses, ReadAt.Bias, ReadAfter.Pulse)
+            pulses, readat, readafter)
 
-        if vstop < vstart:
-            voltages = np.arange(vstop-vstep/2.0, vstart, vstep)\
-                         .repeat(np.max((pulses, 1)))
-        else:
-            voltages = np.arange(vstart, vstop+vstep/2.0, vstep)\
-                         .repeat(np.max((pulses, 1)))
+        voltages = np.arange(vstart, vstop+vstep/2.0, vstep)\
+                     .repeat(np.max((pulses, 1)))
 
         self.arc.execute()
         self.arc.finalise_operation(self.arcconf.idleMode)
@@ -49,19 +87,14 @@ class CurveTracerOperation(BaseOperation):
         currents = np.empty(shape=voltages.shape)
         for (i, (v, d)) in enumerate(zip(voltages, self.arc.get_iter(DataMode.Bits))):
             curr = d[0][self.mapper.bit_idxs][b]
-            if v != 0.0:
-                print("V = %.2f V; I = %.2e A; R = %s" % (v, curr,
-                    pg.siFormat(np.abs(v/curr), suffix='Ω')))
-            else:
-                print("V = %.2f V; I = %.2e A; R = N/A" % (v, curr))
             currents[i] = curr
-        print("===")
-        self._data = (voltages, currents)
-        self.finished.emit()
 
-    @property
-    def data(self):
-        return self._data
+        return (voltages, currents)
+
+    def curveData(self):
+        readat = self.params[5]
+        cycles = self.params[6]
+        return (np.array(self._voltages), -np.array(self._currents), readat, cycles)
 
 
 class CurveTracer(BaseModule, Ui_CurveTracerWidget):
@@ -74,11 +107,129 @@ class CurveTracer(BaseModule, Ui_CurveTracerWidget):
         self._thread = None
 
         self.setupUi(self)
+        self.rampInterDurationWidget.setEnabled(False)
+        self._populateIVTypeComboBox()
+        self._populateBiasTypeComboBox()
+        self._populateReadAtComboBox()
 
         self.rampSelectedButton.clicked.connect(self.rampSelectedClicked)
         self.rampSelectedButton.setEnabled((len(self.cells) == 1) and (self.arc is not None))
+        self.biasTypeComboBox.currentIndexChanged.connect(self.biasTypeChanged)
         signals.crossbarSelectionChanged.connect(self.crossbarSelectionChanged)
         signals.arc2ConnectionChanged.connect(self.crossbarSelectionChanged)
+        signals.readoutVoltageChanged.connect(self.readoutVoltageChanged)
+
+    def _populateIVTypeComboBox(self, setFont=True):
+        box = self.ivTypeComboBox
+        if setFont:
+            font = QtGui.QFontDatabase.systemFont(QtGui.QFontDatabase.SystemFont.FixedFont)
+            font.setPointSize(9)
+            box.setFont(font)
+        box.addItem('V₀❯V+❯V–❯V₀', Direction.V0_VP_VM_V0)
+        box.addItem('V₀❯V–❯V+❯V₀', Direction.V0_VM_VP_V0)
+        box.insertSeparator(box.count())
+        box.addItem('V₀❯V+❯V₀', Direction.V0_VP_V0)
+        box.addItem('V+❯V₀❯V+', Direction.VP_V0_VP)
+        box.addItem('V₀❯V–❯V₀', Direction.V0_VM_V0)
+        box.addItem('V–❯V₀❯V–', Direction.VM_V0_VM)
+        box.insertSeparator(box.count())
+        box.addItem('V₀❯V+', Direction.V0_VP)
+        box.addItem('V+❯V₀', Direction.VP_V0)
+        box.addItem('V₀❯V–', Direction.V0_VM)
+        box.addItem('V–❯V₀', Direction.VM_V0)
+
+    def _populateBiasTypeComboBox(self):
+        box = self.biasTypeComboBox
+        box.addItem('Staircase', BiasType.Staircase)
+        box.addItem('Pulsed', BiasType.Pulsed)
+
+    def _populateReadAtComboBox(self):
+        box = self.readAtComboBox
+        box.addItem('Bias', ReadAt.Bias)
+        box.addItem('Vread (%.2f V)' % self.readoutVoltage, \
+            ReadAt.Arb(self.readoutVoltage))
+
+    def _makeRampStops(self):
+
+        def fix_stops(stops, step):
+            actual_stops = []
+
+            previous = None
+            current = None
+
+            for (l, h) in stops:
+                if current is None:
+                    current = (l, h)
+                else:
+                    previous = current
+                    current = (l, h)
+
+                if previous is None:
+                    actual_stops.append((l, h))
+                    continue
+
+                (curr_l, curr_h) = current
+                (prev_l, prev_h) = previous
+
+                if prev_h < prev_l:
+                    step = -step
+
+                # there's a gap between current low and previous
+                # high, so ensure that the previous low is actually
+                # inclusive
+                if curr_l != prev_h:
+                    actual_stops[-1] = (prev_l, prev_h + step/2)
+                actual_stops.append((l, h))
+
+            return actual_stops
+
+        direction = self.ivTypeComboBox.currentData()
+        step = np.abs(self.rampVStepSpinBox.value())
+        vo = np.abs(self.rampVStartSpinBox.value())
+        vp = np.abs(self.rampVPosMaxSpinBox.value())
+        vm = -np.abs(self.rampVNegMaxSpinBox.value())
+        cycles = self.rampCyclesSpinBox.value()
+
+        should_fix = True
+
+        if direction == Direction.V0_VP_VM_V0:
+            stops = [(vo, vp), (vp, vo), (-vo, vm), (vm, -vo)]
+        elif direction == Direction.V0_VM_VP_V0:
+            stops = [(-vo, vm), (vm, -vo), (vo, vp), (vp, vo)]
+        elif direction == Direction.VP_VM_V0:
+            stops = [(vp, vo), (-vo, vm), (vm, -vo)]
+        elif direction == Direction.VM_VP_V0:
+            stops = [(vm, -vo), (vo, vp), (vp, vo)]
+        elif direction == Direction.V0_VP_V0:
+            stops = [(vo, vp), (vp, vo)]
+        elif direction == Direction.VP_V0_VP:
+            stops = [(vp, vo), (vo, vp)]
+        elif direction == Direction.V0_VM_V0:
+            stops = [(-vo, vm), (vm, -vo)]
+        elif direction == Direction.VM_V0_VM:
+            stops = [(vm, -vo), (-vo, vm)]
+        elif direction == Direction.V0_VP:
+            stops = [(vo, vp)]
+            should_fix = False
+        elif direction == Direction.VP_V0:
+            stops = [(vp, vo)]
+            should_fix = False
+        elif direction == Direction.V0_VM:
+            stops = [(-vo, vm)]
+            should_fix = False
+        elif direction == Direction.VM_V0:
+            stops = [(vm, -vo)]
+            should_fix = False
+        else:
+            raise ValueError("Unknown ramp direction:", direction)
+
+        # if we are doing multi-direction ramp pulses must be fixed
+        # to avoid duplicate data
+        # the `* cycles` part will repeat the ramp before fixing it
+        if should_fix:
+            return fix_stops(stops * cycles, step)
+        else:
+            return stops * cycles
 
     def crossbarSelectionChanged(self, cells):
         self.rampSelectedButton.setEnabled((len(self.cells) == 1) and (self.arc is not None))
@@ -88,23 +239,56 @@ class CurveTracer(BaseModule, Ui_CurveTracerWidget):
         self._thread.finished.connect(self._threadFinished)
         self._thread.start()
 
+    def readoutVoltageChanged(self):
+        idx = self.readAtComboBox.currentIndex()
+        self.readAtComboBox.clear()
+        self._populateReadAtComboBox()
+        self.readAtComboBox.setCurrentIndex(idx)
+
+    def biasTypeChanged(self, idx):
+        biasType = self.biasTypeComboBox.itemData(idx)
+        self.rampInterDurationWidget.setEnabled(biasType != BiasType.Staircase)
+
     def _rampParams(self):
-        vstart = self.rampVStartSpinBox.value()
         vstep = self.rampVStepSpinBox.value()
-        vstop = self.rampVStopSpinBox.value()
         pulses = self.rampPulsesSpinBox.value()
         pw = self.rampPwDurationWidget.getDuration()
-        inter = self.rampInterDurationWidget.getDuration()
+        readat = self.readAtComboBox.currentData()
+        cycles = self.rampCyclesSpinBox.value()
+        if self.biasTypeComboBox.currentData() == BiasType.Staircase:
+            inter = 0
+        else:
+            inter = self.rampInterDurationWidget.getDuration()
 
-        return (vstart, vstep, vstop, pw, inter, pulses)
+        ramps = self._makeRampStops()
+        return (ramps, vstep, pw, inter, pulses, readat, cycles)
 
     def _threadFinished(self):
         self._thread.wait()
         self._thread.setParent(None)
-        data = self._thread.data
+        data = self._thread.curveData()
         self._thread = None
-        print("curve tracer finished")
         self._plotData(data[0], data[1], "Voltage", "Current", 'V', 'A')
+        (w, b) = list(self.cells)[0]
+        dtype = [('voltage', '<f4'), ('current', '<f4'), ('read_voltage', '<f4')]
+        dset = self.datastore.make_wb_table(w, b, MOD_TAG, (len(data[0]), ), dtype)
+        dset[:, 'voltage'] = data[0]
+        dset[:, 'current'] = data[1]
+
+        vread_raw = data[2]
+        if vread_raw == ReadAt.Bias:
+            vread = data[0]
+        else:
+            vread = np.array([vread_raw.voltage()]).repeat(len(data[0]))
+
+        dset[:, 'read_voltage'] = vread
+
+        cycles = data[3]
+        dset.attrs['cycles'] = cycles
+
+        pw = np.array([self._rampParams()[3]]).repeat(len(data[0]))
+        signals.valueBulkUpdate.emit(w, b, data[1], data[0], pw, vread, OpType.PULSEREAD)
+        signals.dataDisplayUpdate.emit(w, b)
 
     def _plotData(self, x, y, xlabel, ylabel, xunit=None, yunit=None, logscale=False):
         dialog = QtWidgets.QDialog(self)
