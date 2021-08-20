@@ -132,6 +132,16 @@ def _discover_modules(path, base='arc2control.modules'):
 
 def main():
     import sys
+    import warnings
+
+    warnings.filterwarnings('ignore', category=RuntimeWarning, \
+        message='.*invalid value encountered in true_divide.*', \
+        module='arc2control\.widgets\..*')
+
+    warnings.filterwarnings('ignore', category=RuntimeWarning, \
+        message='.*divide by zero encountered in true_divide.*', \
+        module='arc2control\.widgets\..*')
+
     realpath = os.path.dirname(os.path.realpath(__file__))
     mapfile = os.path.join(realpath, 'mappings', 'resarray32.toml')
 
