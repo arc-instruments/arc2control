@@ -3,6 +3,7 @@ import h5py
 import os.path
 import types
 import time
+import math
 from enum import Enum, IntEnum
 
 
@@ -120,6 +121,8 @@ class H5DataStore:
         ('pulse_width', '<f4'),
         ('read_voltage', '<f4'),
         ('op_type', '<u4')]
+
+    _BASE_SIZE = 1000
 
     def __init__(self, fname, name=None, mode=H5Mode.APPEND, shape=(32, 32)):
         """
@@ -298,12 +301,13 @@ class H5DataStore:
         grp_name = 'W%02dB%02d' % (word, bit)
         if grp_name not in self._h5['crosspoints']:
             grp = self._h5['crosspoints'].create_group(grp_name)
-            dset = grp.create_dataset('timeseries', shape=(1000,),
+            dset = grp.create_dataset('timeseries', shape=(H5DataStore._BASE_SIZE,),
                 dtype=self._TSERIES_DTYPE,
                 maxshape=(None,), chunks=True)
             dset.attrs['NROWS'] = 0
             dset.attrs['TITLE'] = 'W%02dB%02d' % (word, bit)
             dset.attrs['CLASS'] = 'TABLE'
+            dset.attrs['BASE_SIZE'] = H5DataStore._BASE_SIZE
 
     def timeseries(self, word, bit):
         """
@@ -327,7 +331,12 @@ class H5DataStore:
         dset = self._h5['crosspoints'][wbid]['timeseries']
         idx = dset.attrs['NROWS']
 
-        dset[idx] = (current, voltage, pulse, read_voltage, optype)
+        try:
+            dset[idx] = (current, voltage, pulse, read_voltage, optype)
+        except IndexError:
+            # resize and try again
+            dset.resize((2*dset.shape[0], ))
+            dset[idx] = (current, voltage, pulse, read_voltage, optype)
 
         dset.attrs['NROWS'] = idx + 1
 
@@ -372,6 +381,21 @@ class H5DataStore:
         dset = self._h5['crosspoints'][wbid]['timeseries']
         idx = dset.attrs['NROWS']
 
+        # check if we can fit the data in the dataset
+        free_rows = dset.shape[0] - idx
+        if free_rows < dlen:
+            try:
+                BASE_SIZE = dset.attrs['BASE_SIZE']
+            except (KeyError, IndexError):
+                BASE_SIZE = H5DataStore._BASE_SIZE
+            # resize dataset to fit, we need at least this many
+            # total rows
+            min_length = idx + free_rows + 1
+            # we need to double the size this many times to fit
+            # the data
+            factor = math.ceil(math.log(min_length/BASE_SIZE, 2))
+            dset.resize((BASE_SIZE*2**factor,))
+
         dset[idx:idx+dlen, 'current'] = currents
         dset[idx:idx+dlen, 'voltage'] = voltages
         dset[idx:idx+dlen, 'pulse_width'] = pulses
@@ -415,6 +439,7 @@ class H5DataStore:
             dset.attrs['TSTAMP'] = ts
 
         dset.attrs['crosspoints'] = [[word, bit]]
+        dset.attrs['BASE_SIZE'] = shape[0]
 
         return dset
 
@@ -443,6 +468,7 @@ class H5DataStore:
         dset = self.__make_table(dsetname, shape, dtype, maxshape)
 
         dset.attrs['crosspoints'] = [[x[0], x[1]] for x in crosspoints]
+        dset.attrs['BASE_SIZE'] = shape[0]
 
         if tstamp:
             dset.attrs['TSTAMP'] = ts
