@@ -5,6 +5,7 @@ from pyarc2 import ReadAt, ReadAfter, DataMode
 from arc2control.modules.base import BaseModule, BaseOperation
 from .generated.curvetracer import Ui_CurveTracerWidget
 from . import MOD_NAME, MOD_TAG
+from .ct_display_widget import CTDataDisplayWidget
 from arc2control import signals
 from arc2control.h5utils import OpType
 
@@ -268,7 +269,6 @@ class CurveTracer(BaseModule, Ui_CurveTracerWidget):
         self._thread.setParent(None)
         data = self._thread.curveData()
         self._thread = None
-        self._plotData(data[0], data[1], "Voltage", "Current", 'V', 'A')
         (w, b) = list(self.cells)[0]
         dtype = [('voltage', '<f4'), ('current', '<f4'), ('read_voltage', '<f4')]
         dset = self.datastore.make_wb_table(w, b, MOD_TAG, (len(data[0]), ), dtype)
@@ -290,19 +290,6 @@ class CurveTracer(BaseModule, Ui_CurveTracerWidget):
         signals.valueBulkUpdate.emit(w, b, data[1], data[0], pw, vread, OpType.PULSEREAD)
         signals.dataDisplayUpdate.emit(w, b)
 
-    def _plotData(self, x, y, xlabel, ylabel, xunit=None, yunit=None, logscale=False):
-        dialog = QtWidgets.QDialog(self)
-        box = QtWidgets.QHBoxLayout()
-        dialog.setWindowTitle("Ramp results")
-
-        gv = pg.GraphicsLayoutWidget()
-        plot = gv.addPlot()
-        plot.plot(x, y, pen=None, symbol='+')
-        plot.getAxis('bottom').setLabel(xlabel, units=xunit)
-        plot.getAxis('left').setLabel(ylabel, units=yunit)
-
-        box.addWidget(gv)
-        dialog.setLayout(box)
-
-        dialog.show()
-
+    @staticmethod
+    def display(dataset):
+        return CTDataDisplayWidget(dataset)
