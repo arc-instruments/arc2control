@@ -21,6 +21,7 @@ from .pulseops_widget import PulseOpsWidget
 from .plottingoptions_widget import DisplayType as PlotDisplayType
 from .plottingoptions_widget import YScale as PlotYScale
 from .plottingoptions_widget import PlottingOptionsWidget
+from .device_explorer_widget import DeviceExplorerWidget
 from .. import graphics
 from ..h5utils import H5DataStore, OpType, H5Mode
 import weakref
@@ -43,6 +44,13 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
 
         self.setupUi(self)
         self._setupControlWidgets()
+
+        self.deviceExplorerWidget = DeviceExplorerWidget()
+        self.deviceExplorerWidget.setTagMapper(\
+            {key: self._modules[key][0] for key in self._modules.keys()})
+        self.deviceExplorerWidget.experimentSelected.connect(self._experimentSelected)
+        self.deviceDockWidget.setWidget(self.deviceExplorerWidget)
+
         self._setupPlottingWidgets()
         self._populateModuleComboBox()
         self._loadIcons()
@@ -162,6 +170,34 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         else:
             self._arc = None
         signals.arc2ConnectionChanged.emit(connected, self._arc)
+
+    def _experimentSelected(self, tag, path):
+        try:
+            dset = self._datastore.dataset(path)
+            mod = self._modules[tag][1]
+            wdg = mod.display(dset)
+
+            dialog = QtWidgets.QDialog(self)
+            dialog.setWindowIcon(graphics.getIcon('arc2-logo'))
+            dtitle = wdg.property('title')
+            if dtitle is None:
+                dtitle = path
+            dialog.setWindowTitle(dtitle)
+
+            layout = QtWidgets.QVBoxLayout()
+            layout.setContentsMargins(0, 0, 0, 0)
+            layout.addWidget(wdg)
+            dialog.setLayout(layout)
+
+            (recw, rech) = wdg.property('recsize')
+
+            if (recw, rech) != (None, None):
+                dialog.resize(recw, rech)
+
+            dialog.show()
+
+        except KeyError as err:
+            print('Could not retrieve dataset or associated module:', err)
 
     def selectionChanged(self, cells):
         # cells = self.mainCrossbarWidget.selectedCells
@@ -670,6 +706,8 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         self.saveDatasetAction.setToolTip('Save')
         self.saveDatasetAsAction.setEnabled(False)
         self._reloadFromDataset()
+        self.deviceExplorerWidget.clear()
+        self.deviceExplorerWidget.loadFromStore(self._datastore)
 
     def _openDataset(self):
         if self._datastore is not None and self._datastore.is_temporary:
@@ -697,6 +735,8 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
             self.saveDatasetAction.setEnabled(False)
             self.saveDatasetAction.setToolTip('Dataset is saved automatically')
             self.saveDatasetAsAction.setEnabled(True)
+            self.deviceExplorerWidget.clear()
+            self.deviceExplorerWidget.loadFromStore(self._datastore)
         else:
             # if no specific dataset has been opened, create a new
             # temporary one
