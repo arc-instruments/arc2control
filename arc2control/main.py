@@ -119,7 +119,7 @@ def _discover_modules(path, base='arc2control.modules'):
         loader = finder.find_module(name)
         try:
             mod = importlib.import_module('%s.%s' % (base, name))
-            mods[mod.MOD_NAME] = mod.ENTRY_POINT
+            mods[mod.MOD_TAG] = (mod.MOD_NAME, mod.ENTRY_POINT)
             print("Importing module:", mod)
         except (ModuleNotFoundError, ImportError, KeyError, AttributeError) as exc:
             # either `MOD_NAME`/`ENTRY_POINT` are not defined, module

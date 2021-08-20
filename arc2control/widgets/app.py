@@ -142,7 +142,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         self.mainPlotWidget.ci.layout.setRowStretchFactor(1, 1)
 
     def _populateModuleComboBox(self):
-        for (name, mod) in self._modules.items():
+        for (tag, (name, mod)) in self._modules.items():
             self.moduleListComboBox.addItem(name, mod)
 
         self.addModuleButton.clicked.connect(partial(self.addModuleTab, mod))
