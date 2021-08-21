@@ -56,7 +56,31 @@ class CurveTracerOperation(BaseOperation):
             else:
                 st = vstep
 
-            if idx == (len(ramps) - 1):
+            try:
+                # check if the next ramp is discontinuous to this one.
+                # If it is then we need to make the ramp endpoint inclusive
+                # for instance if vstep=0.2 and we have two ramps from
+                # 0.0 to 1.0 we want to go [0.0, 0.2, 0.4, 0.6, 0.8, 1.0] →
+                # [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]. However if we have a
+                # a 0.0 → 1.0 → 0.0 it means the actual ramps should be
+                # [0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 0.8, 0.6, 0.4, 0.2, 0.0] and
+                # NOT
+                # [0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.0, 0.8, 0.6, 0.4, 0.2, 0.0] and
+                #                           ^^^^^^^^
+                #                           ||||||||
+                #                there should be only one value at the
+                #                apex of the ramp (or at the nadir
+                #                if it's a 1.0 → 0.0 → 1.0 ramp)
+                (next_vstart, next_vstop) = ramps[idx+1]
+                if vstop != next_vstart:
+                    endpoint_inclusive = True
+                else:
+                    endpoint_inclusive = False
+            except IndexError:
+                # irrelevant: it means we are on the last ramp anyway
+                pass
+
+            if idx == len(ramps) - 1 or endpoint_inclusive:
                 (v, i) = self.do_ramp(w, b, vstart, st, vstop+st/2, pw, \
                     interpulse, pulses, readat, ReadAfter.Block)
             else:
