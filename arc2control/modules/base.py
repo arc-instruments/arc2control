@@ -38,6 +38,8 @@ class BaseOperation(QtCore.QThread):
 
 class BaseModule(QtWidgets.QWidget):
 
+    experimentFinished = QtCore.pyqtSignal(int, int, str)
+
     def __init__(self, arcref, arcconf, vread, store, name, tag, cells, mapper, parent=None):
         super().__init__(parent=parent)
 

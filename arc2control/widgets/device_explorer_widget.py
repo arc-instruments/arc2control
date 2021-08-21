@@ -1,4 +1,5 @@
 from PyQt6 import QtCore, QtWidgets
+from pathlib import PurePosixPath
 
 
 def _experimentSorter(item):
@@ -46,6 +47,22 @@ class DeviceExplorerWidget(QtWidgets.QWidget):
 
         return font
 
+    def __makeDeviceNode(self, key):
+        deviceNode = QtWidgets.QTreeWidgetItem(self._root, [key])
+        deviceNode.setFont(0, self.__makeDeviceNodeFont(deviceNode))
+        deviceNode.__setattr__('key', key)
+        self._deviceNodes[key] = deviceNode
+
+        return deviceNode
+
+    def __makeExperimentNode(self, parent, label, expid, path):
+        itemNode = QtWidgets.QTreeWidgetItem(parent, [label])
+        itemNode.setFont(0, self.__makeExperimentNodeFont(itemNode))
+        itemNode.__setattr__('path', path)
+        itemNode.__setattr__('modtag', expid)
+
+        return itemNode
+
     def setTagMapper(self, mapper):
         self._tagMapper = mapper
 
@@ -57,9 +74,7 @@ class DeviceExplorerWidget(QtWidgets.QWidget):
 
         for key in alldevkeys:
             device = crosspoints[key]
-            deviceNode = QtWidgets.QTreeWidgetItem(root, [key])
-            deviceNode.setFont(0, self.__makeDeviceNodeFont(deviceNode))
-            deviceNode.__setattr__('key', key)
+            deviceNode = self.__makeDeviceNode(key)
 
             experiments = device['experiments']
             expkeys = sorted(experiments.keys(), key=_experimentSorter)
@@ -74,14 +89,31 @@ class DeviceExplorerWidget(QtWidgets.QWidget):
                 else:
                     itemLabel = expid
 
-                itemNode = QtWidgets.QTreeWidgetItem(deviceNode, [itemLabel])
-                itemNode.setFont(0, self.__makeExperimentNodeFont(itemNode))
-                itemNode.__setattr__('path', '%s/%s' % (experiments.name, tag))
-                itemNode.__setattr__('modtag', expid)
+                itemNode = self.__makeExperimentNode(deviceNode, itemLabel, \
+                    expid, '%s/%s' % (experiments.name, tag))
                 deviceNode.addChild(itemNode)
 
-            self._deviceNodes[key] = deviceNode
             root.addChild(deviceNode)
+
+    def addExperiment(self, w, b, dsetpath):
+        key = 'W%02dB%02d' % (w, b)
+        path = PurePosixPath(dsetpath)
+        (expid, _) = path.parts[-1].split('_')
+
+        if key in self._deviceNodes.keys():
+            deviceNode = self._deviceNodes[key]
+        else:
+            deviceNode = self.__makeDeviceNode(key)
+            self._root.addChild(deviceNode)
+
+        try:
+            itemLabel = self._tagMapper[expid]
+        except KeyError:
+            itemLabel = expid
+
+        itemNode = self.__makeExperimentNode(deviceNode, itemLabel, \
+            expid, dsetpath)
+        deviceNode.addChild(itemNode)
 
     def clear(self):
         self.tree.clear()

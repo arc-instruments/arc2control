@@ -9,7 +9,7 @@ from .ct_display_widget import CTDataDisplayWidget
 from arc2control import signals
 from arc2control.h5utils import OpType
 
-from PyQt6 import QtWidgets, QtGui
+from PyQt6 import QtCore, QtWidgets, QtGui
 
 
 class BiasType(Enum):
@@ -289,6 +289,7 @@ class CurveTracer(BaseModule, Ui_CurveTracerWidget):
         pw = np.array([self._rampParams()[3]]).repeat(len(data[0]))
         signals.valueBulkUpdate.emit(w, b, data[1], data[0], pw, vread, OpType.PULSEREAD)
         signals.dataDisplayUpdate.emit(w, b)
+        self.experimentFinished.emit(w, b, dset.name)
 
     @staticmethod
     def display(dataset):

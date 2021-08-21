@@ -509,6 +509,9 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         obj = kls(self._arc, self.arc2ConnectionWidget.arc2Config, \
             self.readOpsWidget.readoutVoltage(), self._datastore, \
             self.mainCrossbarWidget.selection, self.mapper)
+        # update tree when experiment is finished
+        obj.experimentFinished.connect(lambda w, b, path: \
+            self.deviceExplorerWidget.addExperiment(w, b, path))
         wdg = QtWidgets.QWidget()
         layout = QtWidgets.QVBoxLayout()
         layout.addWidget(obj)
