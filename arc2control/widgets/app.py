@@ -696,7 +696,12 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
                     if fname is not None and len(fname[0]) > 0:
                         shutil.move(self._datastore.fname, fname[0])
                     else:
-                        os.remove(self._datastore.fname)
+                        # if cancel is pressed, reopen the previous
+                        # dataset and exit
+                        fname = self._datastore.fname
+                        self._datastore = H5DataStore(fname, mode=H5Mode.APPEND)
+                        self._datastore.__setattr__('is_temporary', True)
+                        return
                 else:
                     os.remove(self._datastore.fname)
 
