@@ -119,8 +119,8 @@ class CTDataDisplayWidget(QtWidgets.QWidget):
         cycles = dataset.attrs.get('cycles', 1)
 
         if dataset.shape[0] % cycles > 0:
-            len_per_cycle = (dataset.shape[0]+1) // cycles
-            # we will need to duplicate a point in order to
+            len_per_cycle = (dataset.shape[0] // cycles) + 1
+            # we will need to duplicate a point per cycle in order to
             # have equally sized arrays PER CYCLE
             needs_adjustment = True
         else:
@@ -153,21 +153,24 @@ class CTDataDisplayWidget(QtWidgets.QWidget):
             # if the dataset needs adjustment process all the cycles but the
             # last one, otherwise just process all of them
             for i in range(cycles_to_process):
-                from_idx = i*len_per_cycle
-                to_idx = from_idx + len_per_cycle
+                from_idx = i*(len_per_cycle-1)
+                to_idx = from_idx + (len_per_cycle-1)
 
                 for f in ['current', 'voltage', 'read_voltage']:
-                    actual_data[f+str(i+1)][from_idx:to_idx] = dataset[from_idx:to_idx, f]
+                    if needs_adjustment:
+                        # copy the data into the first len_per_cycle-1 points
+                        actual_data[f+str(i+1)][0:len_per_cycle-1] = dataset[from_idx:to_idx, f]
+                        # and copy the first point of the next cycle as the last point of this
+                        # cycle to make all columns equal length
+                        actual_data[f+str(i+1)][len_per_cycle-1] = dataset[to_idx, f]
 
-            # special handling for the last cycle that's one point shorter than the rest
+                    else:
+                        actual_data[f+str(i+1)][:] = dataset[i*len_per_cycle:(i+1)*len_per_cycle, f]
+
+            # special handling for the last cycle that's one point longer than the rest
             if needs_adjustment:
-                # copy the last point from the last cycle as the first point of the last
-                # cycle to account for that missing last point
                 for f in ['current', 'voltage', 'read_voltage']:
-                    actual_data[f+str(cycles)][0] = dataset[to_idx-1, f]
-
-                    actual_data[f+str(cycles)][1:] = \
-                        dataset[to_idx:, f]
+                    actual_data[f+str(cycles)][:] = dataset[to_idx:, f]
 
             self.data = actual_data
         else:
