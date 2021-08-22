@@ -26,6 +26,11 @@ class DurationWidget(QtWidgets.QWidget):
         layout.addWidget(self.baseValueSpinBox)
         layout.addWidget(self.multiplierCombo)
 
+    def setObjectName(self, what):
+        super().setObjectName(what)
+        self.baseValueSpinBox.setObjectName('%s_baseValue' % what)
+        self.multiplierCombo.setObjectName('%s_multiplier' % what)
+
     def getDuration(self):
         base = self.baseValueSpinBox.value()
         multiplier = self.multiplierCombo.currentData()

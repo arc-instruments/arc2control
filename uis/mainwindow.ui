@@ -53,6 +53,9 @@
           </item>
           <item>
            <widget class="QPushButton" name="saveModuleButton">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="text">
              <string>Save</string>
             </property>

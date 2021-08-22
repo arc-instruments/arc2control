@@ -27,6 +27,7 @@ from ..h5utils import H5DataStore, OpType, H5Mode
 import weakref
 import os, tempfile
 from .. import signals
+from ..modules import moduleClassFromJson
 
 
 _APP_TITLE = 'ArC2 Control Panel'
@@ -155,6 +156,8 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
 
         self.addModuleButton.clicked.connect(partial(self.addModuleTab, mod))
         self.removeModuleButton.clicked.connect(self.removeCurrentModuleTab)
+        self.saveModuleButton.clicked.connect(self._saveModuleClicked)
+        self.loadModuleButton.clicked.connect(self._loadModuleClicked)
 
     def _loadIcons(self):
         self.setWindowIcon(graphics.getIcon('arc2-logo'))
@@ -516,12 +519,16 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         layout = QtWidgets.QVBoxLayout()
         layout.addWidget(obj)
         wdg.setLayout(layout)
+        # add an attribute to quickly get to the actual module widget
+        setattr(wdg, 'module', obj)
         self.experimentTabWidget.addTab(wdg, obj.name)
 
         if self.experimentTabWidget.count() > 0:
             self.moduleWrapStackedWidget.setCurrentIndex(0)
         else:
             self.moduleWrapStackedWidget.setCurrentIndex(1)
+
+        self.saveModuleButton.setEnabled(True)
 
         return obj
 
@@ -536,6 +543,35 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
             self.moduleWrapStackedWidget.setCurrentIndex(0)
         else:
             self.moduleWrapStackedWidget.setCurrentIndex(1)
+
+        if self.experimentTabWidget.count() == 0:
+            self.saveModuleButton.setEnabled(False)
+
+    def _saveModuleClicked(self):
+        wdg = self.experimentTabWidget.currentWidget()
+        if wdg is None or not hasattr(wdg, 'module'):
+            return
+
+        fname = QtWidgets.QFileDialog.getSaveFileName(self, "Export Widget Data",\
+            '', 'JSON files (*.json);;All files (*.*)')
+
+        if fname is None or len(fname[0]) == 0:
+            return
+
+        wdg.module.exportToJson(fname[0])
+
+    def _loadModuleClicked(self):
+        fname = QtWidgets.QFileDialog.getOpenFileName(self, "Open Widget Data",\
+            '', 'JSON files (*.json);;All files (*.*)')
+
+        if fname is None or len(fname[0]) == 0:
+            return
+
+        klass = moduleClassFromJson(fname[0])
+
+        wdg = self.addModuleTab(klass)
+        wdg.loadFromJson(fname[0])
+
 
     def _clearPlots(self):
         dispType = self.plottingOptionsWidget.displayType

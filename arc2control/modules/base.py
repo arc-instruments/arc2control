@@ -1,4 +1,7 @@
 import abc
+import json
+import importlib
+from collections import Iterable
 
 from PyQt6 import QtCore, QtWidgets
 from .. import signals
@@ -51,6 +54,15 @@ class BaseModule(QtWidgets.QWidget):
         self._selectedCells = cells
         self._mapper = mapper
         self._datastore = store
+        self._serializableTypes = {
+            #    type:, getter, setter
+            QtWidgets.QLineEdit: ('text', 'setText'), \
+            QtWidgets.QSpinBox: ('value', 'setValue'), \
+            QtWidgets.QComboBox: ('currentIndex', 'setCurrentIndex'), \
+            QtWidgets.QDoubleSpinBox: ('value', 'setValue'), \
+            QtWidgets.QCheckBox: ('isChecked', 'setChecked'), \
+            QtWidgets.QRadioButton: ('isChecked', 'setChecked')
+        }
 
         signals.arc2ConnectionChanged.connect(self.__arc2ConnectionChanged)
         signals.crossbarSelectionChanged.connect(self.__crossbarSelectionChanged)
@@ -101,8 +113,82 @@ class BaseModule(QtWidgets.QWidget):
             self._arc = None
 
     @property
+    def fullModuleName(self):
+        klass = self.__class__
+        fullType = klass.__module__ + '.' + klass.__qualname__
+
+        return fullType
+
+    @property
     def datastore(self):
         return self._datastore
+
+    def addSerializableType(self, typ, getter, setter):
+        """
+        Register the setters and getters of a non standard
+        widgets that should be serialized with ``exportToJson``.
+        """
+        self._serializableTypes.append((typ, getter, setter))
+
+    def exportToJson(self, fname):
+        """
+        Export all the adjustable children of this module to a JSON
+        file. All individual widgets must set a unique name using
+        `setObjectName` for this to work properly. Standard Qt
+        Widgets and custom widgets that are made up from standard
+        widgets are dealed with automatically. For bespoke widgets,
+        these must be registered with ``self.addSerializableType``.
+        """
+        types = tuple(self._serializableTypes.keys())
+
+        widgets = {}
+        objs = self.findChildren(types)
+
+        for o in objs:
+            # ignore QLineEdits that are part of a QSpinBox
+            if o.objectName() == 'qt_spinbox_lineedit':
+                continue
+            klass = o.__class__
+            fullType = klass.__module__ + '.' + klass.__qualname__
+            setter = self._serializableTypes[klass][1]
+            getter = getattr(o, self._serializableTypes[klass][0])
+
+            values = getter()
+
+            if isinstance(values, str) or not isinstance(values, Iterable):
+                actualValues = [values]
+            else:
+                actualValues = values
+
+            widgets[o.objectName()] = {'type': fullType, \
+                'setter': self._serializableTypes[klass][1],\
+                'args': [*actualValues]}
+
+        with open(fname, 'w') as f:
+            f.write(json.dumps({'modname': self.fullModuleName, \
+                'widgets': widgets }, indent=2))
+
+    def loadFromJson(self, fname):
+        raw = json.loads(open(fname, 'r').read())['widgets']
+
+        for (name, attrs) in raw.items():
+            klsname = attrs['type']
+            setterName = attrs['setter']
+            args = attrs['args']
+
+            klsparts = klsname.split('.')
+            pkg = ".".join(klsparts[:-1])
+
+            try:
+                mod = importlib.import_module(pkg)
+                klass = getattr(mod, klsparts[-1])
+            except TypeError:
+                continue
+
+            wdg = self.findChild(klass, name)
+
+            setter = getattr(wdg, setterName)
+            setter(*args)
 
     def __crossbarSelectionChanged(self, cb):
         self._selectedCells = cb
