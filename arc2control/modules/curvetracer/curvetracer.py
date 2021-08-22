@@ -274,6 +274,10 @@ class CurveTracer(BaseModule, Ui_CurveTracerWidget):
         biasType = self.biasTypeComboBox.itemData(idx)
         self.rampInterDurationWidget.setEnabled(biasType != BiasType.Staircase)
 
+    def loadFromJson(self, fname):
+        super().loadFromJson(fname)
+        self.rampInterDurationWidget.setEnabled(self.biasTypeComboBox.currentIndex() == 1)
+
     def _rampParams(self):
         vstep = self.rampVStepSpinBox.value()
         pulses = self.rampPulsesSpinBox.value()
