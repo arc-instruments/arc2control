@@ -154,7 +154,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         for (tag, (name, mod)) in self._modules.items():
             self.moduleListComboBox.addItem(name, mod)
 
-        self.addModuleButton.clicked.connect(partial(self.addModuleTab, mod))
+        self.addModuleButton.clicked.connect(self.addModuleClicked)
         self.removeModuleButton.clicked.connect(self.removeCurrentModuleTab)
         self.saveModuleButton.clicked.connect(self._saveModuleClicked)
         self.loadModuleButton.clicked.connect(self._loadModuleClicked)
@@ -507,6 +507,10 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
                    .ground_all()\
                    .execute()
         self._finaliseOperation()
+
+    def addModuleClicked(self):
+        mod = self.moduleListComboBox.currentData()
+        self.addModuleTab(mod)
 
     def addModuleTab(self, kls):
         obj = kls(self._arc, self.arc2ConnectionWidget.arc2Config, \
