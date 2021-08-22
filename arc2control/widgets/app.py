@@ -526,6 +526,8 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         # add an attribute to quickly get to the actual module widget
         setattr(wdg, 'module', obj)
         self.experimentTabWidget.addTab(wdg, obj.name)
+        # switch to the new tab
+        self.experimentTabWidget.setCurrentIndex(self.experimentTabWidget.count()-1)
 
         if self.experimentTabWidget.count() > 0:
             self.moduleWrapStackedWidget.setCurrentIndex(0)
