@@ -12,6 +12,9 @@ from arc2control.h5utils import OpType
 from PyQt6 import QtCore, QtWidgets, QtGui
 
 
+_CT_DTYPE = [('voltage', '<f4'), ('current', '<f4'), ('read_voltage', '<f4')]
+
+
 class BiasType(Enum):
     Staircase = 1
     Pulsed = 2
@@ -302,8 +305,7 @@ class CurveTracer(BaseModule, Ui_CurveTracerWidget):
         data = self._thread.curveData()
         self._thread = None
         (w, b) = list(self.cells)[0]
-        dtype = [('voltage', '<f4'), ('current', '<f4'), ('read_voltage', '<f4')]
-        dset = self.datastore.make_wb_table(w, b, MOD_TAG, (len(data[0]), ), dtype)
+        dset = self.datastore.make_wb_table(w, b, MOD_TAG, (len(data[0]), ), _CT_DTYPE)
         dset[:, 'voltage'] = data[0]
         dset[:, 'current'] = data[1]
 
