@@ -123,6 +123,10 @@ class BaseModule(QtWidgets.QWidget):
     def datastore(self):
         return self._datastore
 
+    @property
+    def description(self):
+        return ''
+
     def addSerializableType(self, typ, getter, setter):
         """
         Register the setters and getters of a non standard

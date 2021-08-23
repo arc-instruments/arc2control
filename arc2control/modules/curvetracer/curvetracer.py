@@ -4,7 +4,7 @@ from enum import Enum
 from pyarc2 import ReadAt, ReadAfter, DataMode
 from arc2control.modules.base import BaseModule, BaseOperation
 from .generated.curvetracer import Ui_CurveTracerWidget
-from . import MOD_NAME, MOD_TAG
+from . import MOD_NAME, MOD_TAG, MOD_DESCRIPTION
 from .ct_display_widget import CTDataDisplayWidget
 from arc2control import signals
 from arc2control.h5utils import OpType
@@ -162,6 +162,10 @@ class CurveTracer(BaseModule, Ui_CurveTracerWidget):
         box.addItem('V+❯V₀', Direction.VP_V0)
         box.addItem('V₀❯V–', Direction.V0_VM)
         box.addItem('V–❯V₀', Direction.VM_V0)
+
+    @property
+    def description(self):
+        return MOD_DESCRIPTION
 
     def _populateBiasTypeComboBox(self):
         box = self.biasTypeComboBox

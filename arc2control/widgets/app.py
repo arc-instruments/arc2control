@@ -520,8 +520,17 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         obj.experimentFinished.connect(lambda w, b, path: \
             self.deviceExplorerWidget.addExperiment(w, b, path))
         wdg = QtWidgets.QWidget()
+        scrollArea = QtWidgets.QScrollArea()
         layout = QtWidgets.QVBoxLayout()
         layout.addWidget(obj)
+        scrollArea.setLayout(layout)
+
+        layout = QtWidgets.QVBoxLayout()
+        titleLabel = QtWidgets.QLabel(obj.name)
+        titleLabel.setStyleSheet('QLabel { font-weight: bold; font-size: 11pt; } ')
+        layout.addWidget(titleLabel)
+        layout.addWidget(QtWidgets.QLabel(obj.description))
+        layout.addWidget(scrollArea)
         wdg.setLayout(layout)
         # add an attribute to quickly get to the actual module widget
         setattr(wdg, 'module', obj)
