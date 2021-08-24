@@ -11,6 +11,7 @@ __pycache__
 *.lib
 *.pyc
 *.bin
+/pyqtgraph
 arc2control/widgets/generated/*py
 !arc2control/widgets/generated/__init__.py
 arc2control/modules/*/generated/*.py
