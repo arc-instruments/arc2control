@@ -49,7 +49,6 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         self.deviceExplorerWidget = DeviceExplorerWidget()
         self.deviceExplorerWidget.setTagMapper(\
             {key: self._modules[key][0] for key in self._modules.keys()})
-        self.deviceExplorerWidget.experimentSelected.connect(self._experimentSelected)
         self.deviceDockWidget.setWidget(self.deviceExplorerWidget)
 
         self._setupPlottingWidgets()
@@ -106,6 +105,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
 
         self.selectionChanged(self.mainCrossbarWidget.selection)
 
+        self.deviceExplorerWidget.experimentSelected.connect(self._experimentSelected)
         signals.valueUpdate.connect(self._valueUpdate)
         signals.valueBulkUpdate.connect(self._valueUpdateBulk)
         signals.dataDisplayUpdate.connect(self._updateSinglePlot)
