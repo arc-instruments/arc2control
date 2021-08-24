@@ -1,5 +1,10 @@
 from PyQt6 import QtCore, QtWidgets
 from pathlib import PurePosixPath
+from functools import partial
+import re
+
+
+_keyMatcher = re.compile('W(\d+)B(\d+)')
 
 
 def _experimentSorter(item):
@@ -7,10 +12,21 @@ def _experimentSorter(item):
     return int(tstamp)
 
 
+def _wbFromKey(key):
+
+    match = _keyMatcher.match(key)
+
+    if not match:
+        return (None, None)
+
+    return (int(match.group(1)), int(match.group(2)))
+
 class DeviceExplorerWidget(QtWidgets.QWidget):
 
     #                                      tag, path
     experimentSelected = QtCore.pyqtSignal(str, str)
+    #                                                w,   b,   complete
+    exportDeviceHistoryRequested = QtCore.pyqtSignal(int, int, bool)
 
     def __init__(self, parent=None):
         super().__init__(parent=parent)
@@ -19,6 +35,8 @@ class DeviceExplorerWidget(QtWidgets.QWidget):
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.tree = QtWidgets.QTreeWidget()
         self.tree.setHeaderHidden(True)
+        self.tree.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.CustomContextMenu)
+        self.tree.customContextMenuRequested.connect(self.__itemRightClicked)
 
         self._root = QtWidgets.QTreeWidgetItem(self.tree, ['Root'])
         self._deviceNodes = {}
@@ -33,6 +51,30 @@ class DeviceExplorerWidget(QtWidgets.QWidget):
             return
 
         self.experimentSelected.emit(item.modtag, item.path)
+
+    def __itemRightClicked(self, point):
+        item = self.tree.itemAt(point)
+        try:
+            key = item.key
+            menu = QtWidgets.QMenu("Context Menu", self)
+            exportAllAction = menu.addAction('Export complete history')
+            exportAllAction.triggered.connect(\
+                partial(self.__exportTriggered, key, True))
+            exportRangeAction = menu.addAction('Export range')
+            exportRangeAction.triggered.connect(\
+                partial(self.__exportTriggered, key, False))
+            menu.exec(self.tree.viewport().mapToGlobal(point))
+        except AttributeError:
+            # not a device node
+            return
+
+    def __exportTriggered(self, key, complete):
+        (w, b) = _wbFromKey(key)
+
+        if (w is None) or (b is None):
+            return
+
+        self.exportDeviceHistoryRequested.emit(w, b, complete)
 
     def __makeDeviceNodeFont(self, node):
         font = node.font(0)

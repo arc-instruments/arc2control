@@ -32,6 +32,7 @@ from ..modules import moduleClassFromJson
 
 _APP_TITLE = 'ArC2 Control Panel'
 _H5_FILE_FILTER = 'Datasets (*.h5);;All files (*.*)'
+_H5_TS_EXPORT_FILTER = 'Comma separated file (*.csv);;Tab separated file (*.tsv)'
 
 
 class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
@@ -106,6 +107,8 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         self.selectionChanged(self.mainCrossbarWidget.selection)
 
         self.deviceExplorerWidget.experimentSelected.connect(self._experimentSelected)
+        self.deviceExplorerWidget.exportDeviceHistoryRequested.connect(self._exportTimeSeries)
+
         signals.valueUpdate.connect(self._valueUpdate)
         signals.valueBulkUpdate.connect(self._valueUpdateBulk)
         signals.dataDisplayUpdate.connect(self._updateSinglePlot)
@@ -851,6 +854,83 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         self.mainCrossbarWidget.setData(np.abs(vdset[:]/cdset[:]).T)
         self.setWindowTitle('%s [%s]' % \
             (_APP_TITLE, os.path.basename(self._datastore.fname)))
+
+    def _exportTimeSeries(self, w, b, complete):
+
+        if complete:
+            ts = self._datastore.timeseries(w, b)[0:]
+        else:
+            ts = self._datastore.timeseries(w, b)
+
+            # ask for a range
+            dialog = QtWidgets.QDialog(self)
+            dialog.setWindowTitle('Export data range')
+            dialog.setWindowIcon(graphics.getIcon('arc2-logo'))
+            layout = QtWidgets.QGridLayout(dialog)
+
+            layout.addWidget(QtWidgets.QLabel('From'), 0, 0)
+            fromSpinBox = QtWidgets.QSpinBox(dialog)
+            fromSpinBox.setMaximum(ts.shape[0])
+            fromSpinBox.setMinimum(0)
+            layout.addWidget(fromSpinBox, 0, 1)
+
+            layout.addWidget(QtWidgets.QLabel('To'), 0, 2)
+            toSpinBox = QtWidgets.QSpinBox(dialog)
+            toSpinBox.setMaximum(ts.shape[0])
+            toSpinBox.setMinimum(0)
+            toSpinBox.setValue(ts.shape[0])
+            layout.addWidget(toSpinBox, 0, 3)
+
+            minButton = QtWidgets.QPushButton('Min', dialog)
+            minButton.clicked.connect(lambda: fromSpinBox.setValue(0))
+
+            maxButton = QtWidgets.QPushButton('Max', dialog)
+            maxButton.clicked.connect(lambda: toSpinBox.setValue(ts.shape[0]))
+
+            layout.addWidget(minButton, 1, 1)
+            layout.addWidget(maxButton, 1, 3)
+
+            dlgButtons = QtWidgets.QDialogButtonBox(dialog)
+            dlgButtons.setStandardButtons(\
+                QtWidgets.QDialogButtonBox.StandardButton.Ok | \
+                QtWidgets.QDialogButtonBox.StandardButton.Cancel)
+
+            layout.addItem(QtWidgets.QSpacerItem(20, 30, \
+                QtWidgets.QSizePolicy.Policy.Fixed, \
+                QtWidgets.QSizePolicy.Policy.Expanding), 2, 0)
+            layout.addWidget(dlgButtons, 3, 0, 1, 4)
+            dlgButtons.accepted.connect(dialog.accept)
+            dlgButtons.rejected.connect(dialog.reject)
+
+            dialog.setLayout(layout)
+            if dialog.exec():
+                fromIdx = fromSpinBox.value()
+                toIdx = toSpinBox.value()
+                if toIdx < fromIdx:
+                    QtWidgets.QMessageBox.critical(self, \
+                        'Export timeseries', \
+                        'Export range invalid (from > to)')
+                    return
+                ts = ts[fromIdx:toIdx]
+            else:
+                return
+
+        (fname, flt) = QtWidgets.QFileDialog.getSaveFileName(self, \
+            "Export timeseries", '', _H5_TS_EXPORT_FILTER)
+
+        if fname is None or fname == '':
+            return
+
+        if flt.endswith('(*.csv)'):
+            delimiter = ','
+        elif flt.endswith('(*.tsv)'):
+            delimiter = '\t'
+        else:
+            raise ValueError('Invalid export file type')
+
+        # ts is defined here
+        np.savetxt(fname, ts, delimiter=delimiter)
+
 
     def _quit(self):
         try:
