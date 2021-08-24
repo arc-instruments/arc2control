@@ -61,7 +61,9 @@ class BaseModule(QtWidgets.QWidget):
             QtWidgets.QComboBox: ('currentIndex', 'setCurrentIndex'), \
             QtWidgets.QDoubleSpinBox: ('value', 'setValue'), \
             QtWidgets.QCheckBox: ('isChecked', 'setChecked'), \
-            QtWidgets.QRadioButton: ('isChecked', 'setChecked')
+            QtWidgets.QRadioButton: ('isChecked', 'setChecked'), \
+            QtWidgets.QStackedWidget: ('currentIndex', 'setCurrentIndex'), \
+            QtWidgets.QTabWidget: ('currentIndex', 'setCurrentIndex')
         }
 
         signals.arc2ConnectionChanged.connect(self.__arc2ConnectionChanged)
