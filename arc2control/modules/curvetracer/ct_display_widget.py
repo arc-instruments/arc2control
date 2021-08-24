@@ -51,8 +51,8 @@ class CTDataDisplayWidget(QtWidgets.QWidget):
 
         try:
             crosspoint = self.dataset.attrs['crosspoints'][0]
-            self.setProperty('title', '%s | W=%02d B = %02d' % \
-                (MOD_NAME, crosspoint[0], crosspoint[1]))
+            self.setProperty('title', '%s | W = %02d B = %02d' % \
+                (MOD_NAME, crosspoint[0]+1, crosspoint[1]+1))
         except KeyError:
             self.setProperty('title', '%s' % (MOD_NAME))
 

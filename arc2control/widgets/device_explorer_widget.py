@@ -90,7 +90,8 @@ class DeviceExplorerWidget(QtWidgets.QWidget):
         return font
 
     def __makeDeviceNode(self, key):
-        deviceNode = QtWidgets.QTreeWidgetItem(self._root, [key])
+        (w, b) = _wbFromKey(key)
+        deviceNode = QtWidgets.QTreeWidgetItem(self._root, ['W%02dB%02d' % (w+1, b+1)])
         deviceNode.setFont(0, self.__makeDeviceNodeFont(deviceNode))
         deviceNode.__setattr__('key', key)
         self._deviceNodes[key] = deviceNode
