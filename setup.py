@@ -27,7 +27,7 @@ else:
 requirements = [
     'numpy>=1.14.0',
     'PyQt6>=6.0.99',
-    'pyqtgraph>=0.12.0',
+    'git+git://github.com/pyqtgraph/pyqtgraph@master#egg=pyqtgraph',
     'requests>=2.20.0',
     'scipy>=1.3.0',
     'semver>=2.7.0',
