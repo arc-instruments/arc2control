@@ -33,6 +33,7 @@ from ..modules import moduleClassFromJson
 _APP_TITLE = 'ArC2 Control Panel'
 _H5_FILE_FILTER = 'Datasets (*.h5);;All files (*.*)'
 _H5_TS_EXPORT_FILTER = 'Comma separated file (*.csv);;Tab separated file (*.tsv)'
+_MOD_FILE_FILTER = 'JSON files (*.json);;All files (*.*)'
 
 
 class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
@@ -571,7 +572,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
             return
 
         fname = QtWidgets.QFileDialog.getSaveFileName(self, "Export Widget Data",\
-            '', 'JSON files (*.json);;All files (*.*)')
+            '', _MOD_FILE_FILTER)
 
         if fname is None or len(fname[0]) == 0:
             return
@@ -580,7 +581,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
 
     def loadModuleClicked(self):
         fname = QtWidgets.QFileDialog.getOpenFileName(self, "Open Widget Data",\
-            '', 'JSON files (*.json);;All files (*.*)')
+            '', _MOD_FILE_FILTER)
 
         if fname is None or len(fname[0]) == 0:
             return
