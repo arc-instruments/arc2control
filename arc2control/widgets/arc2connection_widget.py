@@ -24,6 +24,7 @@ class ArC2ConnectionWidget(Ui_ArC2ConnectionWidget, QtWidgets.QWidget):
 
     arc2ConfigChanged = QtCore.pyqtSignal(ArC2Config)
     connectionChanged = QtCore.pyqtSignal(bool)
+    firmwareSelectionChanged = QtCore.pyqtSignal(str)
 
     def __init__(self, parent=None):
         Ui_ArC2ConnectionWidget.__init__(self)
@@ -38,7 +39,7 @@ class ArC2ConnectionWidget(Ui_ArC2ConnectionWidget, QtWidgets.QWidget):
         self.headerControlRadio.toggled.connect(self.__controlModeChanged)
         self.floatDevsRadio.toggled.connect(self.__idleModeChanged)
         self.gndDevsRadio.toggled.connect(self.__idleModeChanged)
-        self.selectFirmwareButton.clicked.connect(self.__openFirmware)
+        self.selectFirmwareButton.clicked.connect(self.openFirmware)
         self.connectArC2Button.clicked.connect(self.__arc2Connect)
         self.refreshIDsButton.clicked.connect(self.__find_efm_ids)
         self.__find_efm_ids()
@@ -92,12 +93,13 @@ class ArC2ConnectionWidget(Ui_ArC2ConnectionWidget, QtWidgets.QWidget):
     def arc2Config(self):
         return ArC2Config(self.idleMode, self.controlMode)
 
-    def __openFirmware(self):
+    def openFirmware(self):
         fname = QtWidgets.QFileDialog.getOpenFileName(self,\
             'Select firmware', os.path.dirname(sys.argv[0]),\
             "Firmware files (*.bin);;Any file (*.*)")[0]
         if fname is not None and len(fname) > 0:
             self.selectedFirmwareEdit.setText(os.path.realpath(fname))
+            self.firmwareSelectionChanged.emit(os.path.realpath(fname))
 
     def __arc2Connect(self):
         if self._arc is not None:
