@@ -46,8 +46,8 @@ class RETDataDisplayWidget(QtWidgets.QWidget):
 
         layout.addLayout(buttonLayout)
 
-        self._makeGraphPane()
-        self._makeDataPane()
+        self.__makeGraphPane()
+        self.__makeDataPane()
 
         try:
             crosspoint = self.dataset.attrs['crosspoints'][0]
@@ -64,7 +64,7 @@ class RETDataDisplayWidget(QtWidgets.QWidget):
         layout.addWidget(self.stackedWdg)
         self.setLayout(layout)
 
-    def _displaySelectionChanged(self, checked, btn):
+    def __displaySelectionChanged(self, checked, btn):
         if not checked:
             return
         if checked == self.graphButton.isChecked():
@@ -72,7 +72,7 @@ class RETDataDisplayWidget(QtWidgets.QWidget):
         elif checked == self.dataButton.isChecked():
             self.stackedWdg.setCurrentIndex(1)
 
-    def _makeGraphPane(self):
+    def __makeGraphPane(self):
 
         dataset = self.dataset
 
@@ -92,7 +92,7 @@ class RETDataDisplayWidget(QtWidgets.QWidget):
         self.plot.plot(timestamps, resistance, pen='r', symbolBrush='r', \
             symbolPen=None, symbol='+', symbolSize=6)
 
-    def _makeDataPane(self):
+    def __makeDataPane(self):
 
         dataset = self.dataset
 
@@ -126,7 +126,7 @@ class RETDataDisplayWidget(QtWidgets.QWidget):
 
         buttonLayout = QtWidgets.QHBoxLayout()
         self.exportDataButton = QtWidgets.QPushButton("Export Data")
-        self.exportDataButton.clicked.connect(self._exportDataClicked)
+        self.exportDataButton.clicked.connect(self.exportDataClicked)
         buttonLayout.addSpacerItem(QtWidgets.QSpacerItem(20, 20, \
             QtWidgets.QSizePolicy.Policy.Expanding, \
             QtWidgets.QSizePolicy.Policy.Minimum))
@@ -135,7 +135,7 @@ class RETDataDisplayWidget(QtWidgets.QWidget):
 
         self.dataTablePane.setLayout(layout)
 
-    def _exportDataClicked(self):
+    def exportDataClicked(self):
         (fname, fltr) = QtWidgets.QFileDialog.getSaveFileName(self, \
             "Export data from %s" % MOD_NAME, '', _RET_EXPORT_FILE_FILTER)
 

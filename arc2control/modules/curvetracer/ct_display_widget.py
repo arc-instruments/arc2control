@@ -26,11 +26,11 @@ class CTDataDisplayWidget(QtWidgets.QWidget):
         self.dataButton = QtWidgets.QPushButton("Data")
         self.dataButton.setCheckable(True)
         self.dataButton.toggled.connect(partial(\
-            self._displaySelectionChanged, btn=self.dataButton))
+            self.displaySelectionChanged, btn=self.dataButton))
         self.graphButton = QtWidgets.QPushButton("Graph")
         self.graphButton.setCheckable(True)
         self.graphButton.toggled.connect(partial(\
-            self._displaySelectionChanged, btn=self.graphButton))
+            self.displaySelectionChanged, btn=self.graphButton))
 
         buttonGroup.addButton(self.graphButton)
         buttonGroup.addButton(self.dataButton)
@@ -46,8 +46,8 @@ class CTDataDisplayWidget(QtWidgets.QWidget):
 
         layout.addLayout(buttonLayout)
 
-        self._makeGraphPane()
-        self._makeDataPane()
+        self.__makeGraphPane()
+        self.__makeDataPane()
 
         try:
             crosspoint = self.dataset.attrs['crosspoints'][0]
@@ -65,7 +65,7 @@ class CTDataDisplayWidget(QtWidgets.QWidget):
         layout.addWidget(self.stackedWdg)
         self.setLayout(layout)
 
-    def _displaySelectionChanged(self, checked, btn):
+    def displaySelectionChanged(self, checked, btn):
         if not checked:
             return
         if checked == self.graphButton.isChecked():
@@ -73,7 +73,7 @@ class CTDataDisplayWidget(QtWidgets.QWidget):
         elif checked == self.dataButton.isChecked():
             self.stackedWdg.setCurrentIndex(1)
 
-    def _makeGraphPane(self):
+    def __makeGraphPane(self):
         dataset = self.dataset
 
         cycles = dataset.attrs.get('cycles', 1)
@@ -113,7 +113,7 @@ class CTDataDisplayWidget(QtWidgets.QWidget):
                 pen=(idx, cycles), symbolBrush=(idx, cycles), symbolPen=None, \
                 symbol='s', symbolSize=6)
 
-    def _makeDataPane(self):
+    def __makeDataPane(self):
         dataset = self.dataset
 
         cycles = dataset.attrs.get('cycles', 1)
@@ -185,7 +185,7 @@ class CTDataDisplayWidget(QtWidgets.QWidget):
 
         buttonLayout = QtWidgets.QHBoxLayout()
         self.exportDataButton = QtWidgets.QPushButton("Export Data")
-        self.exportDataButton.clicked.connect(self._exportDataClicked)
+        self.exportDataButton.clicked.connect(self.exportDataClicked)
         buttonLayout.addSpacerItem(QtWidgets.QSpacerItem(20, 20, \
             QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum))
         buttonLayout.addWidget(self.exportDataButton)
@@ -193,7 +193,7 @@ class CTDataDisplayWidget(QtWidgets.QWidget):
 
         self.dataTablePane.setLayout(layout)
 
-    def _exportDataClicked(self):
+    def exportDataClicked(self):
         (fname, fltr) = QtWidgets.QFileDialog.getSaveFileName(self, \
             "Export data from %s" % MOD_NAME, '', _CT_EXPORT_FILE_FILTER)
 

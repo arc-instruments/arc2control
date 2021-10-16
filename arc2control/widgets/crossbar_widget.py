@@ -250,8 +250,8 @@ class PaintWidget(QtWidgets.QWidget):
         if (self.rangeStart is not None) and (self.rangeEnd is not None):
 
             painter.setPen(RANPEN)
-            (b0, w0) = self._coordsToCell(self.rangeStart.x(), self.rangeStart.y())
-            (bf, wf) = self._coordsToCell(self.rangeEnd.x(), self.rangeEnd.y())
+            (b0, w0) = self.__coordsToCell(self.rangeStart.x(), self.rangeStart.y())
+            (bf, wf) = self.__coordsToCell(self.rangeEnd.x(), self.rangeEnd.y())
             minw = min(w0, wf)
             maxw = max(w0, wf)+1
             minb = min(b0, bf)
@@ -364,7 +364,7 @@ class PaintWidget(QtWidgets.QWidget):
             stepsY = _clip(stepsY, low=0, high=self._bits)
             #self.rangeEnd = QtCore.QPoint(stepsX*DX, stepsY*DY)
             append = (QtWidgets.QApplication.keyboardModifiers() & QtCore.Qt.KeyboardModifier.ControlModifier)
-            selection = self._cellsInSelection()
+            selection = self.__cellsInSelection()
             self.rangeStart = None
             self.rangeEnd = None
 
@@ -486,15 +486,15 @@ class PaintWidget(QtWidgets.QWidget):
             self.rangeEnd = QtCore.QPoint(stepsX*DX+CBPADX, stepsY*DY+CBPADY)
             self.repaint()
 
-    def _cellsInSelection(self):
+    def __cellsInSelection(self):
 
         if self.rangeEnd is None:
             return set()
 
         selectedCells = self.selection
 
-        (w0, b0) = self._coordsToCell(self.rangeStart.x(), self.rangeStart.y())
-        (wf, bf) = self._coordsToCell(self.rangeEnd.x(), self.rangeEnd.y())
+        (w0, b0) = self.__coordsToCell(self.rangeStart.x(), self.rangeStart.y())
+        (wf, bf) = self.__coordsToCell(self.rangeEnd.x(), self.rangeEnd.y())
 
         minw = min((w0, wf))
         maxw = max((w0, wf))+1
@@ -506,7 +506,7 @@ class PaintWidget(QtWidgets.QWidget):
 
         return cells
 
-    def _coordsToCell(self, x, y):
+    def __coordsToCell(self, x, y):
         (w, b) = (int((x-CBPADX)/DX), int((y-CBPADY)/DY))
         return (w, b)
 

@@ -14,10 +14,10 @@ class SectionExpandButton(QtWidgets.QPushButton):
         self.section.setExpanded(expanded)
         self.innerText = text
         self.setText(self.innerText)
-        self.clicked.connect(self.on_clicked)
+        self.clicked.connect(self.onClicked)
         self.setStyleSheet(SECTION_ENABLED_STYLE)
 
-    def on_clicked(self):
+    def onClicked(self):
         if self.section.isExpanded():
             self.section.setExpanded(False)
             self.setStyleSheet(SECTION_DISABLED_STYLE)
@@ -25,7 +25,7 @@ class SectionExpandButton(QtWidgets.QPushButton):
             self.section.setExpanded(True)
             self.setStyleSheet(SECTION_ENABLED_STYLE)
 
-        self._resetText()
+        self.__resetText()
 
     def setText(self, txt):
         if self.section.isExpanded():
@@ -33,7 +33,7 @@ class SectionExpandButton(QtWidgets.QPushButton):
         else:
             super().setText('– ' + txt)
 
-    def _resetText(self):
+    def __resetText(self):
         self.setText(self.innerText)
 
 
@@ -54,7 +54,7 @@ class CollapsibleTreeWidget(QtWidgets.QWidget):
         layout.addWidget(self.tree)
         self.tree.setIndentation(0)
 
-    def _baseColorHex(self):
+    def __baseColorHex(self):
         color = self.tree.palette().base().color()
         return "#%2x%2x%2x" % (color.red(), color.green(), color.blue())
 
@@ -70,7 +70,7 @@ class CollapsibleTreeWidget(QtWidgets.QWidget):
         section = QtWidgets.QTreeWidgetItem(buttonTreeItem)
         section.setDisabled(True)
         frame = QtWidgets.QFrame()
-        frame.setStyleSheet('QFrame:hover { background-color: %s; }' % self._baseColorHex())
+        frame.setStyleSheet('QFrame:hover { background-color: %s; }' % self.__baseColorHex())
         flayout = QtWidgets.QVBoxLayout(frame)
         flayout.addWidget(wdg)
         self.tree.setItemWidget(section, 0, frame)

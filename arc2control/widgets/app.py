@@ -45,26 +45,26 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         QtWidgets.QWidget.__init__(self, parent=parent)
 
         self.setupUi(self)
-        self._setupControlWidgets()
+        self.__setupControlWidgets()
 
         self.deviceExplorerWidget = DeviceExplorerWidget()
         self.deviceExplorerWidget.setTagMapper(\
             {key: self._modules[key][0] for key in self._modules.keys()})
         self.deviceDockWidget.setWidget(self.deviceExplorerWidget)
 
-        self._setupPlottingWidgets()
-        self._populateModuleComboBox()
-        self._loadIcons()
+        self.__setupPlottingWidgets()
+        self.__populateModuleComboBox()
+        self.__loadIcons()
 
         self._datastore = H5DataStore(tempfile.NamedTemporaryFile(\
             suffix='.h5', delete=False).name,\
             mode=H5Mode.WRITE)
         self._datastore.__setattr__('is_temporary', True)
 
-        self._connectSignals()
+        self.__connectSignals()
 
         # initialise an empty crossbar (all zeros)
-        self._crossbarRefresh(np.zeros(self._datastore.shape),\
+        self.crossbarRefresh(np.zeros(self._datastore.shape),\
             np.zeros(self._datastore.shape))
 
         self.setWindowTitle('%s [%s]' % \
@@ -73,7 +73,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
 
         self.show()
 
-    def _connectSignals(self):
+    def __connectSignals(self):
 
         self.selectAllButton.clicked.connect(lambda: self.mainCrossbarWidget.selectAll())
 
@@ -94,26 +94,26 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         self.pulseOpsWidget.negativePulseReadClicked.connect(\
             partial(self.pulseReadSelectedClicked, polarity=Polarity.NEGATIVE))
 
-        self.plottingOptionsWidget.xRangeChanged.connect(self._refreshCurrentPlot)
-        self.plottingOptionsWidget.displayTypeChanged.connect(self._refreshCurrentPlot)
-        self.plottingOptionsWidget.yScaleChanged.connect(self._changePlotScale)
+        self.plottingOptionsWidget.xRangeChanged.connect(self.refreshCurrentPlot)
+        self.plottingOptionsWidget.displayTypeChanged.connect(self.refreshCurrentPlot)
+        self.plottingOptionsWidget.yScaleChanged.connect(self.changePlotScale)
 
-        self.newDatasetAction.triggered.connect(self._newDataset)
-        self.openDatasetAction.triggered.connect(self._openDataset)
-        self.saveDatasetAction.triggered.connect(self._saveDataset)
-        self.saveDatasetAsAction.triggered.connect(self._saveDatasetAs)
+        self.newDatasetAction.triggered.connect(self.newDataset)
+        self.openDatasetAction.triggered.connect(self.openDataset)
+        self.saveDatasetAction.triggered.connect(self.saveDataset)
+        self.saveDatasetAsAction.triggered.connect(self.saveDatasetAs)
         self.quitAction.triggered.connect(self.close)
 
         self.selectionChanged(self.mainCrossbarWidget.selection)
 
-        self.deviceExplorerWidget.experimentSelected.connect(self._experimentSelected)
-        self.deviceExplorerWidget.exportDeviceHistoryRequested.connect(self._exportTimeSeries)
+        self.deviceExplorerWidget.experimentSelected.connect(self.experimentSelected)
+        self.deviceExplorerWidget.exportDeviceHistoryRequested.connect(self.__exportTimeSeries)
 
-        signals.valueUpdate.connect(self._valueUpdate)
-        signals.valueBulkUpdate.connect(self._valueUpdateBulk)
-        signals.dataDisplayUpdate.connect(self._updateSinglePlot)
+        signals.valueUpdate.connect(self.valueUpdate)
+        signals.valueBulkUpdate.connect(self.valueUpdateBulk)
+        signals.dataDisplayUpdate.connect(self.updateSinglePlot)
 
-    def _setupControlWidgets(self):
+    def __setupControlWidgets(self):
         self.arc2ConnectionWidget = ArC2ConnectionWidget()
         self.readOpsWidget = ReadOpsWidget()
         self.pulseOpsWidget = PulseOpsWidget()
@@ -128,7 +128,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         self.controlCollapsibleTreeWidget.addWidget("Plotting Options",\
             self.plottingOptionsWidget)
 
-    def _setupPlottingWidgets(self):
+    def __setupPlottingWidgets(self):
         self.tracePlot = self.mainPlotWidget.addPlot(name='trace')
         self.tracePlot.showGrid(x=True, y=True)
         self.tracePlot.getAxis('left').setStyle(tickTextWidth=30,\
@@ -153,16 +153,16 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         self.mainPlotWidget.ci.layout.setRowStretchFactor(0, 2)
         self.mainPlotWidget.ci.layout.setRowStretchFactor(1, 1)
 
-    def _populateModuleComboBox(self):
+    def __populateModuleComboBox(self):
         for (tag, (name, mod)) in self._modules.items():
             self.moduleListComboBox.addItem(name, mod)
 
         self.addModuleButton.clicked.connect(self.addModuleClicked)
         self.removeModuleButton.clicked.connect(self.removeCurrentModuleTab)
-        self.saveModuleButton.clicked.connect(self._saveModuleClicked)
-        self.loadModuleButton.clicked.connect(self._loadModuleClicked)
+        self.saveModuleButton.clicked.connect(self.saveModuleClicked)
+        self.loadModuleButton.clicked.connect(self.loadModuleClicked)
 
-    def _loadIcons(self):
+    def __loadIcons(self):
         self.setWindowIcon(graphics.getIcon('arc2-logo'))
         self.openDatasetAction.setIcon(graphics.getIcon('action-open'))
         self.saveDatasetAction.setIcon(graphics.getIcon('action-save'))
@@ -177,7 +177,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
             self._arc = None
         signals.arc2ConnectionChanged.emit(connected, self._arc)
 
-    def _experimentSelected(self, tag, path):
+    def experimentSelected(self, tag, path):
         try:
             dset = self._datastore.dataset(path)
             mod = self._modules[tag][1]
@@ -229,7 +229,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
             cell = list(cells)[0]
             value = self.mainCrossbarWidget.valueOf(cell)
             self.readOpsWidget.setValue(cell.w, cell.b, value, suffix='Ω')
-            self._updateSinglePlot(*list(cells)[0])
+            self.updateSinglePlot(*list(cells)[0])
 
     def mousePositionChanged(self, cell):
         if cell.w < 0 or cell.b < 0:
@@ -254,7 +254,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         else:
             self.readSelectedCell(cells)
 
-    def _pulseOpInner(self, voltage, pulsewidth, _single, _slice, _all):
+    def __pulseOpInner(self, voltage, pulsewidth, _single, _slice, _all):
         cells = self.mainCrossbarWidget.selectedCells
 
         # first check if we can use the Pulse{Read}All operation
@@ -283,7 +283,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         else:
             raise Exception("Unknown polarity?")
 
-        self._pulseOpInner(v, pw, _single, _slice, _all)
+        self.__pulseOpInner(v, pw, _single, _slice, _all)
 
     def pulseReadSelectedClicked(self, polarity):
         vread = self.readOpsWidget.readoutVoltage()
@@ -298,7 +298,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         else:
             raise Exception("Unknown polarity?")
 
-        self._pulseOpInner(v, pw, _single, _slice, _all)
+        self.__pulseOpInner(v, pw, _single, _slice, _all)
 
     def pulseReadSelectedCell(self, cells, vpulse, pulsewidth, vread):
         cell = cells[0]
@@ -311,7 +311,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         else:
             current = self._arc().pulseread_one(low, high, vpulse, int(pulsewidth*1.0e9),
                 vread)
-            self._finaliseOperation()
+            self.__finaliseOperation()
             #self.mainCrossbarWidget.updateData(w, b, np.abs(vread/current))
             self.readOpsWidget.setValue(w, b, np.abs(vread/current))
             signals.valueUpdate.emit(w, b, current, vpulse, pulsewidth, vread,\
@@ -331,7 +331,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
 
         for (k, v) in slices.items():
             try:
-                (volt, curr, idx) = self._pulseReadSlice(self.mapper.b2ch[k],
+                (volt, curr, idx) = self.__pulseReadSlice(self.mapper.b2ch[k],
                     np.array([self.mapper.w2ch[x] for x in v], dtype=np.uint64),
                     vpulse, pulsewidth)
                 data[k][idx] = np.abs(volt/curr[idx])
@@ -353,7 +353,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         voltage = self.readOpsWidget.readoutVoltage()
         raw = self._arc().pulseread_all(vpulse, int(pulsewidth*1.0e9), voltage,
             BiasOrder.Cols)
-        self._finaliseOperation()
+        self.__finaliseOperation()
         data = np.empty(shape=(self.mapper.nbits, self.mapper.nwords))
         for (row, channel) in enumerate(sorted(self.mapper.ch2b.keys())):
             bitline = self.mapper.ch2b[channel]
@@ -375,7 +375,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
 
         for (k, v) in slices.items():
             try:
-                (volt, curr, idx) = self._readSlice(self.mapper.b2ch[k],
+                (volt, curr, idx) = self.__readSlice(self.mapper.b2ch[k],
                     np.array([self.mapper.w2ch[x] for x in v], dtype=np.uint64))
                 data[k][idx] = np.abs(volt/curr[idx])
                 for w in idx:
@@ -387,7 +387,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
 
         self.mainCrossbarWidget.setData(data.T)
 
-    def _readSlice(self, low, highs):
+    def __readSlice(self, low, highs):
         if self._arc is None:
             print("arc2 is not connected")
             return
@@ -402,7 +402,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         idx = np.where(~np.isnan(currents))[0]
         return (voltage, currents, idx)
 
-    def _pulseReadSlice(self, low, highs, vpulse, pulsewidth):
+    def __pulseReadSlice(self, low, highs, vpulse, pulsewidth):
         if self._arc is None:
             print("arc2 is not connected")
             return
@@ -418,7 +418,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         idx = np.where(~np.isnan(currents))[0]
         return (vpulse, currents, idx)
 
-    def _finaliseOperation(self):
+    def __finaliseOperation(self):
         if self._arc is None:
             return
 
@@ -435,7 +435,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         else:
             voltage = self.readOpsWidget.readoutVoltage()
             current = self._arc().read_one(low, high, voltage)
-            self._finaliseOperation()
+            self.__finaliseOperation()
 
             signals.valueUpdate.emit(w, b, current, voltage, 0.0, \
                 self.readOpsWidget.readoutVoltage(), OpType.READ)
@@ -448,7 +448,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
 
         voltage = self.readOpsWidget.readoutVoltage()
         raw = self._arc().read_all(voltage, BiasOrder.Cols)
-        self._finaliseOperation()
+        self.__finaliseOperation()
         data = np.empty(shape=(self.mapper.nbits, self.mapper.nwords))
         for (row, channel) in enumerate(sorted(self.mapper.ch2b.keys())):
             bitline = self.mapper.ch2b[channel]
@@ -456,7 +456,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
 
         shape = data.shape
         actual_voltage = np.repeat([voltage], shape[0]*shape[1]).reshape(*shape)
-        self._crossbarRefresh(data, actual_voltage)
+        self.crossbarRefresh(data, actual_voltage)
 
     def pulseSelectedCell(self, cells, voltage, pulsewidth):
         if self._arc is None:
@@ -474,7 +474,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
                    .execute()
         signals.valueUpdate.emit(w, b, np.NaN, voltage, pulsewidth, \
             np.NaN, OpType.PULSE)
-        self._finaliseOperation()
+        self.__finaliseOperation()
 
     def pulseSelectedSlices(self, cells, voltage, pulsewidth):
         if self._arc is None:
@@ -499,7 +499,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
             for w in idx:
                 signals.valueUpdate.emit(w, k, np.NaN, voltage, pulsewidth,\
                     np.NaN, OpType.PULSE)
-            self._finaliseOperation()
+            self.__finaliseOperation()
 
     def pulseAll(self, voltage, pulsewidth):
         if self._arc is None:
@@ -509,7 +509,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         self._arc().pulse_all(voltage, int(pulsewidth*1.0e9), BiasOrder.Cols)\
                    .ground_all()\
                    .execute()
-        self._finaliseOperation()
+        self.__finaliseOperation()
 
     def addModuleClicked(self):
         mod = self.moduleListComboBox.currentData()
@@ -565,7 +565,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         if self.experimentTabWidget.count() == 0:
             self.saveModuleButton.setEnabled(False)
 
-    def _saveModuleClicked(self):
+    def saveModuleClicked(self):
         wdg = self.experimentTabWidget.currentWidget()
         if wdg is None or not hasattr(wdg, 'module'):
             return
@@ -578,7 +578,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
 
         wdg.module.exportToJson(fname[0])
 
-    def _loadModuleClicked(self):
+    def loadModuleClicked(self):
         fname = QtWidgets.QFileDialog.getOpenFileName(self, "Open Widget Data",\
             '', 'JSON files (*.json);;All files (*.*)')
 
@@ -591,7 +591,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         wdg.loadFromJson(fname[0])
 
 
-    def _clearPlots(self):
+    def clearPlots(self):
         dispType = self.plottingOptionsWidget.displayType
 
         self.tracePlot.plot([0],[0])
@@ -600,31 +600,31 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         self.pulsePlot.clear()
         self.tracePlot.getAxis('left').setLabel(**dispType.plotLabel())
 
-    def _changePlotScale(self, scale):
+    def changePlotScale(self, scale):
         if scale == PlotYScale.Linear:
             self.tracePlot.setLogMode(False, False)
         elif scale == PlotYScale.Log:
             self.tracePlot.setLogMode(False, True)
 
-    def _refreshCurrentPlot(self, *args):
+    def refreshCurrentPlot(self, *args):
         cells = self.mainCrossbarWidget.selectedCells
         if len(cells) == 1:
             (w, b) = cells[0]
-            self._updateSinglePlot(w, b)
+            self.updateSinglePlot(w, b)
         else:
-            self._clearPlots()
+            self.clearPlots()
 
-    def _valueUpdate(self, w, b, curr, volt, pw, vread, optype):
+    def valueUpdate(self, w, b, curr, volt, pw, vread, optype):
         self._datastore.update_status(w, b, curr, volt, pw, vread, optype)
         self.mainCrossbarWidget.updateData(w, b, np.abs(vread/curr))
         self.selectionChanged(self.mainCrossbarWidget.selection)
 
-    def _valueUpdateBulk(self, w, b, curr, volt, pw, vread, optype):
+    def valueUpdateBulk(self, w, b, curr, volt, pw, vread, optype):
         self._datastore.update_status_bulk(w, b, curr, volt, pw, vread, optype)
         self.mainCrossbarWidget.updateData(w, b, np.abs(vread[-1]/curr[-1]))
         self.selectionChanged(self.mainCrossbarWidget.selection)
 
-    def _updateSinglePlot(self, w, b):
+    def updateSinglePlot(self, w, b):
 
         xRange = self.plottingOptionsWidget.xRange
         dispType = self.plottingOptionsWidget.displayType
@@ -633,7 +633,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
             full_timeseries = self._datastore.timeseries(w, b)
             len_timeseries = full_timeseries.shape[0]
         except KeyError: # no dataset exists
-            self._clearPlots()
+            self.clearPlots()
             return
 
         if xRange is None:
@@ -728,14 +728,14 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
             symbolPen=None, symbolBrush=(0, 0, 255),  symbol='+',\
             symbolSize=6)
 
-    def _crossbarRefresh(self, current, voltage):
+    def crossbarRefresh(self, current, voltage):
         vdset = self._datastore.dataset('crossbar/voltage')
         cdset = self._datastore.dataset('crossbar/current')
         cdset[:] = current
         vdset[:] = voltage
         self.mainCrossbarWidget.setData(np.abs(vdset[:]/cdset[:]).T)
 
-    def _newDataset(self):
+    def newDataset(self):
         if self._datastore is not None:
             # save existing data
             self._datastore.close()
@@ -767,11 +767,11 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         self.saveDatasetAction.setEnabled(True)
         self.saveDatasetAction.setToolTip('Save')
         self.saveDatasetAsAction.setEnabled(False)
-        self._reloadFromDataset()
+        self.reloadFromDataset()
         self.deviceExplorerWidget.clear()
         self.deviceExplorerWidget.loadFromStore(self._datastore)
 
-    def _openDataset(self):
+    def openDataset(self):
         if self._datastore is not None and self._datastore.is_temporary:
             self._datastore.close()
 
@@ -810,9 +810,9 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
             self.saveDatasetAction.setToolTip('Save')
             self.saveDatasetAsAction.setEnabled(False)
 
-        self._reloadFromDataset()
+        self.reloadFromDataset()
 
-    def _saveDataset(self):
+    def saveDataset(self):
         fname = QtWidgets.QFileDialog.getSaveFileName(self, "Save dataset as",\
             '', _H5_FILE_FILTER)
         if fname is not None and len(fname[0]) > 0:
@@ -827,9 +827,9 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
             self.saveDatasetAction.setEnabled(False)
             self.saveDatasetAction.setToolTip('Dataset is saved automatically')
             self.saveDatasetAsAction.setEnabled(True)
-            self._reloadFromDataset()
+            self.reloadFromDataset()
 
-    def _saveDatasetAs(self):
+    def saveDatasetAs(self):
         fname = QtWidgets.QFileDialog.getSaveFileName(self, "Save dataset as",\
             '', _H5_FILE_FILTER)
         if fname is not None and len(fname[0]) > 0:
@@ -845,17 +845,17 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
             self._datastore.__setattr__('is_temporary', False)
             self.saveDatasetAction.setEnabled(False)
             self.saveDatasetAction.setToolTip('Dataset is saved automatically')
-            self._reloadFromDataset()
+            self.reloadFromDataset()
 
-    def _reloadFromDataset(self):
-        self._refreshCurrentPlot()
+    def reloadFromDataset(self):
+        self.refreshCurrentPlot()
         vdset = self._datastore.dataset('crossbar/voltage')
         cdset = self._datastore.dataset('crossbar/current')
         self.mainCrossbarWidget.setData(np.abs(vdset[:]/cdset[:]).T)
         self.setWindowTitle('%s [%s]' % \
             (_APP_TITLE, os.path.basename(self._datastore.fname)))
 
-    def _exportTimeSeries(self, w, b, complete):
+    def __exportTimeSeries(self, w, b, complete):
 
         if complete:
             ts = self._datastore.timeseries(w, b)[0:]
@@ -932,7 +932,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         np.savetxt(fname, ts, delimiter=delimiter)
 
 
-    def _quit(self):
+    def quit(self):
         try:
             if self._arc is not None:
                 self.arc2ConnectionWidget.disconnectArC2()
@@ -956,5 +956,5 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
                     os.remove(self._datastore.fname)
 
     def closeEvent(self, evt):
-        self._quit()
+        self.quit()
         evt.accept()

@@ -136,9 +136,9 @@ class CurveTracer(BaseModule, Ui_CurveTracerWidget):
 
         self.setupUi(self)
         self.rampInterDurationWidget.setEnabled(False)
-        self._populateIVTypeComboBox()
-        self._populateBiasTypeComboBox()
-        self._populateReadAtComboBox()
+        self.__populateIVTypeComboBox()
+        self.__populateBiasTypeComboBox()
+        self.__populateReadAtComboBox()
 
         self.rampSelectedButton.clicked.connect(self.rampSelectedClicked)
         self.rampSelectedButton.setEnabled((len(self.cells) == 1) and (self.arc is not None))
@@ -147,7 +147,7 @@ class CurveTracer(BaseModule, Ui_CurveTracerWidget):
         signals.arc2ConnectionChanged.connect(self.crossbarSelectionChanged)
         signals.readoutVoltageChanged.connect(self.readoutVoltageChanged)
 
-    def _populateIVTypeComboBox(self, setFont=True):
+    def __populateIVTypeComboBox(self, setFont=True):
         box = self.ivTypeComboBox
         if setFont:
             font = QtGui.QFontDatabase.systemFont(QtGui.QFontDatabase.SystemFont.FixedFont)
@@ -170,18 +170,18 @@ class CurveTracer(BaseModule, Ui_CurveTracerWidget):
     def description(self):
         return MOD_DESCRIPTION
 
-    def _populateBiasTypeComboBox(self):
+    def __populateBiasTypeComboBox(self):
         box = self.biasTypeComboBox
         box.addItem('Staircase', BiasType.Staircase)
         box.addItem('Pulsed', BiasType.Pulsed)
 
-    def _populateReadAtComboBox(self):
+    def __populateReadAtComboBox(self):
         box = self.readAtComboBox
         box.addItem('Bias', ReadAt.Bias)
         box.addItem('Vread (%.2f V)' % self.readoutVoltage, \
             ReadAt.Arb(self.readoutVoltage))
 
-    def _makeRampStops(self):
+    def __makeRampStops(self):
 
         def fix_stops(stops, step):
             actual_stops = []
@@ -267,14 +267,14 @@ class CurveTracer(BaseModule, Ui_CurveTracerWidget):
         self.rampSelectedButton.setEnabled((len(self.cells) == 1) and (self.arc is not None))
 
     def rampSelectedClicked(self):
-        self._thread = CurveTracerOperation(self._rampParams(), self)
-        self._thread.finished.connect(self._threadFinished)
+        self._thread = CurveTracerOperation(self.__rampParams(), self)
+        self._thread.finished.connect(self.__threadFinished)
         self._thread.start()
 
     def readoutVoltageChanged(self):
         idx = self.readAtComboBox.currentIndex()
         self.readAtComboBox.clear()
-        self._populateReadAtComboBox()
+        self.__populateReadAtComboBox()
         self.readAtComboBox.setCurrentIndex(idx)
 
     def biasTypeChanged(self, idx):
@@ -285,7 +285,7 @@ class CurveTracer(BaseModule, Ui_CurveTracerWidget):
         super().loadFromJson(fname)
         self.rampInterDurationWidget.setEnabled(self.biasTypeComboBox.currentIndex() == 1)
 
-    def _rampParams(self):
+    def __rampParams(self):
         vstep = self.rampVStepSpinBox.value()
         pulses = self.rampPulsesSpinBox.value()
         pw = self.rampPwDurationWidget.getDuration()
@@ -296,10 +296,10 @@ class CurveTracer(BaseModule, Ui_CurveTracerWidget):
         else:
             inter = self.rampInterDurationWidget.getDuration()
 
-        ramps = self._makeRampStops()
+        ramps = self.__makeRampStops()
         return (ramps, vstep, pw, inter, pulses, readat, cycles)
 
-    def _threadFinished(self):
+    def __threadFinished(self):
         self._thread.wait()
         self._thread.setParent(None)
         data = self._thread.curveData()
@@ -320,7 +320,7 @@ class CurveTracer(BaseModule, Ui_CurveTracerWidget):
         cycles = data[3]
         dset.attrs['cycles'] = cycles
 
-        pw = np.array([self._rampParams()[3]]).repeat(len(data[0]))
+        pw = np.array([self.__rampParams()[3]]).repeat(len(data[0]))
         signals.valueBulkUpdate.emit(w, b, data[1], data[0], pw, vread, OpType.PULSEREAD)
         signals.dataDisplayUpdate.emit(w, b)
         self.experimentFinished.emit(w, b, dset.name)

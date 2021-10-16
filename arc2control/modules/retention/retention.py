@@ -35,16 +35,16 @@ class RetentionOperation(BaseOperation):
         # allocate data tables and do initial read
         for cell in self.cells:
             self.cellData[cell] = np.empty(shape=(iterations+1, ), dtype=_RET_DTYPE)
-            self.cellData[cell][0] = self._readDevice(cell, vread)
+            self.cellData[cell][0] = self.readDevice(cell, vread)
 
         for step in range(1, iterations+1):
             time.sleep(readevery)
             for cell in self.cells:
-                self.cellData[cell][step] = self._readDevice(cell, vread)
+                self.cellData[cell][step] = self.readDevice(cell, vread)
 
         self.finished.emit()
 
-    def _readDevice(self, cell, vread):
+    def readDevice(self, cell, vread):
         (w, b) = (cell.w, cell.b)
         (high, low) = self.mapper.wb2ch[w][b]
 
@@ -155,11 +155,11 @@ class Retention(BaseModule):
             (self.arc is not None))
 
     def applyButtonClicked(self):
-        self._thread = RetentionOperation(self._retentionParams(), self)
-        self._thread.finished.connect(self._threadFinished)
+        self._thread = RetentionOperation(self.__retentionParams(), self)
+        self._thread.finished.connect(self.__threadFinished)
         self._thread.start()
 
-    def _threadFinished(self):
+    def __threadFinished(self):
         self._thread.wait()
         self._thread.setParent(None)
         data = self._thread.retentionData()
@@ -173,7 +173,7 @@ class Retention(BaseModule):
                 dset[:, field] = values[field]
             self.experimentFinished.emit(w, b, dset.name)
 
-    def _retentionParams(self):
+    def __retentionParams(self):
         readfor = self.readForDurationWidget.getDuration()
         readevery = self.readEveryDurationWidget.getDuration()
         if self.lockReadoutVoltageCheckBox.isChecked():
