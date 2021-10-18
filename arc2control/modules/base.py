@@ -1,7 +1,10 @@
 import abc
 import json
 import importlib
-from collections import Iterable
+try:
+    from collections.abc import Iterable
+except ImportError:
+    from collections import Iterable
 
 from PyQt6 import QtCore, QtWidgets
 from .. import signals
