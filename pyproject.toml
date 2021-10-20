@@ -1,7 +1,8 @@
 [tool.poetry]
 name = "arc2control"
 version = "0.1.0"
-description = "ArC2 Control Panel"
+description = "ArC TWO Control Panel"
+readme = "README.md"
 authors = ["Spyros Stathopoulos <devel@arc-instruments.co.uk>"]
 repository = "https://github.com/arc-instruments/arc2control"
 exclude = ["venv-pyarc2-update.py"]

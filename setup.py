@@ -7,11 +7,10 @@ import glob
 import time
 
 __HERE__ = os.path.abspath(os.path.dirname(__file__))
-__VERSION_FILE__ = os.path.join(__HERE__, 'arc2control', 'version.txt')
 __VERSION_SEMVER__ = '0.1.0'
 
 __NAME__ = "arc2control"
-__DESC__ = "ArC2 Control Interface",
+__DESC__ = "ArC TWO Control Panel"
 __MAINTAINER__ = "Spyros Stathopoulos"
 __EMAIL__ = "devel@arc-instruments.co.uk"
 __VERSION__ = __VERSION_SEMVER__.replace('-','')
@@ -152,32 +151,32 @@ setup(
     version = __VERSION__,
     description = __DESC__,
     long_description = __LONG_DESC__,
-    long_description_content_type='text/markdown',
+    long_description_content_type = 'text/markdown',
     author = __MAINTAINER__,
     author_email = __EMAIL__,
     url = __URL__,
-    project_urls={
+    project_urls = {
         "Bug Tracker": "https://github.com/arc-instruments/arc2control/issues",
         "Source Code": "https://github.com/arc-instruments/arc2control"
     },
     license = 'GPL3',
-    platforms = ['any'],
     classifiers = [
-        "Development Status :: 4 - Beta",
+        "Development Status :: 3 - Alpha",
         "Intended Audience :: Science/Research",
         "Topic :: Scientific/Engineering",
         "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
-        "Operating System :: Microsoft :: Windows",
-        "Operating System :: POSIX",
-        "Operating System :: MacOS :: MacOS X",
+        "Operating System :: Microsoft :: Windows :: Windows 8",
+        "Operating System :: Microsoft :: Windows :: Windows 8.1",
+        "Operating System :: Microsoft :: Windows :: Windows 10",
+        "Operating System :: POSIX :: Linux",
         "Programming Language :: Python :: 3 :: Only",
         "Programming Language :: Python :: 3.7",
-        "Programming Language :: Python :: 3.8"
+        "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9"
 
     ],
     packages = packages,
-    python_requires = '>=3.7',
+    python_requires = '>=3.8',
     install_requires = requirements,
     entry_points = {
         'console_scripts': ['arc2control = arc2control.main:main']
