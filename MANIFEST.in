@@ -4,3 +4,4 @@ include */widgets/generated/__init__.py
 exclude */modules/*/generated/*.py
 include */modules/*/generated/__init__.py
 recursive-include */modules *.ui
+exclude venv-pyarc2-update.py
