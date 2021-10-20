@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "ArC2 Control Panel"
 authors = ["Spyros Stathopoulos <devel@arc-instruments.co.uk>"]
 repository = "https://github.com/arc-instruments/arc2control"
+exclude = ["venv-pyarc2-update.py"]
 
 [tool.poetry.dependencies]
 python = "^3.8"
