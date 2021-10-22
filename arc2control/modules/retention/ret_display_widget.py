@@ -26,11 +26,11 @@ class RETDataDisplayWidget(QtWidgets.QWidget):
         self.dataButton = QtWidgets.QPushButton("Data")
         self.dataButton.setCheckable(True)
         self.dataButton.toggled.connect(partial(\
-            self._displaySelectionChanged, btn=self.dataButton))
+            self.__displaySelectionChanged, btn=self.dataButton))
         self.graphButton = QtWidgets.QPushButton("Graph")
         self.graphButton.setCheckable(True)
         self.graphButton.toggled.connect(partial(\
-            self._displaySelectionChanged, btn=self.graphButton))
+            self.__displaySelectionChanged, btn=self.graphButton))
 
         buttonGroup.addButton(self.graphButton)
         buttonGroup.addButton(self.dataButton)
