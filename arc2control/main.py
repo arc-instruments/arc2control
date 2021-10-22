@@ -130,7 +130,7 @@ def _discover_modules(path, base='arc2control.modules'):
     return mods
 
 
-def main():
+def main(args):
     import sys
     import warnings
 
@@ -153,7 +153,7 @@ def main():
 
     mapper = ChannelMapper(words, bits, wordarr, bitarr)
 
-    app = QtWidgets.QApplication(sys.argv)
+    app = QtWidgets.QApplication(args)
     app.setApplicationName('arc2control')
     graphics.initialise()
 
