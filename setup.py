@@ -25,12 +25,12 @@ else:
 
 requirements = [
     'numpy>=1.18.0',
-    'PyQt6>=6.0.99',
+    'PyQt6>=6.1.0',
     'pyqtgraph>=0.12.3',
     'requests>=2.20.0',
-    'scipy>=1.3.0',
-    'semver>=2.7.0',
-    'toml>=0.10.0'
+    'semver>=2.0.0',
+    'toml>=0.10.0',
+    'h5py>=3.0.0'
 ]
 
 
@@ -176,7 +176,7 @@ setup(
 
     ],
     packages = packages,
-    python_requires = '>=3.8',
+    python_requires = '>=3.7',
     install_requires = requirements,
     entry_points = {
         'console_scripts': ['arc2control = arc2control.main:main']
