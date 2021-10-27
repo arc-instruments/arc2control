@@ -23,7 +23,7 @@ class BaseOperation(QtCore.QThread):
 
     @property
     def arc(self):
-        return self.parent._arc()
+        return self.parent.arc
 
     @property
     def cells(self):
