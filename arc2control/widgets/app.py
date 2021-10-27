@@ -184,6 +184,11 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
             mod = self._modules[tag][1]
             wdg = mod.display(dset)
 
+            if wdg is None:
+                print('display method exists, but no Widget is produced', \
+                    file=sys.stderr)
+                return
+
             dialog = QtWidgets.QDialog(self)
             dialog.setWindowIcon(graphics.getIcon('arc2-logo'))
             dtitle = wdg.property('title')
