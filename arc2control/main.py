@@ -130,9 +130,13 @@ def _discover_modules(path, base='arc2control.modules'):
     return mods
 
 
-def main(args):
+def main(args=None):
+
     import sys
     import warnings
+
+    if args is None:
+        args = sys.argv[1:]
 
     warnings.filterwarnings('ignore', category=RuntimeWarning, \
         message='.*invalid value encountered in true_divide.*', \
