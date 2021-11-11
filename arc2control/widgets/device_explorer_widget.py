@@ -89,6 +89,12 @@ class DeviceExplorerWidget(QtWidgets.QWidget):
 
         return font
 
+    def __makeUnknownExperimentNodeFont(self, node):
+        font = self.__makeExperimentNodeFont(node)
+        font.setItalic(True)
+
+        return font
+
     def __makeDeviceNode(self, key):
         (w, b) = _wbFromKey(key)
         deviceNode = QtWidgets.QTreeWidgetItem(self._root, ['W%02dB%02d' % (w+1, b+1)])
@@ -98,9 +104,12 @@ class DeviceExplorerWidget(QtWidgets.QWidget):
 
         return deviceNode
 
-    def __makeExperimentNode(self, parent, label, expid, path):
+    def __makeExperimentNode(self, parent, label, expid, path, unknown=False):
         itemNode = QtWidgets.QTreeWidgetItem(parent, [label])
-        itemNode.setFont(0, self.__makeExperimentNodeFont(itemNode))
+        if unknown:
+            itemNode.setFont(0, self.__makeUnknownExperimentNodeFont(itemNode))
+        else:
+            itemNode.setFont(0, self.__makeExperimentNodeFont(itemNode))
         itemNode.__setattr__('path', path)
         itemNode.__setattr__('modtag', expid)
 
@@ -127,13 +136,16 @@ class DeviceExplorerWidget(QtWidgets.QWidget):
                 if self._tagMapper is not None:
                     try:
                         itemLabel = self._tagMapper[expid]
+                        unknown = False
                     except KeyError:
-                        itemLabel = expid
+                        # mark unknown modules as such
+                        unknown = True
+                        itemLabel = expid + ' [?]'
                 else:
                     itemLabel = expid
 
                 itemNode = self.__makeExperimentNode(deviceNode, itemLabel, \
-                    expid, '%s/%s' % (experiments.name, tag))
+                    expid, '%s/%s' % (experiments.name, tag), unknown)
                 deviceNode.addChild(itemNode)
 
             root.addChild(deviceNode)
