@@ -1,5 +1,6 @@
 import numpy as np
 import h5py
+from pathlib import PosixPath
 import os.path
 import types
 import time
@@ -8,7 +9,7 @@ from enum import Enum, IntEnum
 
 
 _H5DS_VERSION_MAJOR = 0
-_H5DS_VERSION_MINOR = 1
+_H5DS_VERSION_MINOR = 2
 
 
 class H5Mode(Enum):
@@ -73,7 +74,7 @@ class H5DataStore:
 
     ### File structure
 
-    Format of the HDF backing store as of v0.1 (G: Group, D: Dataset)
+    Format of the HDF backing store as of v0.2 (G: Group, D: Dataset)
 
     ```
     [G] / # root node; always present (duh!)
@@ -81,8 +82,10 @@ class H5DataStore:
      ├── [G] synthetics # tests with more than one crosspoint, always present
      │    │
      │    ├─ [D] test00 # data, shape depending on experiment
-     │    └─ [D] test01 # data, shape depending on experiment
-     │
+     │    ├─ [D] test01 # data, shape depending on experiment
+     |    └─ [G] test02 # experiment with more than one tables
+     │        │
+     │        └─ [D] test02a # experiment data
      │
      ├── [G] crosspoints # data tied to a single device
      │    │
@@ -91,8 +94,15 @@ class H5DataStore:
      │         ├─ [D] timeseries # history of device biasing
      │         │                 # current, voltage, pulse_width, read_voltage, type
      │         │                 # 5 columns, expandable length, always present
-     │         ├─ [D] test00 # data, shape depending on experiment
-     │         └─ [D] test01 # data, shape depending on experiment
+     │         │
+     │         └─ [G] experiments
+     │             │
+     │             ├─ [D] test00 # data, shape depending on experiment
+     │             ├─ [D] test01 # data, shape depending on experiment
+     │             └─ [G] test02 # experiment with more than one tables
+     │                 │
+     │                 └─ [D] test02a # experiment data
+     │
      │
      │
      └── [G] crossbar # crossbar raster view, always present
@@ -410,14 +420,88 @@ class H5DataStore:
         except TypeError: # read_voltages is probably a scalar
             self._h5['crossbar']['voltage'][bit, word] = read_voltages
 
-    def make_wb_table(self, word, bit, name, shape, dtype, maxshape=None, tstamp=True):
+    def __make_group(self, crosspoints, grpname, ts=None):
+
+        # make sure individual time series exists
+        for (w, b) in crosspoints:
+            try:
+                self.__create_timeseries(w, b)
+            except ValueError:
+                # exists already, no problem
+                continue
+
+        grp = self._h5.create_group(grpname)
+
+        if ts:
+            grp.attrs['TSTAMP'] = ts
+
+        grp.attrs['crosspoints'] = crosspoints
+        grp.attrs['CLASS'] = 'GROUP'
+
+        return grp
+
+    def __sanitise_group_basepath(self, grp, anchor):
+        if isinstance(grp, h5py.Group):
+            grpname = grp.name + '/'
+        elif isinstance(grp, str):
+            if not grp.endswith('/'):
+                grpname = grp + '/'
+            else:
+                grpname = grp
+        else:
+            raise TypeError('Group must be an instance of h5py.Group or str')
+
+        # some sanity checks
+        # first convert into a forward slash separated path (PosixPath)
+        pbasepath = PosixPath(grpname)
+        if pbasepath == PosixPath('/'):
+            raise KeyError('Cannot attach experiment to root node')
+
+        # then check if it's an absolute path if yes, then check
+        # if the parent path is correct
+        if pbasepath.anchor == '/':
+            parent = pbasepath.parent
+            if parent != PosixPath(anchor):
+                raise KeyError('Attempting to attach experiment to wrong group node: ' \
+                    + basepath)
+            basepath = str(pbasepath)
+        # otherwise treat the path as relative to the correct node
+        else:
+            basepath = '%s/%s' % (anchor, grpname)
+
+        return basepath
+
+    def make_wb_group(self, word, bit, name, tstamp=True):
+        """
+        Create a new experiment group tied to a specific crosspoint. This can be
+        used to group multiple data tables under a single experimental node. This
+        will return the underlying HDF group. Unless `tstamp` is set to `False`
+        the current timestamp with ns precision will be added to the group name.
+        """
+
+        if tstamp:
+            ts = time.time_ns()
+            grpname = 'crosspoints/W%02dB%02d/experiments/%s_%d' % \
+                (word, bit, name, ts)
+        else:
+            ts = None
+            grpname = 'crosspoints/W%02dB%02d/experiments/%s' % \
+                (word, bit, name)
+
+        return self.__make_group([[word, bit]], grpname, ts)
+
+    def make_wb_table(self, word, bit, name, shape, dtype, grp=None, maxshape=None, tstamp=True):
         """
         Create a new experiment table tied to a specific crosspoint. Arguments
         `shape` and `dtype` follow numpy conventions. This will return the
         underlying HDF dataset. If `maxshape` is `None` the dataset will
         always be chunked but will allow appends (default). Unless `tstamp` is set
         to `False` the current timestamp with ns precision will be added to the
-        dataset names.
+        dataset names. If `grp` is specified then the table will be created as
+        a child of the specified experiment group. Group name can be either
+        relative (no leading '/') or absolute. In the latter case the parent path
+        must match the corrent word/bit coordinate otherwise an exception will
+        be raised. Group can either be an instance of `h5py.Group` or `str`.
         """
         # make sure time series exists
         try:
@@ -426,13 +510,28 @@ class H5DataStore:
             # exists already, no problem
             pass
 
+        anchor = '/crosspoints/W%02dB%02d/experiments' % (word, bit)
+
+        # if a group is specified, attach the dataset under the
+        # experiment group
+        if grp is not None:
+            basepath = self.__sanitise_group_basepath(grp, anchor)
+
+        # else put it under "experiments"
+        else:
+            basepath = anchor
+
+        if not (basepath in self._h5.keys()):
+            raise KeyError('Group does not exist: ' + basepath)
+
         if tstamp:
             ts = time.time_ns()
-            dsetname = 'crosspoints/W%02dB%02d/experiments/%s_%d' % \
-                (word, bit, name, ts)
+            dsetname = '%s/%s_%d' % \
+                (basepath, name, ts)
         else:
-            dsetname = 'crosspoints/W%02dB%02d/experiments/%s' % \
-                (word, bit, name)
+            dsetname = '%s/%s' % \
+                (basepath, name)
+
         dset = self.__make_table(dsetname, shape, dtype, maxshape)
 
         if tstamp:
@@ -443,14 +542,35 @@ class H5DataStore:
 
         return dset
 
-    def make_synthetic_table(self, crosspoints, name, shape, dtype, maxshape=None, tstamp=True):
+    def make_synthetic_group(self, crosspoints, name, tstamp=True):
+        """
+        Create a new synthetic experiment group. This can be used to group
+        multiple data tables under a single experimental node. This will return
+        the underlying HDF group. Unless `tstamp` is set to `False` the current
+        timestamp with ns precision will be added to the group name.
+        """
+
+        if tstamp:
+            ts = time.time_ns()
+            grpname = 'synthetics/%s_%d' % (name, ts)
+        else:
+            ts = None
+            grpname = 'synthetics/%s' % name
+
+        return self.__make_group(crosspoints, grpname, ts)
+
+    def make_synthetic_table(self, crosspoints, name, shape, dtype, grp=None, maxshape=None, tstamp=True):
         """
         Create a new experiment table encompassing many crosspoints. Arguments
         `shape` and `dtype` follow numpy conventions. This will return the
         underlying HDF dataset. If `maxshape` is `None` the dataset will
         always be chunked but will allow appends (default). Unless `tstamp` is set
         to `False` the current timestamp with ns precision will be added to the
-        dataset names.
+        dataset names. If `grp` is specified then the table will be created as
+        a child of the specified experiment group. Group name can be either
+        relative (no leading '/') or absolute. In the latter case the parent path
+        must match the corrent word/bit coordinate otherwise an exception will
+        be raised. Group can either be an instance of `h5py.Group` or `str`.
         """
         # make sure individual time series exists
         for (w, b) in crosspoints:
@@ -460,11 +580,22 @@ class H5DataStore:
                 # exists already, no problem
                 continue
 
+        anchor = '/synthetics'
+
+        # if a group is specified, ensure it's under the correct
+        # base group
+        if grp is not None:
+            basepath = self.__sanitise_group_basepath(grp, anchor)
+        # else put it under "synthetics" as usual
+        else:
+            basepath = anchor
+
         if tstamp:
             ts = time.time_ns()
-            dsetname = 'synthetics/%s_%d' % (name, ts)
+            dsetname = '%s/%s_%d' % (basepath, name, ts)
         else:
-            dsetname = 'synthetics/%s' % name
+            dsetname = '%s/%s' % (basepath, name)
+
         dset = self.__make_table(dsetname, shape, dtype, maxshape)
 
         dset.attrs['crosspoints'] = [[x[0], x[1]] for x in crosspoints]
