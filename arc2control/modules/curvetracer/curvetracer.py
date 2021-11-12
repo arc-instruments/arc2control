@@ -48,7 +48,8 @@ class CurveTracerOperation(BaseOperation):
         if len(self.cells) != 1:
             return
 
-        (ramps, vstep, pw, interpulse, pulses, readat, cycles) = self.params
+        (ramps, vstep, pw, interpulse, pulses, readat, readafter, cycles) = \
+            self.params
         cell = list(self.cells)[0]
 
         (w, b) = (cell.w, cell.b)
@@ -85,10 +86,10 @@ class CurveTracerOperation(BaseOperation):
 
             if idx == len(ramps) - 1 or endpoint_inclusive:
                 (v, i) = self.do_ramp(w, b, vstart, st, vstop+st/2, pw, \
-                    interpulse, pulses, readat, ReadAfter.Block)
+                    interpulse, pulses, readat, readafter)
             else:
                 (v, i) = self.do_ramp(w, b, vstart, st, vstop-st/2, pw, \
-                    interpulse, pulses, readat, ReadAfter.Block)
+                    interpulse, pulses, readat, readafter)
 
             self._voltages.extend(v)
             self._currents.extend(i)
@@ -108,6 +109,7 @@ class CurveTracerOperation(BaseOperation):
 
         voltages = np.arange(vstart, vstop+vstep/2.0, vstep)\
                      .repeat(np.max((pulses, 1)))
+        #print(voltages)
 
         self.arc.execute()
         self.arc.finalise_operation(self.arcconf.idleMode)
@@ -297,13 +299,14 @@ class CurveTracer(BaseModule, Ui_CurveTracerWidget):
             inter = self.rampInterDurationWidget.getDuration()
 
         ramps = self.__makeRampStops()
-        return (ramps, vstep, pw, inter, pulses, readat, cycles)
+        return (ramps, vstep, pw, inter, pulses, readat, ReadAfter.Pulse, cycles)
 
     def __threadFinished(self):
         self._thread.wait()
         self._thread.setParent(None)
         data = self._thread.curveData()
-        (ramp, vstep, pw, inter, pulses, _, cycles) = self._thread.params
+        (ramp, vstep, pw, inter, pulses, _, readafter, cycles) = \
+            self._thread.params
         self._thread = None
         (w, b) = list(self.cells)[0]
         dset = self.datastore.make_wb_table(w, b, MOD_TAG, (len(data[0]), ), _CT_DTYPE)
@@ -324,6 +327,7 @@ class CurveTracer(BaseModule, Ui_CurveTracerWidget):
         dset.attrs['inter'] = inter
         dset.attrs['pulses'] = pulses
         dset.attrs['cycles'] = cycles
+        dset.attrs['read_after'] = str(readafter)
 
         pw = np.array([self.__rampParams()[3]]).repeat(len(data[0]))
         signals.valueBulkUpdate.emit(w, b, data[1], data[0], pw, vread, OpType.PULSEREAD)

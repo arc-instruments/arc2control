@@ -1,5 +1,6 @@
 from functools import partial
 from PyQt6 import QtCore, QtWidgets
+from pyarc2 import ReadAfter
 import pyqtgraph as pg
 import numpy as np
 
@@ -255,6 +256,17 @@ class CTDataDisplayWidget(QtWidgets.QWidget):
             vstep = None
 
         try:
+            readafter = dataset.attrs['read_after']
+            if readafter == str(ReadAfter.Pulse):
+                layout.addRow('Read after:', QtWidgets.QLabel('Pulse'))
+            elif readafter == str(ReadAfter.Block):
+                layout.addRow('Read after:', QtWidgets.QLabel('Block'))
+            else:
+                layout.addRow('Read after:', QtWidgets.QLabel('Unknown'))
+        except Exception as exc:
+            readafter = None
+
+        try:
             ramp = dataset.attrs['ramp']
             plotWdg = pg.PlotWidget()
             plotWdg.setMouseEnabled(False, False)
@@ -307,6 +319,12 @@ class CTDataDisplayWidget(QtWidgets.QWidget):
             header.append(' ramp: %s' % str(ramp))
             header.append(' minV: %d' % np.min(ramp))
             header.append(' maxV: %s' % np.max(ramp))
+        except KeyError:
+            pass
+
+        try:
+            readafter = dataset.attrs['read_after']
+            header.append(' read after: %s', str(readafter))
         except KeyError:
             pass
 
