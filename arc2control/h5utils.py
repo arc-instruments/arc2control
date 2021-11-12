@@ -521,9 +521,6 @@ class H5DataStore:
         else:
             basepath = anchor
 
-        if not (basepath in self._h5.keys()):
-            raise KeyError('Group does not exist: ' + basepath)
-
         if tstamp:
             ts = time.time_ns()
             dsetname = '%s/%s_%d' % \
