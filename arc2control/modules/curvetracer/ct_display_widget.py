@@ -1,5 +1,5 @@
 from functools import partial
-from PyQt6 import QtWidgets
+from PyQt6 import QtCore, QtWidgets
 import pyqtgraph as pg
 import numpy as np
 
@@ -31,14 +31,20 @@ class CTDataDisplayWidget(QtWidgets.QWidget):
         self.graphButton.setCheckable(True)
         self.graphButton.toggled.connect(partial(\
             self.displaySelectionChanged, btn=self.graphButton))
+        self.attrsButton = QtWidgets.QPushButton("Attributes")
+        self.attrsButton.setCheckable(True)
+        self.attrsButton.toggled.connect(partial(\
+            self.displaySelectionChanged, btn=self.attrsButton))
 
         buttonGroup.addButton(self.graphButton)
         buttonGroup.addButton(self.dataButton)
+        buttonGroup.addButton(self.attrsButton)
 
         buttonLayout.addItem(QtWidgets.QSpacerItem(20, 20, \
             QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum))
         buttonLayout.addWidget(self.graphButton)
         buttonLayout.addWidget(self.dataButton)
+        buttonLayout.addWidget(self.attrsButton)
         buttonLayout.addItem(QtWidgets.QSpacerItem(20, 20, \
             QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum))
 
@@ -48,6 +54,7 @@ class CTDataDisplayWidget(QtWidgets.QWidget):
 
         self.__makeGraphPane()
         self.__makeDataPane()
+        self.__makeAttrsPane()
 
         try:
             crosspoint = self.dataset.attrs['crosspoints'][0]
@@ -59,8 +66,8 @@ class CTDataDisplayWidget(QtWidgets.QWidget):
         self.setProperty('recsize', (800, 500))
 
         self.stackedWdg.addWidget(self.gv)
-
         self.stackedWdg.addWidget(self.dataTablePane)
+        self.stackedWdg.addWidget(self.attrsPane)
 
         layout.addWidget(self.stackedWdg)
         self.setLayout(layout)
@@ -72,6 +79,8 @@ class CTDataDisplayWidget(QtWidgets.QWidget):
             self.stackedWdg.setCurrentIndex(0)
         elif checked == self.dataButton.isChecked():
             self.stackedWdg.setCurrentIndex(1)
+        elif checked == self.attrsButton.isChecked():
+            self.stackedWdg.setCurrentIndex(2)
 
     def __makeGraphPane(self):
         dataset = self.dataset
@@ -193,9 +202,123 @@ class CTDataDisplayWidget(QtWidgets.QWidget):
 
         self.dataTablePane.setLayout(layout)
 
+    def __makeAttrsPane(self):
+
+        dataset = self.dataset
+        (word, bit) = (dataset.attrs['crosspoints'][0])
+
+        self.attrsPane = QtWidgets.QScrollArea(self)
+        attrsWdg = QtWidgets.QWidget()
+        layout = QtWidgets.QFormLayout()
+        layout.setLabelAlignment(QtCore.Qt.AlignmentFlag.AlignRight)
+        layout.setVerticalSpacing(12)
+
+        layout.addRow('Crosspoint:', \
+            QtWidgets.QLabel('W: %02d B: %02d' % (word+1, bit+1)))
+        layout.addRow('Cycles:', QtWidgets.QLabel(str(dataset.attrs['cycles'])))
+
+        # interpulse
+        try:
+            interpulse = dataset.attrs['inter']
+            if interpulse == 0:
+                layout.addRow('Type:', QtWidgets.QLabel('Staircase'))
+            else:
+                layout.addRow('Type:', QtWidgets.QLabel('Pulsed (interpulse: %s)' \
+                    % pg.siFormat(interpulse, suffix='s')))
+        except KeyError:
+            interpulse = None
+
+        # pulse width
+        try:
+            pw = dataset.attrs['pw']
+            if interpulse is not None and interpulse == 0:
+                pwlabel = 'Step width:'
+            elif interpulse is not None and interpulse > 0:
+                pwlabel = 'Pulse width:'
+            else:
+                pwlabel = 'Step width:'
+            layout.addRow(pwlabel, \
+                QtWidgets.QLabel('%s' % pg.siFormat(pw, suffix='s')))
+        except KeyError:
+            pw = None
+
+        # pulses per step
+        try:
+            pulses = dataset.attrs['pulses']
+            layout.addRow('Pulses per step:', QtWidgets.QLabel(str(pulses)))
+        except KeyError:
+            pulses = None
+
+        try:
+            vstep = dataset.attrs['vstep']
+        except:
+            vstep = None
+
+        try:
+            ramp = dataset.attrs['ramp']
+            plotWdg = pg.PlotWidget()
+            plotWdg.setMouseEnabled(False, False)
+            plotWdg.setMenuEnabled(False)
+            plotWdg.setMinimumSize(200, 120)
+            plotWdg.setMaximumSize(500, 120)
+            plotWdg.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding,
+                QtWidgets.QSizePolicy.Policy.Fixed)
+            plotWdg.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
+            minV = np.min(ramp.flatten())
+            maxV = np.max(ramp.flatten())
+            layout.addRow('Minimum V:', \
+                QtWidgets.QLabel(pg.siFormat(minV, suffix='V')))
+            layout.addRow('Maximum V:', \
+                QtWidgets.QLabel(pg.siFormat(maxV, suffix='V')))
+            if vstep is not None:
+                layout.addRow('V step:', \
+                    QtWidgets.QLabel(pg.siFormat(vstep, suffix='V')))
+
+            plot = plotWdg.plot(ramp.flatten(), pen={'color': '#00F', 'width': 1})
+            plotWdg.getPlotItem().hideAxis('bottom')
+            plotWdg.getPlotItem().getAxis('left').setLabel('Voltage', units='V')
+            layout.addRow('Ramp:', plotWdg)
+        except KeyError:
+            ramp = None
+
+        layout.setItem(layout.rowCount(), \
+            QtWidgets.QFormLayout.ItemRole.FieldRole, \
+            QtWidgets.QSpacerItem(20, 20, \
+            QtWidgets.QSizePolicy.Policy.Expanding, \
+            QtWidgets.QSizePolicy.Policy.Expanding))
+
+        attrsWdg.setLayout(layout)
+        self.attrsPane.setWidget(attrsWdg)
+
     def exportDataClicked(self):
         (fname, fltr) = QtWidgets.QFileDialog.getSaveFileName(self, \
             "Export data from %s" % MOD_NAME, '', _CT_EXPORT_FILE_FILTER)
+
+        dataset = self.dataset
+
+        # save dataset attributes in the header
+        header = []
+        header.append(' ATTRS_START')
+        header.append(' crosspoints: %s' % dataset.attrs['crosspoints'][0])
+        header.append(' cycles: %d' % dataset.attrs['cycles'])
+
+        try:
+            ramp = dataset.attrs['ramp'].flatten()
+            header.append(' ramp: %s' % str(ramp))
+            header.append(' minV: %d' % np.min(ramp))
+            header.append(' maxV: %s' % np.max(ramp))
+        except KeyError:
+            pass
+
+        for key in ['vstep', 'pw', 'pulses', 'inter']:
+            try:
+                header.append(' %s: %g' % (key, dataset.attrs[key]))
+            except KeyError:
+                continue
+
+        header.append(' ATTRS_END')
+        header.append('')
+        header.append(' voltage,current,read_voltage')
 
         if fname is None or len(fname) == 0:
             return
@@ -207,6 +330,7 @@ class CTDataDisplayWidget(QtWidgets.QWidget):
         else:
             delimiter = ','
 
-        np.savetxt(fname, self.data, delimiter=delimiter)
+        np.savetxt(fname, self.data, comments='#', header='\n'.join(header), \
+            delimiter=delimiter)
 
 

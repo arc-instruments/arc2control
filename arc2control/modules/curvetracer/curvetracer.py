@@ -303,6 +303,7 @@ class CurveTracer(BaseModule, Ui_CurveTracerWidget):
         self._thread.wait()
         self._thread.setParent(None)
         data = self._thread.curveData()
+        (ramp, vstep, pw, inter, pulses, _, cycles) = self._thread.params
         self._thread = None
         (w, b) = list(self.cells)[0]
         dset = self.datastore.make_wb_table(w, b, MOD_TAG, (len(data[0]), ), _CT_DTYPE)
@@ -317,7 +318,11 @@ class CurveTracer(BaseModule, Ui_CurveTracerWidget):
 
         dset[:, 'read_voltage'] = vread
 
-        cycles = data[3]
+        dset.attrs['ramp'] = ramp
+        dset.attrs['vstep'] = vstep
+        dset.attrs['pw'] = pw
+        dset.attrs['inter'] = inter
+        dset.attrs['pulses'] = pulses
         dset.attrs['cycles'] = cycles
 
         pw = np.array([self.__rampParams()[3]]).repeat(len(data[0]))
