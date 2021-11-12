@@ -243,17 +243,18 @@ class CTDataDisplayWidget(QtWidgets.QWidget):
         except KeyError:
             pw = None
 
-        # pulses per step
+        try:
+            vstep = dataset.attrs['vstep']
+            layout.addRow('V step:', \
+                QtWidgets.QLabel(pg.siFormat(vstep, suffix='V')))
+        except:
+            vstep = None
+
         try:
             pulses = dataset.attrs['pulses']
             layout.addRow('Pulses per step:', QtWidgets.QLabel(str(pulses)))
         except KeyError:
             pulses = None
-
-        try:
-            vstep = dataset.attrs['vstep']
-        except:
-            vstep = None
 
         try:
             readafter = dataset.attrs['read_after']
@@ -278,17 +279,17 @@ class CTDataDisplayWidget(QtWidgets.QWidget):
             plotWdg.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
             minV = np.min(ramp.flatten())
             maxV = np.max(ramp.flatten())
-            layout.addRow('Minimum V:', \
-                QtWidgets.QLabel(pg.siFormat(minV, suffix='V')))
-            layout.addRow('Maximum V:', \
-                QtWidgets.QLabel(pg.siFormat(maxV, suffix='V')))
-            if vstep is not None:
-                layout.addRow('V step:', \
-                    QtWidgets.QLabel(pg.siFormat(vstep, suffix='V')))
 
-            plot = plotWdg.plot(ramp.flatten(), pen={'color': '#00F', 'width': 1})
+            maxLine = pg.InfiniteLine(maxV, angle=0.0, label="max = %s" % \
+                pg.siFormat(maxV, suffix='V'), labelOpts={'color': '#000'})
+            minLine = pg.InfiniteLine(minV, angle=0.0, label="min = %s"% \
+                pg.siFormat(minV, suffix='V'), labelOpts={'color': '#000'})
+
+            plot = plotWdg.plot(ramp.flatten(), pen={'color': '#00F', 'width': 2})
             plotWdg.getPlotItem().hideAxis('bottom')
             plotWdg.getPlotItem().getAxis('left').setLabel('Voltage', units='V')
+            plotWdg.addItem(maxLine)
+            plotWdg.addItem(minLine)
             layout.addRow('Ramp:', plotWdg)
         except KeyError:
             ramp = None
@@ -324,7 +325,7 @@ class CTDataDisplayWidget(QtWidgets.QWidget):
 
         try:
             readafter = dataset.attrs['read_after']
-            header.append(' read after: %s', str(readafter))
+            header.append(' read after: %s' % str(readafter))
         except KeyError:
             pass
 
