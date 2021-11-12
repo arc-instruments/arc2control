@@ -205,6 +205,12 @@ class CTDataDisplayWidget(QtWidgets.QWidget):
 
     def __makeAttrsPane(self):
 
+        def _makeLabel(text):
+            lbl = QtWidgets.QLabel(text)
+            lbl.setStyleSheet('QLabel { font-weight: bold; }')
+
+            return lbl
+
         dataset = self.dataset
         (word, bit) = (dataset.attrs['crosspoints'][0])
 
@@ -214,18 +220,20 @@ class CTDataDisplayWidget(QtWidgets.QWidget):
         layout.setLabelAlignment(QtCore.Qt.AlignmentFlag.AlignRight)
         layout.setVerticalSpacing(12)
 
-        layout.addRow('Crosspoint:', \
+        layout.addRow(_makeLabel('Crosspoint:'), \
             QtWidgets.QLabel('W: %02d B: %02d' % (word+1, bit+1)))
-        layout.addRow('Cycles:', QtWidgets.QLabel(str(dataset.attrs['cycles'])))
+        layout.addRow(_makeLabel('Cycles:'), \
+            QtWidgets.QLabel(str(dataset.attrs['cycles'])))
 
         # interpulse
         try:
             interpulse = dataset.attrs['inter']
             if interpulse == 0:
-                layout.addRow('Type:', QtWidgets.QLabel('Staircase'))
+                layout.addRow(_makeLabel('Type:'), QtWidgets.QLabel('Staircase'))
             else:
-                layout.addRow('Type:', QtWidgets.QLabel('Pulsed (interpulse: %s)' \
-                    % pg.siFormat(interpulse, suffix='s')))
+                layout.addRow(_makeLabel('Type:'), \
+                    QtWidgets.QLabel('Pulsed (interpulse: %s)' \
+                        % pg.siFormat(interpulse, suffix='s')))
         except KeyError:
             interpulse = None
 
@@ -233,11 +241,11 @@ class CTDataDisplayWidget(QtWidgets.QWidget):
         try:
             pw = dataset.attrs['pw']
             if interpulse is not None and interpulse == 0:
-                pwlabel = 'Step width:'
+                pwlabel = _makeLabel('Step width:')
             elif interpulse is not None and interpulse > 0:
-                pwlabel = 'Pulse width:'
+                pwlabel = _makeLabel('Pulse width:')
             else:
-                pwlabel = 'Step width:'
+                pwlabel = _makeLabel('Step width:')
             layout.addRow(pwlabel, \
                 QtWidgets.QLabel('%s' % pg.siFormat(pw, suffix='s')))
         except KeyError:
@@ -245,25 +253,27 @@ class CTDataDisplayWidget(QtWidgets.QWidget):
 
         try:
             vstep = dataset.attrs['vstep']
-            layout.addRow('V step:', \
+            layout.addRow(_makeLabel('V step:'), \
                 QtWidgets.QLabel(pg.siFormat(vstep, suffix='V')))
         except:
             vstep = None
 
         try:
             pulses = dataset.attrs['pulses']
-            layout.addRow('Pulses per step:', QtWidgets.QLabel(str(pulses)))
+            layout.addRow(_makeLabel('Pulses per step:'), \
+                QtWidgets.QLabel(str(pulses)))
         except KeyError:
             pulses = None
 
         try:
             readafter = dataset.attrs['read_after']
+            ralabel = _makeLabel('Read after:')
             if readafter == str(ReadAfter.Pulse):
-                layout.addRow('Read after:', QtWidgets.QLabel('Pulse'))
+                layout.addRow(ralabel, QtWidgets.QLabel('Pulse'))
             elif readafter == str(ReadAfter.Block):
-                layout.addRow('Read after:', QtWidgets.QLabel('Block'))
+                layout.addRow(ralabel, QtWidgets.QLabel('Block'))
             else:
-                layout.addRow('Read after:', QtWidgets.QLabel('Unknown'))
+                layout.addRow(ralabel, QtWidgets.QLabel('Unknown'))
         except Exception as exc:
             readafter = None
 
@@ -290,7 +300,7 @@ class CTDataDisplayWidget(QtWidgets.QWidget):
             plotWdg.getPlotItem().getAxis('left').setLabel('Voltage', units='V')
             plotWdg.addItem(maxLine)
             plotWdg.addItem(minLine)
-            layout.addRow('Ramp:', plotWdg)
+            layout.addRow(_makeLabel('Ramp:'), plotWdg)
         except KeyError:
             ramp = None
 
