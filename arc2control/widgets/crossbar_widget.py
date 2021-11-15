@@ -140,7 +140,7 @@ class CachedBackground:
         for coord in indices:
             (col, row) = (coord[0], coord[1])
             val = self._data[col][row]
-            if (val is not np.nan) and (val < np.iinfo(np.int32).max):
+            if (val is not np.nan) and (val > 0.0) and (val < np.iinfo(np.int32).max):
                 # idx = int(val*7.9)
                 minR = np.log10(MIN_RES)
                 normR = np.log10(MAX_RES) - minR
