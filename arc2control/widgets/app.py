@@ -502,7 +502,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
             self._arc().pulse_slice_masked(low, voltage, int(pulsewidth*1.0e9), highs)\
                        .ground_all()\
                        .execute()
-            for w in idx:
+            for w in v:
                 signals.valueUpdate.emit(w, k, np.NaN, voltage, pulsewidth,\
                     np.NaN, OpType.PULSE)
             self.__finaliseOperation()
