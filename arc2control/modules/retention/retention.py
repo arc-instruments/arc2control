@@ -1,5 +1,5 @@
 import math
-import time, datetime
+import time
 import numpy as np
 import pyqtgraph as pg
 from enum import Enum
@@ -51,29 +51,36 @@ class RetentionOperation(BaseOperation):
         for cell in self.cells:
             self.cellData[cell] = np.empty(shape=(iterations+1, ), dtype=_RET_DTYPE)
             self.cellDataLookBack[cell] = 0
-            self.cellData[cell][0] = self.readDevice(cell, vread)
+            self.cellData[cell][0] = (vread, self.readDevice(cell, vread), \
+                *self.parseTimestamp(time.time()))
 
         for step in range(1, iterations+1):
             time.sleep(readevery)
             for cell in self.cells:
-                result = self.readDevice(cell, vread)
-                self.cellData[cell][step] = result
-                self.conditionalRefresh(cell, step, result)
+                start = time.time()
+                current = self.readDevice(cell, vread)
+                delta = time.time() - start
+                stamp = self.parseTimestamp(start, step*delta)
+                self.cellData[cell][step] = (vread, current, *stamp)
+                self.conditionalRefresh(cell, step, (vread, current, *stamp))
 
         self.finished.emit()
 
-    def readDevice(self, cell, vread, prevtstamp=None):
+    def parseTimestamp(self, tstamp, offset=0):
+        (decimals, seconds) = math.modf(tstamp - offset)
+        microseconds = int(decimals*1000000)
+        seconds = int(seconds)
+
+        return (seconds, microseconds)
+
+    def readDevice(self, cell, vread):
         (w, b) = (cell.w, cell.b)
         (high, low) = self.mapper.wb2ch[w][b]
 
         current = self.arc.read_one(low, high, vread)
         self.arc.finalise_operation(self.arcconf.idleMode)
-        now = datetime.datetime.now()
-        (decimals, seconds) = math.modf(now.timestamp())
-        microseconds = int(decimals*1e6)
-        seconds = int(seconds)
 
-        return (vread, current, seconds, microseconds)
+        return current
 
     def conditionalRefresh(self, cell, step, result):
 
