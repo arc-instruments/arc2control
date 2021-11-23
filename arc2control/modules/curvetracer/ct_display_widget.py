@@ -1,3 +1,4 @@
+from itertools import groupby
 from functools import partial
 from PyQt6 import QtCore, QtWidgets
 from pyarc2 import ReadAfter
@@ -295,7 +296,7 @@ class CTDataDisplayWidget(QtWidgets.QWidget):
             minLine = pg.InfiniteLine(minV, angle=0.0, label="min = %s"% \
                 pg.siFormat(minV, suffix='V'), labelOpts={'color': '#000'})
 
-            plot = plotWdg.plot(ramp.flatten(), pen={'color': '#00F', 'width': 2})
+            plot = plotWdg.plot([a for a,b in groupby(ramp.flatten())], pen={'color': '#00F', 'width': 2})
             plotWdg.getPlotItem().hideAxis('bottom')
             plotWdg.getPlotItem().getAxis('left').setLabel('Voltage', units='V')
             plotWdg.addItem(maxLine)
