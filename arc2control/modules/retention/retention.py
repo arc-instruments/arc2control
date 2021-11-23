@@ -16,6 +16,9 @@ from PyQt6 import QtCore, QtWidgets, QtGui
 
 _RET_DTYPE = [('read_voltage', '<f4'), ('current', '<f4'), ('tstamp_s', '<u8'), ('tstamp_us', '<u8')]
 
+_MAX_REFRESHES_PER_SECOND = 5
+_MIN_INTERVAL_USEC = 1000000//_MAX_REFRESHES_PER_SECOND # note! integer division
+
 
 class RetentionOperation(BaseOperation):
 
@@ -27,6 +30,18 @@ class RetentionOperation(BaseOperation):
         self._currents = []
         self.cellData = {}
 
+        (_, readevery, _) = self.params
+        # check if we need to ease up on refreshing the display
+        self._immediateUpdates = readevery*1000000 > _MIN_INTERVAL_USEC
+        # in that case, find out how many points should we
+        # accumulate before a refresh
+        self._accumulatorCutOff = (1.0/readevery)/_MAX_REFRESHES_PER_SECOND
+
+        # if doing slow refreshes this holds a counter
+        # that indicates how many iterations should be
+        # pulled during each refresh
+        self.cellDataLookBack = {}
+
     def run(self):
         (readfor, readevery, vread) = self.params
 
@@ -35,28 +50,56 @@ class RetentionOperation(BaseOperation):
         # allocate data tables and do initial read
         for cell in self.cells:
             self.cellData[cell] = np.empty(shape=(iterations+1, ), dtype=_RET_DTYPE)
+            self.cellDataLookBack[cell] = 0
             self.cellData[cell][0] = self.readDevice(cell, vread)
 
         for step in range(1, iterations+1):
             time.sleep(readevery)
             for cell in self.cells:
-                self.cellData[cell][step] = self.readDevice(cell, vread)
+                result = self.readDevice(cell, vread)
+                self.cellData[cell][step] = result
+                self.conditionalRefresh(cell, step, result)
 
         self.finished.emit()
 
-    def readDevice(self, cell, vread):
+    def readDevice(self, cell, vread, prevtstamp=None):
         (w, b) = (cell.w, cell.b)
         (high, low) = self.mapper.wb2ch[w][b]
 
         current = self.arc.read_one(low, high, vread)
         self.arc.finalise_operation(self.arcconf.idleMode)
-        (decimals, seconds) = math.modf(datetime.datetime.now().timestamp())
+        now = datetime.datetime.now()
+        (decimals, seconds) = math.modf(now.timestamp())
         microseconds = int(decimals*1e6)
         seconds = int(seconds)
 
-        signals.valueUpdate.emit(w, b, current, vread, 0.0, vread, OpType.READ)
-        signals.dataDisplayUpdate.emit(w, b)
         return (vread, current, seconds, microseconds)
+
+    def conditionalRefresh(self, cell, step, result):
+
+        (_, readevery, _) = self.params
+        (w, b) = (cell.w, cell.b)
+
+        (vread, current, seconds, microseconds) = result
+
+        if self._immediateUpdates:
+            signals.valueUpdate.emit(w, b, current, vread, 0.0, vread, OpType.READ)
+            signals.dataDisplayUpdate.emit(w, b)
+        else:
+            pointsPersSec = 1.0/readevery
+            self.cellDataLookBack[cell] += 1
+            accumulated = self.cellDataLookBack[cell]
+
+            if accumulated > self._accumulatorCutOff:
+                currents = self.cellData[cell]['current'][step-accumulated:step]
+                voltages = self.cellData[cell]['read_voltage'][step-accumulated:step]
+                pws = np.array([0.0]).repeat(accumulated)
+                signals.valueBulkUpdate.emit(w, b, \
+                    currents, voltages, pws, voltages, OpType.READ)
+                signals.dataDisplayUpdate.emit(w, b)
+
+                self.cellDataLookBack[cell] = 0
+
 
     def retentionData(self):
         return self.cellData
