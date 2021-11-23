@@ -5,3 +5,4 @@ exclude */modules/*/generated/*.py
 include */modules/*/generated/__init__.py
 recursive-include */modules *.ui
 exclude venv-pyarc2-update.py
+exclude vermng.py

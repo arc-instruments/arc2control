@@ -1,19 +1,33 @@
 from setuptools import find_packages
 from distutils.core import setup, Command
 from distutils.command.build import build
-import os, sys
+import re, os, sys
 import os.path
 import glob
 import time
 
+
+def find_version_from_file(module, basedir=None):
+
+    if basedir is None:
+        basedir = os.path.abspath(os.path.dirname(__file__))
+
+    regexp = re.compile('^__version__\s*=\s*"(.*)"')
+    with open(os.path.join(basedir, module, 'version.py'), 'r') as vfile:
+        for line in vfile.readlines():
+            match = regexp.match(line)
+            if match is not None:
+                return match.group(1).replace('-', '')
+    return None
+
+
 __HERE__ = os.path.abspath(os.path.dirname(__file__))
-__VERSION_SEMVER__ = '0.1.0'
 
 __NAME__ = "arc2control"
 __DESC__ = "ArC TWO Control Panel"
 __MAINTAINER__ = "Spyros Stathopoulos"
 __EMAIL__ = "devel@arc-instruments.co.uk"
-__VERSION__ = __VERSION_SEMVER__.replace('-','')
+__VERSION__ = find_version_from_file(__NAME__, __HERE__)
 __URL__ = "http://www.arc-instruments.co.uk/products/arc-two/"
 
 if os.path.exists(os.path.join(__HERE__, "README.md")):
