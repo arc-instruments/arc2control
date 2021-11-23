@@ -14,7 +14,7 @@ class Signals(QObject):
     # wordline, bitline, current, voltage, pulse width, vread, optype
     valueUpdate = pyqtSignal(int, int, float, float, float, float, OpType)
     # same, but with ndarrays for bulk updates
-    valueBulkUpdate = pyqtSignal(int, int, ndarray, ndarray, ndarray, ndarray, OpType)
+    valueBulkUpdate = pyqtSignal(int, int, ndarray, ndarray, ndarray, ndarray, ndarray)
     # wordline, bitline
     dataDisplayUpdate = pyqtSignal(int, int)
 

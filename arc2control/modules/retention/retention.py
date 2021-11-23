@@ -94,8 +94,9 @@ class RetentionOperation(BaseOperation):
                 currents = self.cellData[cell]['current'][step-accumulated:step]
                 voltages = self.cellData[cell]['read_voltage'][step-accumulated:step]
                 pws = np.array([0.0]).repeat(accumulated)
-                signals.valueBulkUpdate.emit(w, b, \
-                    currents, voltages, pws, voltages, OpType.READ)
+                optypes = np.array([OpType.READ]).repeat(accumulated)
+                signals.valueBulkUpdate.emit(w, b, currents, voltages, pws, \
+                    voltages, optypes)
                 signals.dataDisplayUpdate.emit(w, b)
 
                 self.cellDataLookBack[cell] = 0

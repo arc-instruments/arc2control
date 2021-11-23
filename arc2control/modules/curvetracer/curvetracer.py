@@ -330,7 +330,8 @@ class CurveTracer(BaseModule, Ui_CurveTracerWidget):
         dset.attrs['read_after'] = str(readafter)
 
         pw = np.array([self.__rampParams()[3]]).repeat(len(data[0]))
-        signals.valueBulkUpdate.emit(w, b, data[1], data[0], pw, vread, OpType.PULSEREAD)
+        optypes = np.array([OpType.PULSEREAD]).repeat(len(data[0]))
+        signals.valueBulkUpdate.emit(w, b, data[1], data[0], pw, vread, optypes)
         signals.dataDisplayUpdate.emit(w, b)
         self.experimentFinished.emit(w, b, dset.name)
 
