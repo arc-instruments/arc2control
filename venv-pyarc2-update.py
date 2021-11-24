@@ -4,10 +4,12 @@ import os.path
 import sys
 import platform
 import shutil
+import re
 
 
 ARCH = platform.architecture()[0]
 HERE = os.path.dirname(os.path.realpath(__file__))
+PIPRE = re.compile('^pyarc2\s+(.*)\s+pip$')
 
 
 if sys.platform == 'win32':
@@ -31,7 +33,8 @@ def _find_pyarc2_install_path():
 
     for entry in out:
         if entry.startswith('pyarc2'):
-            return os.path.join(entry.split()[2], 'pyarc2')
+            (version, result) = PIPRE.match(entry).group(1).split(maxsplit=1)
+            return os.path.join(result, 'pyarc2')
 
     return None
 
