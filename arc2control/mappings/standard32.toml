@@ -1,5 +1,6 @@
 [config]
 # number of total word- and bitlines
+name = "PLCC 32×32"
 words = 32
 bits = 32
 

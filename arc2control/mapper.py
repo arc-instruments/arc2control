@@ -1,9 +1,10 @@
+import os.path
 import toml
 
 
 class ChannelMapper:
 
-    def __init__(self, words, bits, wordarr, bitarr):
+    def __init__(self, words, bits, wordarr, bitarr, name):
         self._wb2ch = []
         self._ch2w = {}
         self._ch2b = {}
@@ -11,6 +12,7 @@ class ChannelMapper:
         self._bitarr = bitarr
         self._nwords = words
         self._nbits = bits
+        self._name = name
 
         for word in range(0, words):
             wordline = []
@@ -35,6 +37,10 @@ class ChannelMapper:
         b_monstrosity = zip([x[0] for x in bit_adc_idxes],\
             [x[0] for x in sorted(bit_act_idxes, key=lambda x: x[1])])
         self._bit_adc2cb = [x[0] for x in sorted(b_monstrosity, key=lambda x: x[1])]
+
+    @property
+    def name(self):
+        return self._name
 
     @property
     def wb2ch(self):
@@ -108,4 +114,9 @@ class ChannelMapper:
         wordarr = mapraw['mapping']['words']
         bitarr = mapraw['mapping']['bits']
 
-        return ChannelMapper(words, bits, wordarr, bitarr)
+        try:
+            name = mapraw['config']['name']
+        except KeyError:
+            (name, _) = os.path.splitext(os.path.basename(fname))
+
+        return ChannelMapper(words, bits, wordarr, bitarr, name=name)

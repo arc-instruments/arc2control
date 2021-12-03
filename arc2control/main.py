@@ -1,6 +1,7 @@
 from PyQt6 import QtCore, QtWidgets
 from arc2control.widgets.app import App
 import os.path
+import glob
 from . import graphics
 from .mapper import ChannelMapper
 
@@ -32,6 +33,13 @@ def _discover_modules(path, base='arc2control.modules'):
     return mods
 
 
+def _standardQtDirectories(name):
+    return QtCore.QStandardPaths.locateAll(\
+        QtCore.QStandardPaths.StandardLocation.AppDataLocation, \
+        name, \
+        QtCore.QStandardPaths.LocateOption.LocateDirectory)
+
+
 def main(args=None):
 
     import sys
@@ -48,11 +56,6 @@ def main(args=None):
         message='.*divide by zero encountered in true_divide.*', \
         module='arc2control\.widgets\..*')
 
-    realpath = os.path.dirname(os.path.realpath(__file__))
-    mapfile = os.path.join(realpath, 'mappings', 'resarray32.toml')
-
-    mapper = ChannelMapper.from_toml(mapfile)
-
     app = QtWidgets.QApplication(args)
     app.setApplicationName('arc2control')
     graphics.initialise()
@@ -61,13 +64,10 @@ def main(args=None):
     # produce a list of standard data locations with decreasing locality
     # (and therefore decreasing priority). Our data folder *MUST* contain
     # a python package named `arc2emodules` to qualify
-    paths = QtCore.QStandardPaths.locateAll(\
-            QtCore.QStandardPaths.StandardLocation.AppDataLocation, \
-            'arc2emodules', \
-            QtCore.QStandardPaths.LocateOption.LocateDirectory)
+    modulepaths = _standardQtDirectories('arc2emodules')
 
-    # check all the paths returned from `locateAll`
-    for p in paths:
+    # check all the module paths returned from `locateAll`
+    for p in modulepaths:
         # check for an `__init__.py` file to find out if this
         # folder is indeed a python package
         if os.path.exists(os.path.join(p, '__init__.py')):
@@ -83,7 +83,7 @@ def main(args=None):
     from . import modules as basemodmod
     mods = _discover_modules(basemodmod.__path__)
 
-    # try to discover external modules now
+    ## try to discover external modules now ##
     try:
         # this will only fail if there are no `arc2emodules` packages
         # found during the the loop above, there's nothing to do
@@ -93,8 +93,32 @@ def main(args=None):
         # no external modules
         emods = {}
 
+    ## try to discover channel mappings ##
+    mappers = {}
+
+    # find all local mapping paths (~/.local/share, /usr/share, %APPDATA%,
+    # %PYTHONDIR%, etc.)
+    mappingpaths = _standardQtDirectories('mappings')
+    # and add the built-in mappings as well (lowest priority)
+    thispath = os.path.dirname(os.path.realpath(__file__))
+    mappingpaths.append(os.path.join(thispath, 'mappings'))
+
+    # reverse the mapping path list so that the most local directory
+    # is last. it will overwrite all previous mappings with the same
+    # name
+    mappingpaths.reverse()
+
+    for p in mappingpaths:
+        for ff in glob.glob(os.path.join(thispath, p, '*.toml')):
+            try:
+                mapper = ChannelMapper.from_toml(ff)
+                mappers[os.path.basename(ff)] = mapper
+            except Exception as exc:
+                print('Could not parse local mapping file %s:' % \
+                    os.path.basename(ff), exc)
+
     # load the app, merging all modules into a dict
-    wdg = App(mapper, modules={**mods, **emods})
+    wdg = App(mappers, modules={**mods, **emods})
     wdg.show()
     app.exec()
 

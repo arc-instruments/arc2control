@@ -102,6 +102,22 @@ class ArC2ConnectionWidget(Ui_ArC2ConnectionWidget, QtWidgets.QWidget):
             self.selectedFirmwareEdit.setText(os.path.realpath(fname))
             self.firmwareSelectionChanged.emit(os.path.realpath(fname))
 
+    def setMappers(self, mappers, default=None):
+
+        defaultIndex = 0
+
+        for (key, mapper) in mappers.items():
+            self.channelMapperComboBox.addItem(mapper.name, mapper)
+            # if a default value is selected check if this is the one
+            if default is not None and key == default:
+                defaultIndex = self.channelMapperComboBox.count() - 1
+
+        self.channelMapperComboBox.setCurrentIndex(defaultIndex)
+
+    def currentMapper(self):
+        return self.channelMapperComboBox.currentData()
+
+
     def __arc2Connect(self):
         if self._arc is not None:
             self.connectionArC2StatusLabel.setText("Disconnected")

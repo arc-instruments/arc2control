@@ -38,15 +38,15 @@ _MOD_FILE_FILTER = 'JSON files (*.json);;All files (*.*)'
 
 class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
 
-    def __init__(self, mapping, modules={}, parent=None):
+    def __init__(self, mappers, modules={}, parent=None):
         self._arc = None
-        self.mapper = mapping
         self._modules = modules
         Ui_ArC2MainWindow.__init__(self)
         QtWidgets.QWidget.__init__(self, parent=parent)
 
         self.setupUi(self)
         self.__setupControlWidgets()
+        self.arc2ConnectionWidget.setMappers(mappers, default='resarray32.toml')
 
         self.deviceExplorerWidget = DeviceExplorerWidget()
         self.deviceExplorerWidget.setTagMapper(\
@@ -73,6 +73,10 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         self.resize(950, 800)
 
         self.show()
+
+    @property
+    def mapper(self):
+        return self.arc2ConnectionWidget.currentMapper()
 
     def __connectSignals(self):
 
