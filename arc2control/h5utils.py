@@ -13,6 +13,11 @@ _H5DS_VERSION_MINOR = 2
 
 
 class H5Mode(Enum):
+    """
+    HDF5 [access mode][1] when opening or creating files.
+
+      [1]: https://docs.h5py.org/en/stable/quick.html#appendix-creating-a-file
+    """
     READ = 'r'
     WRITE = 'w'
     APPEND = 'a'
@@ -20,18 +25,27 @@ class H5Mode(Enum):
 
 
 class OpType(IntEnum):
+    """
+    Operation type. This is essentially 2-bit bitmask.
+    """
     READ      =  0b01
+    """Bit 0 raised means a read operation."""
     PULSE     =  0b10
+    """Bit 1 raised means a pulse operation."""
     PULSEREAD =  0b11
+    """Both bits are raised"""
 
 
 class H5AccessError(Exception):
+    """Thrown when trying to write to a file opened read-only."""
     pass
 
 class H5DimsError(Exception):
+    """Thrown when trying to save data to a dataset with incompatible size."""
     pass
 
 class H5FormatError(Exception):
+    """The HDF5 file is not compatible with the current file format.."""
     pass
 
 
@@ -49,9 +63,11 @@ def _dataset_append(dset, row):
 
 class H5DataStore:
     """
-    ## HDF5 format description.
+    ## HDF5 format description
 
     ### Attributes
+
+    ```
            root node: H5DS_VERSION_MAJOR: int64 (mandatory)
                       H5DS_VERSION_MINOR: int64 (mandatory)
                       PYTABLES_FORMAT_VERSION: str128
@@ -71,6 +87,7 @@ class H5DataStore:
                                                       │
                                                       └─ (bit, word)
      crossbar leaves: none
+    ```
 
     ### File structure
 
@@ -112,6 +129,7 @@ class H5DataStore:
           │
           ├─ [D] voltage # shape = (bits × words), always present
           └─ [D] current # shape = (bits × words), always present
+
     ```
 
     ### Note on expandable datasets

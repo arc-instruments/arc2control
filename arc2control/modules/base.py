@@ -11,6 +11,14 @@ from .. import signals
 
 
 class BaseOperation(QtCore.QThread):
+    """
+    A standard background operation. This is what you probably need to use if
+    you running a long operation using ArC2. It will connect all relevant
+    signals (configuration, mapper, cell selection, etc.) and expose their
+    corresponding values via properties. When a thread based on this operation
+    is started the `run` method will be called and *must* be implemented by all
+    subclasses of this class.
+    """
 
     finished = QtCore.pyqtSignal()
 
@@ -23,18 +31,31 @@ class BaseOperation(QtCore.QThread):
 
     @property
     def arc(self):
+        """
+        Reference to the currently connected ArC2 instrument (if any)
+        """
         return self.parent.arc
 
     @property
     def cells(self):
+        """
+        Returns a set of tuples representing the currently selected crosspoints
+        `(word, bit)`.
+        """
         return self.parent._selectedCells
 
     @property
     def mapper(self):
+        """
+        The currently activated channel mapper (see `arc2control.mapper.ChannelMapper`).
+        """
         return self.parent._mapper
 
     @property
     def arc2Config(self):
+        """
+        The currently enabled ArC2 configuration
+        """
         return self.parent._arcconf
 
     @abc.abstractmethod
@@ -43,6 +64,12 @@ class BaseOperation(QtCore.QThread):
 
 
 class BaseModule(QtWidgets.QWidget):
+    """
+    Base Module for all ArC2Control plugins. A valid ArC2 plugin _MUST_ derive
+    from this class to be properly loaded on startup. The base class will track
+    all UI and instrument changes and exposes the relevant values via properies
+    and methods.
+    """
 
     experimentFinished = QtCore.pyqtSignal(int, int, str)
 
@@ -109,6 +136,9 @@ class BaseModule(QtWidgets.QWidget):
 
     @property
     def readoutVoltage(self):
+        """
+        Currently selected read-out voltage
+        """
         return self._readoutVoltage
 
     def __arc2ConnectionChanged(self, connected, ref):
@@ -119,6 +149,9 @@ class BaseModule(QtWidgets.QWidget):
 
     @property
     def fullModuleName(self):
+        """
+        Returns the fully qualified python class name
+        """
         klass = self.__class__
         fullType = klass.__module__ + '.' + klass.__qualname__
 
@@ -126,16 +159,29 @@ class BaseModule(QtWidgets.QWidget):
 
     @property
     def datastore(self):
+        """
+        A reference to the current datastore. See `arc2control.h5utils.H5DataStore`.
+        """
         return self._datastore
 
     @property
     def description(self):
+        """
+        Description of the operation of this module. This is typically displayed under
+        the panel name in the main ArC2Control UI. Subclasses must implement this if
+        they need to have a description visible (by default it's empty).
+        """
         return ''
 
     def addSerializableType(self, typ, getter, setter):
         """
         Register the setters and getters of a non standard
         widgets that should be serialized with ``exportToJson``.
+        Typically `typ` would be a custom widget and `setter` and
+        `getter` are functions of that custom widget that load and
+        set its state. Custom widgets must be registered with this
+        function in order to be properly serialised to and retrieved
+        from a file.
         """
         self._serializableTypes.append((typ, getter, setter))
 
@@ -178,6 +224,12 @@ class BaseModule(QtWidgets.QWidget):
                 'widgets': widgets }, indent=2))
 
     def loadFromJson(self, fname):
+        """
+        Load panel settings from a JSON file. Most common widget values
+        are stored automatically but if custom widgets are present the
+        subclass *must* register a setter and a getter method for the
+        class using `ar2control.modules.base.BaseModule.addSerializableType`.
+        """
         raw = json.loads(open(fname, 'r').read())['widgets']
 
         for (name, attrs) in raw.items():
