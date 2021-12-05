@@ -102,7 +102,7 @@ class CurveTracerOperation(BaseOperation):
         # convert pulse width and interpulses to ns
         pw = int(pw*1e9)
         interpulse = int(interpulse * 1e9)
-        (low, high) = self.mapper.wb2ch[w][b]
+        (high, low) = self.mapper.wb2ch[w][b]
 
         self.arc.generate_ramp(low, high, vstart, vstep, vstop, pw, interpulse,
             pulses, readat, readafter)

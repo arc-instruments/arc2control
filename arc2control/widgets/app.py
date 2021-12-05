@@ -475,7 +475,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
 
         cell = cells[0]
         (w, b) = (cell.w, cell.b)
-        (low, high) = self.mapper.wb2ch[w][b]
+        (high, low) = self.mapper.wb2ch[w][b]
 
         print("Pulsing channel lowV: %d; highV: %d | V = %g; PW = %g ns" %
             (low, high, voltage, pulsewidth*1.0e9))
