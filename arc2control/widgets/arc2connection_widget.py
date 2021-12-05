@@ -1,23 +1,16 @@
 import os.path
 import sys
 import time
-from dataclasses import dataclass
 from PyQt6 import QtCore, QtWidgets
 from .generated.arc2connection import Ui_ArC2ConnectionWidget
 
 from enum import Enum
 
 from pyarc2 import Instrument, BiasOrder, ControlMode, ReadAt, \
-    ReadAfter, DataMode, IdleMode, find_ids
+    ReadAfter, DataMode, IdleMode, ArC2Config, find_ids
 
 _CONNECTED_LABEL_STYLE = "QLabel { color: green; font-weight: bold }"
 _DISCONNECTED_LABEL_STYLE = "QLabel { color: red; font-weight: bold }"
-
-
-@dataclass
-class ArC2Config:
-    idleMode: IdleMode
-    controlMode: ControlMode
 
 
 class ArC2ConnectionWidget(Ui_ArC2ConnectionWidget, QtWidgets.QWidget):
