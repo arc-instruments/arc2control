@@ -478,7 +478,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         (high, low) = self.mapper.wb2ch[w][b]
 
         print("Pulsing channel lowV: %d; highV: %d | V = %g; PW = %g ns" %
-            (low, high, voltage, pulsewidth*1.0e9))
+            (high, low, voltage, pulsewidth*1.0e9))
 
         self._arc().pulse_one(low, high, voltage, int(pulsewidth*1.0e9))\
                    .execute()

@@ -104,7 +104,7 @@ class CurveTracerOperation(BaseOperation):
         interpulse = int(interpulse * 1e9)
         (high, low) = self.mapper.wb2ch[w][b]
 
-        self.arc.generate_ramp(low, high, vstart, vstep, vstop, pw, interpulse,
+        self.arc.generate_ramp(high, low, vstart, vstep, vstop, pw, interpulse,
             pulses, readat, readafter)
 
         voltages = np.arange(vstart, vstop+vstep/2.0, vstep)\
