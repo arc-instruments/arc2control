@@ -418,7 +418,7 @@ class H5DataStore:
                 BASE_SIZE = H5DataStore._BASE_SIZE
             # resize dataset to fit, we need at least this many
             # total rows
-            min_length = idx + free_rows + 1
+            min_length = idx + free_rows + dlen + 1
             # we need to double the size this many times to fit
             # the data
             factor = math.ceil(math.log(min_length/BASE_SIZE, 2))
