@@ -186,11 +186,12 @@ setup(
         "Programming Language :: Python :: 3 :: Only",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9"
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
 
     ],
     packages = packages,
-    python_requires = '>=3.7',
+    python_requires = '>=3.7,<3.11',
     install_requires = requirements,
     entry_points = {
         'console_scripts': ['arc2control = arc2control.main:main']
