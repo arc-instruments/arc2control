@@ -43,7 +43,7 @@ requirements = [
     'pyqtgraph>=0.12.3',
     'requests>=2.20.0',
     'semver>=2.0.0',
-    'toml>=0.10.0',
+    'tomli>=1.0.0',
     'h5py>=3.0.0'
 ]
 

@@ -1,5 +1,5 @@
 import os.path
-import toml
+import tomli
 
 
 class ChannelMapper:
@@ -183,7 +183,7 @@ class ChannelMapper:
         `~/.local/share/arc2control/mappings` on Linux. Files **must** end in `.toml`
         to be loaded properly during ArC2Control startup.
         """
-        mapraw = toml.loads(open(fname).read())
+        mapraw = tomli.loads(open(fname).read())
         words = mapraw['config']['words']
         bits = mapraw['config']['bits']
         wordarr = mapraw['mapping']['words']
