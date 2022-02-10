@@ -104,6 +104,9 @@ class CurveTracerOperation(BaseOperation):
         interpulse = int(interpulse * 1e9)
         (high, low) = self.mapper.wb2ch[w][b]
 
+        # ensure we are not tied to a hard GND first
+        self.arc.connect_to_gnd(np.array([], dtype=np.uint64))
+
         self.arc.generate_ramp(high, low, vstart, vstep, vstop, pw, interpulse,
             pulses, readat, readafter)
 

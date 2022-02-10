@@ -1,6 +1,7 @@
 import os.path
 import sys
 import time
+import numpy as np
 from PyQt6 import QtCore, QtWidgets
 from .generated.arc2connection import Ui_ArC2ConnectionWidget
 
@@ -32,7 +33,8 @@ class ArC2ConnectionWidget(Ui_ArC2ConnectionWidget, QtWidgets.QWidget):
         self.internalControlRadio.toggled.connect(self.__controlModeChanged)
         self.headerControlRadio.toggled.connect(self.__controlModeChanged)
         self.floatDevsRadio.toggled.connect(self.__idleModeChanged)
-        self.gndDevsRadio.toggled.connect(self.__idleModeChanged)
+        self.softGndDevsRadio.toggled.connect(self.__idleModeChanged)
+        self.hardGndDevsRadio.toggled.connect(self.__idleModeChanged)
         self.selectFirmwareButton.clicked.connect(self.openFirmware)
         self.connectArC2Button.clicked.connect(self.__arc2Connect)
         self.refreshIDsButton.clicked.connect(self.__find_efm_ids)
@@ -62,12 +64,8 @@ class ArC2ConnectionWidget(Ui_ArC2ConnectionWidget, QtWidgets.QWidget):
         if self._arc is None:
             return
 
-        if self.floatDevsRadio.isChecked():
-            self._arc.ground_all_fast().float_all().execute()
-            self.arc2ConfigChanged.emit(self.arc2Config)
-        if self.gndDevsRadio.isChecked():
-            self._arc.ground_all().execute()
-            self.arc2ConfigChanged.emit(self.arc2Config)
+        self._arc.finalise_operation(mode=self.arc2Config.idleMode)
+        self.arc2ConfigChanged.emit(self.arc2Config)
 
     @property
     def controlMode(self):
@@ -80,8 +78,10 @@ class ArC2ConnectionWidget(Ui_ArC2ConnectionWidget, QtWidgets.QWidget):
     def idleMode(self):
         if self.floatDevsRadio.isChecked():
             return IdleMode.Float
-        if self.gndDevsRadio.isChecked():
-            return IdleMode.Gnd
+        if self.softGndDevsRadio.isChecked():
+            return IdleMode.SoftGnd
+        if self.hardGndDevsRadio.isChecked():
+            return IdleMode.HardGnd
 
     @property
     def arc2Config(self):

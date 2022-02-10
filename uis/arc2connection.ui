@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>271</width>
+    <width>287</width>
     <height>142</height>
    </rect>
   </property>
@@ -92,32 +92,15 @@
     </layout>
    </item>
    <item>
-    <layout class="QGridLayout" name="gridLayout_3" columnstretch="1,0,0">
-     <item row="1" column="0">
-      <widget class="QLabel" name="label_7">
+    <layout class="QGridLayout" name="gridLayout_3" columnstretch="1,0,0,0">
+     <item row="0" column="1">
+      <widget class="QRadioButton" name="internalControlRadio">
        <property name="text">
-        <string>Idle status:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="QRadioButton" name="floatDevsRadio">
-       <property name="text">
-        <string>Float</string>
-       </property>
-       <property name="checked">
-        <bool>true</bool>
+        <string>Internal</string>
        </property>
        <attribute name="buttonGroup">
-        <string notr="true">idleButtonGroup</string>
+        <string notr="true">controlButtonGroup</string>
        </attribute>
-      </widget>
-     </item>
-     <item row="0" column="0">
-      <widget class="QLabel" name="label_6">
-       <property name="text">
-        <string>Control:</string>
-       </property>
       </widget>
      </item>
      <item row="0" column="2">
@@ -133,18 +116,54 @@
        </attribute>
       </widget>
      </item>
-     <item row="0" column="1">
-      <widget class="QRadioButton" name="internalControlRadio">
+     <item row="1" column="1">
+      <widget class="QRadioButton" name="floatDevsRadio">
+       <property name="toolTip">
+        <string>Leave idle channels floating</string>
+       </property>
        <property name="text">
-        <string>Internal</string>
+        <string>Float</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
        </property>
        <attribute name="buttonGroup">
-        <string notr="true">controlButtonGroup</string>
+        <string notr="true">idleButtonGroup</string>
        </attribute>
       </widget>
      </item>
      <item row="1" column="2">
-      <widget class="QRadioButton" name="gndDevsRadio">
+      <widget class="QRadioButton" name="softGndDevsRadio">
+       <property name="toolTip">
+        <string>Setup idle channels as arbitrary voltage at 0.0 V</string>
+       </property>
+       <property name="text">
+        <string>Soft GND</string>
+       </property>
+       <attribute name="buttonGroup">
+        <string notr="true">idleButtonGroup</string>
+       </attribute>
+      </widget>
+     </item>
+     <item row="0" column="0">
+      <widget class="QLabel" name="label_6">
+       <property name="text">
+        <string>Control:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_7">
+       <property name="text">
+        <string>Idle status:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="3">
+      <widget class="QRadioButton" name="hardGndDevsRadio">
+       <property name="toolTip">
+        <string>Tie idle channels to hard ground</string>
+       </property>
        <property name="text">
         <string>GND</string>
        </property>
@@ -202,7 +221,7 @@
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="idleButtonGroup"/>
   <buttongroup name="controlButtonGroup"/>
+  <buttongroup name="idleButtonGroup"/>
  </buttongroups>
 </ui>

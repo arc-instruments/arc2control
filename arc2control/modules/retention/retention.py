@@ -77,6 +77,9 @@ class RetentionOperation(BaseOperation):
         (w, b) = (cell.w, cell.b)
         (high, low) = self.mapper.wb2ch[w][b]
 
+        # ensure we are not tied to hard GND
+        self.arc.connect_to_gnd(np.array([], dtype=np.uint64))
+
         current = self.arc.read_one(low, high, vread)
         self.arc.finalise_operation(self.arcconf.idleMode)
 

@@ -319,6 +319,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         if self._arc is None:
             print("arc2 is not connected")
         else:
+            self.__initialiseOperation()
             current = self._arc().pulseread_one(low, high, vpulse, int(pulsewidth*1.0e9),
                 vread)
             self.__finaliseOperation()
@@ -339,6 +340,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
             except KeyError:
                 slices[c.b] = [c.w]
 
+        self.__initialiseOperation()
         for (k, v) in slices.items():
             try:
                 (volt, curr, idx) = self.__pulseReadSlice(self.mapper.b2ch[k],
@@ -349,6 +351,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
                     signals.valueUpdate.emit(w, k, curr[w], volt, \
                         pulsewidth, self.readOpsWidget.readoutVoltage(),\
                         OpType.PULSEREAD)
+                self.__finaliseOperation()
             except TypeError:
                 # arc not connected
                 return
@@ -361,6 +364,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
             return
 
         voltage = self.readOpsWidget.readoutVoltage()
+        self.__initialiseOperation()
         raw = self._arc().pulseread_all(vpulse, int(pulsewidth*1.0e9), voltage,
             BiasOrder.Cols)
         self.__finaliseOperation()
@@ -383,6 +387,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
             except KeyError:
                 slices[c.b] = [c.w]
 
+        self.__initialiseOperation()
         for (k, v) in slices.items():
             try:
                 (volt, curr, idx) = self.__readSlice(self.mapper.b2ch[k],
@@ -391,6 +396,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
                 for w in idx:
                     signals.valueUpdate.emit(w, k, curr[w], volt, 0.0,\
                         volt, OpType.READ)
+                self.__finaliseOperation()
             except TypeError:
                 # arc not connected
                 return
@@ -428,6 +434,17 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         idx = np.where(~np.isnan(currents))[0]
         return (vpulse, currents, idx)
 
+
+    def __initialiseOperation(self):
+        if self._arc is None:
+            return
+
+        idleMode = self.arc2ConnectionWidget.idleMode
+        if idleMode == IdleMode.HardGnd:
+            self._arc().connect_to_gnd(np.arange(0, dtype=np.uint64))\
+                       .float_all()\
+                       .execute()
+
     def __finaliseOperation(self):
         if self._arc is None:
             return
@@ -443,6 +460,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         if self._arc is None:
             print("arc2 is not connected")
         else:
+            self.__initialiseOperation()
             voltage = self.readOpsWidget.readoutVoltage()
             current = self._arc().read_one(low, high, voltage)
             self.__finaliseOperation()
@@ -457,6 +475,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
             return
 
         voltage = self.readOpsWidget.readoutVoltage()
+        self.__initialiseOperation()
         raw = self._arc().read_all(voltage, BiasOrder.Cols)
         self.__finaliseOperation()
         data = np.empty(shape=(self.mapper.nbits, self.mapper.nwords))
@@ -480,6 +499,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         print("Pulsing channel lowV: %d; highV: %d | V = %g; PW = %g ns" %
             (high, low, voltage, pulsewidth*1.0e9))
 
+        self.__initialiseOperation()
         self._arc().pulse_one(low, high, voltage, int(pulsewidth*1.0e9))\
                    .execute()
         signals.valueUpdate.emit(w, b, np.NaN, voltage, pulsewidth, \
@@ -499,6 +519,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
             except KeyError:
                 slices[c.b] = [c.w]
 
+        self.__initialiseOperation()
         for (k, v) in slices.items():
             low = self.mapper.b2ch[k]
             highs = np.array([self.mapper.w2ch[x] for x in v], dtype=np.uint64)
@@ -516,6 +537,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
             print("arc2 is not connected")
             return
 
+        self.__initialiseOperation()
         self._arc().pulse_all(voltage, int(pulsewidth*1.0e9), BiasOrder.Cols)\
                    .ground_all()\
                    .execute()
