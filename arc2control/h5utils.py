@@ -1,6 +1,6 @@
 import numpy as np
 import h5py
-from pathlib import PosixPath
+from pathlib import PurePosixPath
 import os.path
 import types
 import time
@@ -470,16 +470,16 @@ class H5DataStore:
             raise TypeError('Group must be an instance of h5py.Group or str')
 
         # some sanity checks
-        # first convert into a forward slash separated path (PosixPath)
-        pbasepath = PosixPath(grpname)
-        if pbasepath == PosixPath('/'):
+        # first convert into a forward slash separated path (PurePosixPath)
+        pbasepath = PurePosixPath(grpname)
+        if pbasepath == PurePosixPath('/'):
             raise KeyError('Cannot attach experiment to root node')
 
         # then check if it's an absolute path if yes, then check
         # if the parent path is correct
         if pbasepath.anchor == '/':
             parent = pbasepath.parent
-            if parent != PosixPath(anchor):
+            if parent != PurePosixPath(anchor):
                 raise KeyError('Attempting to attach experiment to wrong group node: ' \
                     + basepath)
             basepath = str(pbasepath)
