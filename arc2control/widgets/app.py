@@ -205,10 +205,14 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
             layout.addWidget(wdg)
             dialog.setLayout(layout)
 
-            (recw, rech) = wdg.property('recsize')
+            try:
+                (recw, rech) = wdg.property('recsize')
 
-            if (recw, rech) != (None, None):
-                dialog.resize(recw, rech)
+                if (recw, rech) != (None, None):
+                    dialog.resize(recw, rech)
+            except TypeError:
+                # recsize is not defined, that's fine
+                pass
 
             dialog.show()
 
