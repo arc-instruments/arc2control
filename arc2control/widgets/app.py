@@ -778,7 +778,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
 
             # and ask if we want to keep the temporary dataset
             if self._datastore.is_temporary:
-                res = QtWidgets.QMessageBox.question(self, "Quit ArC2", \
+                res = QtWidgets.QMessageBox.question(self, "New dataset", \
                     "Save current dataset?")
                 if res == QtWidgets.QMessageBox.StandardButton.Yes:
                     fname = QtWidgets.QFileDialog.getSaveFileName(self, \
@@ -809,24 +809,32 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
 
     def openDataset(self):
         if self._datastore is not None and self._datastore.is_temporary:
-            self._datastore.close()
 
-            res = QtWidgets.QMessageBox.question(self, "Quit ArC2", \
+            remove_old_temp_dataset = False
+
+            res = QtWidgets.QMessageBox.question(self, "Open dataset", \
                 "Save current dataset?")
             if res == QtWidgets.QMessageBox.StandardButton.Yes:
                 fname = QtWidgets.QFileDialog.getSaveFileName(self, \
                     "Save dataset", '', _H5_FILE_FILTER)
                 if fname is not None and len(fname[0]) > 0:
+                    self._datastore.close()
                     shutil.move(self._datastore.fname, fname[0])
                 else:
-                    os.remove(self._datastore.fname)
+                    return
             else:
-                os.remove(self._datastore.fname)
+                # mark the dataset for deletion if a new dataset is in
+                # fact opened
+                remove_old_temp_dataset = True
 
         fname = QtWidgets.QFileDialog.getOpenFileName(self, "Open dataset",\
             '', _H5_FILE_FILTER)
+
         if fname is not None and len(fname[0]) > 0:
 
+            self._datastore.close()
+            if remove_old_temp_dataset:
+                os.remove(self._datastore.fname)
             self._datastore = None
             self._datastore = H5DataStore(fname[0], mode=H5Mode.APPEND)
             self._datastore.__setattr__('is_temporary', False)
@@ -836,15 +844,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
             self.deviceExplorerWidget.clear()
             self.deviceExplorerWidget.loadFromStore(self._datastore)
         else:
-            # if no specific dataset has been opened, create a new
-            # temporary one
-            self._datastore = H5DataStore(tempfile.NamedTemporaryFile(\
-                suffix='.h5', delete=False).name,\
-                mode=H5Mode.WRITE)
-            self._datastore.__setattr__('is_temporary', True)
-            self.saveDatasetAction.setEnabled(True)
-            self.saveDatasetAction.setToolTip('Save')
-            self.saveDatasetAsAction.setEnabled(False)
+            return
 
         self.reloadFromDataset()
 
@@ -969,15 +969,8 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
 
 
     def quit(self):
-        try:
-            if self._arc is not None:
-                self.arc2ConnectionWidget.disconnectArC2()
-                self._arc = None
-        except Exception:
-            pass
 
         if self._datastore is not None:
-            self._datastore.close()
             if self._datastore.is_temporary:
                 res = QtWidgets.QMessageBox.question(self, "Quit ArC2", \
                     "Save current dataset?")
@@ -985,12 +978,31 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
                     fname = QtWidgets.QFileDialog.getSaveFileName(self, \
                         "Save dataset", '', _H5_FILE_FILTER)
                     if fname is not None and len(fname[0]) > 0:
+                        self._datastore.close()
                         shutil.move(self._datastore.fname, fname[0])
-                    else:
-                        os.remove(self._datastore.fname)
+                        return True
                 else:
+                    self._datastore.close()
                     os.remove(self._datastore.fname)
+                    return True
+            else:
+                self._datastore.close()
+                return True
+        else:
+            return True
+
+        return False
 
     def closeEvent(self, evt):
-        self.quit()
-        evt.accept()
+        # ensure that the dataset is saved unless the user
+        # opted not to
+        if self.quit():
+            try:
+                if self._arc is not None:
+                    self.arc2ConnectionWidget.disconnectArC2()
+                    self._arc = None
+            except Exception:
+                pass
+            evt.accept()
+        else:
+            evt.ignore()
