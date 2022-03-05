@@ -28,7 +28,7 @@ class ArC2ConnectionWidget(Ui_ArC2ConnectionWidget, QtWidgets.QWidget):
 
         self.selectedFirmwareEdit.setText(os.path.realpath(
             os.path.join(os.path.dirname(sys.argv[0]), os.path.pardir,\
-            "efm03_20210920.bin")))
+            "efm03_20211211_RF.bin")))
 
         self.internalControlRadio.toggled.connect(self.__controlModeChanged)
         self.headerControlRadio.toggled.connect(self.__controlModeChanged)
