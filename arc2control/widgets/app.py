@@ -808,9 +808,9 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         self.deviceExplorerWidget.loadFromStore(self._datastore)
 
     def openDataset(self):
-        if self._datastore is not None and self._datastore.is_temporary:
+        remove_old_temp_dataset = False
 
-            remove_old_temp_dataset = False
+        if self._datastore is not None and self._datastore.is_temporary:
 
             res = QtWidgets.QMessageBox.question(self, "Open dataset", \
                 "Save current dataset?")
