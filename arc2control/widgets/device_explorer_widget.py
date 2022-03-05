@@ -126,9 +126,15 @@ class DeviceExplorerWidget(QtWidgets.QWidget):
 
         for key in alldevkeys:
             device = crosspoints[key]
+
+            try:
+                experiments = device['experiments']
+            except KeyError:
+                # no experiments done yet, skip it
+                continue
+
             deviceNode = self.__makeDeviceNode(key)
 
-            experiments = device['experiments']
             expkeys = sorted(experiments.keys(), key=_experimentSorter)
 
             for (tag, dset) in experiments.items():
