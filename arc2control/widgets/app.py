@@ -553,7 +553,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
 
     def addModuleTab(self, kls):
         obj = kls(self._arc, self.arc2ConnectionWidget.arc2Config, \
-            self.readOpsWidget.readoutVoltage(), self._datastore, \
+            self.readOpsWidget.readoutVoltage(), weakref.ref(self._datastore), \
             self.mainCrossbarWidget.selection, self.mapper)
         # update tree when experiment is finished
         obj.experimentFinished.connect(lambda w, b, path: \
@@ -888,6 +888,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         vdset = self._datastore.dataset('crossbar/voltage')
         cdset = self._datastore.dataset('crossbar/current')
         self.mainCrossbarWidget.setData(np.abs(vdset[:]/cdset[:]).T)
+        signals.datastoreReplaced.emit(weakref.ref(self._datastore))
         self.setWindowTitle('%s [%s]' % \
             (_APP_TITLE, os.path.basename(self._datastore.fname)))
 

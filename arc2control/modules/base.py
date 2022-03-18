@@ -100,6 +100,7 @@ class BaseModule(QtWidgets.QWidget):
         signals.crossbarSelectionChanged.connect(self.__crossbarSelectionChanged)
         signals.arc2ConfigChanged.connect(self.__arc2ConfigChanged)
         signals.readoutVoltageChanged.connect(self.__readoutVoltageChanged)
+        signals.datastoreReplaced.connect(self.__datastoreReplaced)
 
     @property
     def arc(self):
@@ -162,7 +163,7 @@ class BaseModule(QtWidgets.QWidget):
         """
         A reference to the current datastore. See `arc2control.h5utils.H5DataStore`.
         """
-        return self._datastore
+        return self._datastore()
 
     @property
     def description(self):
@@ -259,3 +260,6 @@ class BaseModule(QtWidgets.QWidget):
 
     def __readoutVoltageChanged(self, voltage):
         self._readoutVoltage = voltage
+
+    def __datastoreReplaced(self, storeref):
+        self._datastore = storeref

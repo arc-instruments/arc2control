@@ -34,6 +34,8 @@ class __Signals(QObject):
     valueBulkUpdate = pyqtSignal(int, int, ndarray, ndarray, ndarray, ndarray, ndarray)
     # wordline, bitline
     dataDisplayUpdate = pyqtSignal(int, int)
+    # weakref to the current dataset
+    datastoreReplaced = pyqtSignal(object)
 
 
 __signals = __Signals()
@@ -109,4 +111,13 @@ you cap your data display update requests to about 5-10 per second otherwise
 delays will be incurred.
 
 Signature: `dataDisplayUpdate(word: int, bit: int)`
+"""
+
+datastoreReplaced = __signals.datastoreReplaced
+"""
+The current HDF5 datast has been replaced with a new one. This signal should
+only really be used internally and it's triggered when a new dataset is
+opened or when a new dataset is created
+
+Signature: `datastoreReplaced(dataset: weakref)`
 """
