@@ -10,8 +10,8 @@ from enum import Enum
 from pyarc2 import Instrument, BiasOrder, ControlMode, ReadAt, \
     ReadAfter, DataMode, IdleMode, ArC2Config, find_ids
 
-_CONNECTED_LABEL_STYLE = "QLabel { color: green; font-weight: bold }"
-_DISCONNECTED_LABEL_STYLE = "QLabel { color: red; font-weight: bold }"
+_CONNECTED_LABEL_STYLE = "QLabel { color: white; background-color: green; font-weight: bold }"
+_DISCONNECTED_LABEL_STYLE = "QLabel { color: white; background-color: #D11A1A; font-weight: bold }"
 
 
 class ArC2ConnectionWidget(Ui_ArC2ConnectionWidget, QtWidgets.QWidget):

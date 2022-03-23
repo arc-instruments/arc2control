@@ -74,18 +74,18 @@
        </property>
        <property name="minimumSize">
         <size>
-         <width>85</width>
+         <width>90</width>
          <height>0</height>
         </size>
        </property>
        <property name="styleSheet">
-        <string notr="true">QLabel { color: red; font-weight: bold; }</string>
+        <string notr="true">QLabel { color: white; background-color: #D11A1A; font-weight: bold; }</string>
        </property>
        <property name="text">
         <string>Disconnected</string>
        </property>
        <property name="alignment">
-        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        <set>Qt::AlignCenter</set>
        </property>
       </widget>
      </item>
@@ -221,7 +221,7 @@
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="controlButtonGroup"/>
   <buttongroup name="idleButtonGroup"/>
+  <buttongroup name="controlButtonGroup"/>
  </buttongroups>
 </ui>
