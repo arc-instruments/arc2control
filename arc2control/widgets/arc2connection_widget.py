@@ -127,6 +127,11 @@ class ArC2ConnectionWidget(Ui_ArC2ConnectionWidget, QtWidgets.QWidget):
             thisdir = os.path.dirname(os.path.realpath(__file__))
             fw = os.path.realpath(self.selectedFirmwareEdit.text())
             efmid = self.efmIDsComboBox.currentData()
+            if not os.path.exists(fw):
+                QtWidgets.QMessageBox.critical(self, \
+                    'Connect ArC2', \
+                    'Firmware file %s does not exist' % os.path.basename(fw) )
+                return
             try:
                 self._arc = Instrument(efmid, fw)
             except:
