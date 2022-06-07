@@ -15,11 +15,11 @@ SELPEN = QtGui.QPen(QtGui.QBrush(QtCore.Qt.GlobalColor.black), 2.0,
 RANPEN = QtGui.QPen(QtGui.QBrush(QtCore.Qt.GlobalColor.red), 3.0,
     cap=QtCore.Qt.PenCapStyle.FlatCap, join=QtCore.Qt.PenJoinStyle.MiterJoin)
 
-DX = 12
-DY = 12
+DX = lambda x: max(int(round(-0.769*x+36.6)), 12)
+DY = lambda x: max(int(round(-0.769*x+36.6)), 12)
 
-CBPADX = 25
-CBPADY = 25
+CBPADX = lambda x: max(int(round(-0.385*x+37.3)), 25)
+CBPADY = lambda x: max(int(round(-0.385*x+37.3)), 25)
 
 GRAD = []
 
@@ -84,10 +84,10 @@ class CachedBackground:
         return self._pixmap
 
     def makePixmap(self):
-        pxm = QtGui.QPixmap(self._words*DX+1+2*CBPADX, self._bits*DY+1+2*CBPADY)
+        pxm = QtGui.QPixmap(self._words*DX(self._words)+1+2*CBPADX(self._words), self._bits*DY(self._bits)+1+2*CBPADY(self._bits))
         pxm.fill(QtCore.Qt.GlobalColor.transparent)
         painter = QtGui.QPainter(pxm)
-        painter.translate(QtCore.QPoint(CBPADX, CBPADY))
+        painter.translate(QtCore.QPoint(CBPADX(self._words), CBPADY(self._bits)))
         painter.setPen(GRIDPEN)
         for row in range(self._bits):
             for col in range(self._words):
@@ -103,25 +103,25 @@ class CachedBackground:
                     except (OverflowError, ValueError):
                         idx = -1
                     if idx < 256 and idx >= 0:
-                        painter.fillRect(col*DX,row*DY,DX,DY, GRAD[idx])
+                        painter.fillRect(col*DX(self._words),row*DY(self._bits),DX(self._words),DY(self._bits), GRAD[idx])
                     else:
-                        painter.fillRect(col*DX,row*DY,DX,DY, GRAD[-1])
+                        painter.fillRect(col*DX(self._words),row*DY(self._bits),DX(self._words),DY(self._bits), GRAD[-1])
                 else: ##### here
-                    painter.fillRect(col*DX,row*DY,DX,DY, QtCore.Qt.GlobalColor.white)
-                painter.drawRect(QtCore.QRect(col*DX, row*DY, DX, DY))
+                    painter.fillRect(col*DX(self._words),row*DY(self._bits),DX(self._words),DY(self._bits), QtCore.Qt.GlobalColor.white)
+                painter.drawRect(QtCore.QRect(col*DX(self._words), row*DY(self._bits), DX(self._words), DY(self._bits)))
 
         font = painter.font()
         font.setPointSize(8);
         painter.setFont(font)
         painter.setPen(TEXTPEN)
         for row in range(self._bits):
-            painter.drawText(-CBPADX, int((row+1-0.25)*DY), '%02d' % (row+1))
+            painter.drawText(-CBPADX(self._words), int((row+1-0.25)*DY(self._bits)), '%02d' % (row+1))
 
         for col in range(self._words):
             painter.save()
-            painter.translate(int((col+0.2)*DX), (self._bits+0.7)*DY)
+            painter.translate(int((col+0.2)*DX(self._words)), (self._bits+0.7)*DY(self._bits))
             painter.rotate(90)
-            #painter.drawText(int((col+0.2)*DX), (self._words+1)*DY, '%02d' % (col+1))
+            #painter.drawText(int((col+0.2)*DX(self._words)), (self._words+1)*DY, '%02d' % (col+1))
             painter.drawText(0, 0, '%02d' % (col+1))
             painter.restore()
 
@@ -131,11 +131,11 @@ class CachedBackground:
         self._pixmap = self.makePixmap()
 
     def blitPixmap(self, indices):
-        pxm = QtGui.QPixmap(self._words*DX+1+2*CBPADX, self._bits*DY+1+2*CBPADY)
+        pxm = QtGui.QPixmap(self._words*DX(self._words)+1+2*CBPADX(self._words), self._bits*DY(self._bits)+1+2*CBPADY(self._bits))
         pxm.fill(QtCore.Qt.GlobalColor.transparent)
         painter = QtGui.QPainter(pxm)
         painter.drawPixmap(0, 0, self._pixmap)
-        painter.translate(QtCore.QPoint(CBPADX, CBPADY))
+        painter.translate(QtCore.QPoint(CBPADX(self._words), CBPADY(self._bits)))
         painter.setPen(GRIDPEN)
         for coord in indices:
             (col, row) = (coord[0], coord[1])
@@ -147,12 +147,12 @@ class CachedBackground:
 
                 idx = int((np.log10(val) - minR)*255/normR)
                 if idx < 256 and idx >= 0:
-                    painter.fillRect(col*DX,row*DY,DX,DY, GRAD[idx])
+                    painter.fillRect(col*DX(self._words),row*DY(self._bits),DX(self._words),DY(self._bits), GRAD[idx])
                 else:
-                    painter.fillRect(col*DX,row*DY,DX,DY, GRAD[-1])
+                    painter.fillRect(col*DX(self._words),row*DY(self._bits),DX(self._words),DY(self._bits), GRAD[-1])
             else:
-                painter.fillRect(col*DX,row*DY,DX,DY, QtCore.Qt.GlobalColor.white)
-            painter.drawRect(QtCore.QRect(col*DX, row*DY, DX, DY))
+                painter.fillRect(col*DX(self._words),row*DY(self._bits),DX(self._words),DY(self._bits), QtCore.Qt.GlobalColor.white)
+            painter.drawRect(QtCore.QRect(col*DX(self._words), row*DY(self._bits), DX(self._words), DY(self._bits)))
 
         return pxm
 
@@ -193,8 +193,8 @@ class PaintWidget(QtWidgets.QWidget):
         self._data = np.zeros(shape=(self._words, self._bits))
         self._data[:] = np.nan
 
-        self.setMinimumSize(DX*self._words+2*CBPADX, DY*self._bits+2*CBPADY)
-        self.setMaximumSize(DX*self._words+2*CBPADX, DY*self._bits+2*CBPADY)
+        self.setMinimumSize(DX(self._words)*self._words+2*CBPADX(self._words), DY(self._bits)*self._bits+2*CBPADY(self._bits))
+        self.setMaximumSize(DX(self._words)*self._words+2*CBPADX(self._words), DY(self._bits)*self._bits+2*CBPADY(self._bits))
         self.background = CachedBackground(self._data, self._words, self._bits)
 
     def paintEvent(self, evt):
@@ -210,8 +210,8 @@ class PaintWidget(QtWidgets.QWidget):
         self._bits = bits
         self._data = np.zeros(shape=(self._words, self._bits))
         self._data[:] = np.nan
-        self.setMinimumSize(DX*self._words+2*CBPADX, DY*self._bits+2*CBPADY)
-        self.setMaximumSize(DX*self._words+2*CBPADX, DY*self._bits+2*CBPADY)
+        self.setMinimumSize(DX(self._words)*self._words+2*CBPADX(self._words), DY(self._bits)*self._bits+2*CBPADY(self._bits))
+        self.setMaximumSize(DX(self._words)*self._words+2*CBPADX(self._words), DY(self._bits)*self._bits+2*CBPADY(self._bits))
         self.background = CachedBackground(self._data, self._bits, self._words)
         self.repaint()
 
@@ -239,13 +239,13 @@ class PaintWidget(QtWidgets.QWidget):
         # self.background.update(DATA)
         painter.drawPixmap(0, 0, self.background.pixmap)
 
-        painter.translate(QtCore.QPoint(CBPADX, CBPADY))
+        painter.translate(QtCore.QPoint(CBPADX(self._words), CBPADY(self._bits)))
 
         for cell in self.selection:
             if cell.b < 0 or cell.w < 0:
                 continue
             painter.setPen(SELPEN)
-            painter.drawRect(QtCore.QRect(cell.w*DX+1, cell.b*DY+1, DX-1, DY-1))
+            painter.drawRect(QtCore.QRect(cell.w*DX(self._words)+1, cell.b*DY(self._bits)+1, DX(self._words)-1, DY(self._bits)-1))
 
         if (self.rangeStart is not None) and (self.rangeEnd is not None):
 
@@ -257,8 +257,8 @@ class PaintWidget(QtWidgets.QWidget):
             minb = min(b0, bf)
             maxb = max(b0, bf)+1
 
-            painter.drawRect(QtCore.QRect(QtCore.QPoint(minb*DX, minw*DY),
-                QtCore.QPoint(maxb*DX, maxw*DY)))
+            painter.drawRect(QtCore.QRect(QtCore.QPoint(minb*DX(self._words), minw*DY(self._bits)),
+                QtCore.QPoint(maxb*DX(self._words), maxw*DY(self._bits))))
 
         # font = painter.font()
         # font.setPointSize(8);
@@ -308,11 +308,11 @@ class PaintWidget(QtWidgets.QWidget):
             return
 
         (x, y) = (evt.position().x(), evt.position().y())
-        if x >= DX*self._words+CBPADX or y >= DY*self._bits+CBPADY:
+        if x >= DX(self._words)*self._words+CBPADX(self._words) or y >= DY(self._bits)*self._bits+CBPADY(self._bits):
             return
-        if x < CBPADX+1 or y < CBPADY+1:
+        if x < CBPADX(self._words)+1 or y < CBPADY(self._bits)+1:
             return
-        (w, b) = (int((x-CBPADX)/DX), int((y-CBPADY)/DY))
+        (w, b) = (int((x-CBPADX(self._words))/DX(self._words)), int((y-CBPADY(self._bits))/DY(self._bits)))
 
         cells = set([Cell(w, b)])
 
@@ -342,11 +342,11 @@ class PaintWidget(QtWidgets.QWidget):
 
         self.mouseDragging = True
         #(stepsX, stepsY) = (round((evt.x()+CBPADX)/DX), round((evt.y()+CBPADY)/DY))
-        (stepsX, stepsY) = (math.floor((evt.position().x()-CBPADX)/DX),
-            math.floor((evt.position().y()-CBPADY)/DY))
+        (stepsX, stepsY) = (math.floor((evt.position().x()-CBPADX(self._words))/DX(self._words)),
+            math.floor((evt.position().y()-CBPADY(self._bits))/DY(self._bits)))
         stepsX = _clip(stepsX, low=0, high=self._bits)
         stepsY = _clip(stepsY, low=0, high=self._words)
-        self.rangeStart = QtCore.QPoint(stepsX*DX+CBPADX, stepsY*DY+CBPADY)
+        self.rangeStart = QtCore.QPoint(stepsX*DX(self._words)+CBPADX(self._words), stepsY*DY(self._bits)+CBPADY(self._bits))
         self.rangeEnd = None
         self.repaint()
 
@@ -359,7 +359,7 @@ class PaintWidget(QtWidgets.QWidget):
 
         if self.mouseDragging:
             self.mouseDragging = False
-            (stepsX, stepsY) = (int((evt.position().x()-CBPADX)/DX), int((evt.position().y()-CBPADY)/DY))
+            (stepsX, stepsY) = (int((evt.position().x()-CBPADX(self._words))/DX(self._words)), int((evt.position().y()-CBPADY(self._bits))/DY(self._bits)))
             stepsX = _clip(stepsX, low=0, high=self._words)
             stepsY = _clip(stepsY, low=0, high=self._bits)
             #self.rangeEnd = QtCore.QPoint(stepsX*DX, stepsY*DY)
@@ -393,12 +393,12 @@ class PaintWidget(QtWidgets.QWidget):
         # the current mouse position to the listeners
         if not self.mouseDragging:
             (x, y) = (evt.position().x(), evt.position().y())
-            if x >= DX*self._words+(CBPADX) or y >= DY*self._bits+(CBPADY):
+            if x >= DX(self._words)*self._words+(CBPADX(self._words)) or y >= DY(self._bits)*self._bits+(CBPADY(self._bits)):
                 newPos = (-1, -1)
-            elif x < (CBPADX+1) or y < (CBPADY+1):
+            elif x < (CBPADX(self._words)+1) or y < (CBPADY(self._bits)+1):
                 newPos = (-1, -1)
             else:
-                newPos = (int((x-CBPADX)/DX), int((y-CBPADY)/DY))
+                newPos = (int((x-CBPADX(self._words))/DX(self._words)), int((y-CBPADY(self._bits))/DY(self._bits)))
 
             # only emit the event if the mouse moved to a different
             # cell than the one it's currently on
@@ -433,19 +433,19 @@ class PaintWidget(QtWidgets.QWidget):
             #   ^
             #   |
             #   +--- mouse is OUTSIDE these boundaries
-            if dx >= DX:
+            if dx >= DX(self._words):
                 # if the end point is "left"er than the
                 # original point then snap to the rightmost
                 # cell
                 if startPoint.x() <= endPoint.x():
                     funcx = math.floor
                     stepxoffset = -1
-                    pxxoffset = int(DX/2)
+                    pxxoffset = int(DX(self._words)/2)
                 # else snap to the leftmost cell
                 else:
                     funcx = math.ceil
                     stepxoffset = 0
-                    pxxoffset = -int(DX/2)
+                    pxxoffset = -int(DX(self._words)/2)
             # otherwise the mouse is still within the original
             # cell; just select the cell without offset
             else:
@@ -462,28 +462,28 @@ class PaintWidget(QtWidgets.QWidget):
             #              the mouse is OUTSIDE these boundaries
             #
             dy = abs(startPoint.y() - endPoint.y())
-            if dy >= DY:
+            if dy >= DY(self._bits):
                 if startPoint.y() <= endPoint.y():
                     funcy = math.floor
                     stepyoffset = -1
-                    pxyoffset = int(DY/2)
+                    pxyoffset = int(DY(self._bits)/2)
                 else:
                     funcy = math.ceil
                     stepyoffset = 0
-                    pxyoffset = -int(DY/2)
+                    pxyoffset = -int(DY(self._bits)/2)
             else:
                 funcy = math.floor
                 stepyoffset = 0
                 pxyoffset = 0
 
             # calculate how many steps (cells) the mouse has moved
-            (stepsX, stepsY) = (funcx((evt.position().x()-CBPADX+pxxoffset)/DX) + stepxoffset,
-                funcy((evt.position().y()-CBPADY+pxyoffset)/DY) + stepyoffset)
+            (stepsX, stepsY) = (funcx((evt.position().x()-CBPADX(self._words)+pxxoffset)/DX(self._words)) + stepxoffset,
+                funcy((evt.position().y()-CBPADY(self._bits)+pxyoffset)/DY(self._bits)) + stepyoffset)
             # and clip them between 0 and BITS or WORDS
             stepsX = _clip(stepsX, low=0, high=self._bits)
             stepsY = _clip(stepsY, low=0, high=self._words)
             # then convert that into absolute coordinates plus the padding
-            self.rangeEnd = QtCore.QPoint(stepsX*DX+CBPADX, stepsY*DY+CBPADY)
+            self.rangeEnd = QtCore.QPoint(stepsX*DX(self._words)+CBPADX(self._words), stepsY*DY(self._bits)+CBPADY(self._bits))
             self.repaint()
 
     def __cellsInSelection(self):
@@ -507,7 +507,7 @@ class PaintWidget(QtWidgets.QWidget):
         return cells
 
     def __coordsToCell(self, x, y):
-        (w, b) = (int((x-CBPADX)/DX), int((y-CBPADY)/DY))
+        (w, b) = (int((x-CBPADX(self._words))/DX(self._words)), int((y-CBPADY(self._bits))/DY(self._bits)))
         return (w, b)
 
     @property
