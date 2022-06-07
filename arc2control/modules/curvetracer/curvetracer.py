@@ -116,7 +116,6 @@ class CurveTracerOperation(BaseOperation):
 
         self.arc.execute()
         self.arc.finalise_operation(self.arcconf.idleMode)
-        self.arc.wait()
         currents = np.empty(shape=voltages.shape)
         for (i, (v, d)) in enumerate(zip(voltages, self.arc.get_iter(DataMode.Bits))):
             curr = d[0][self.mapper.bit_idxs][b]
