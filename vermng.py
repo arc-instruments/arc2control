@@ -3,6 +3,7 @@ import sys
 import os.path
 import re
 import semver
+import date
 
 
 MODULE = 'arc2control'
@@ -10,6 +11,7 @@ MODULE = 'arc2control'
 VERFILETMPL = \
 """# THIS FILE IS UPDATED AUTOMATICALLY - DO NOT TOUCH
 __version__ = "%s"
+__copyright__ = "%s"
 """
 
 def version_file(module, basedir=None):
@@ -43,7 +45,12 @@ def update_version_file(module, version, basedir=None):
     versionfile = version_file(module, basedir)
 
     with open(versionfile, 'w') as verfile:
-        verfile.write(VERFILETMPL % version)
+        thisyear = date.today().year
+        if thisyear == 2022:
+            copytext = "2022"
+        else:
+            copytext = "2022–%d" % thisyear
+        verfile.write(VERFILETMPL % (version, copytext))
 
 
 def update_pyproject(finalversion, basedir=None):

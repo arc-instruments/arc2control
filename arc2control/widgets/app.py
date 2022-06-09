@@ -22,6 +22,7 @@ from .plottingoptions_widget import DisplayType as PlotDisplayType
 from .plottingoptions_widget import YScale as PlotYScale
 from .plottingoptions_widget import PlottingOptionsWidget
 from .device_explorer_widget import DeviceExplorerWidget
+from .about_dialog import AboutDialog
 from .. import graphics
 from ..h5utils import H5DataStore, OpType, H5Mode
 import weakref
@@ -108,6 +109,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         self.saveDatasetAction.triggered.connect(self.saveDataset)
         self.saveDatasetAsAction.triggered.connect(self.saveDatasetAs)
         self.quitAction.triggered.connect(self.close)
+        self.aboutAction.triggered.connect(self.showAboutDialog)
 
         self.selectionChanged(self.mainCrossbarWidget.selection)
 
@@ -891,6 +893,10 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         signals.datastoreReplaced.emit(weakref.ref(self._datastore))
         self.setWindowTitle('%s [%s]' % \
             (_APP_TITLE, os.path.basename(self._datastore.fname)))
+
+    def showAboutDialog(self):
+        dlg = AboutDialog(parent=self)
+        dlg.exec()
 
     def __exportTimeSeries(self, w, b, complete):
 

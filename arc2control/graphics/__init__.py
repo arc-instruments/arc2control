@@ -16,7 +16,8 @@ _pixmap_files = [
 ]
 
 _svg_files = [
-    'arc2-logo.svg'
+    'arc2-logo.svg',
+    'splash.svg'
 ]
 
 _all_images = {}
