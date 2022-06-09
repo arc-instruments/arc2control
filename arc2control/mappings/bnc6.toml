@@ -1,0 +1,12 @@
+[config]
+# number of total word- and bitlines
+name = "BNC breakout"
+words = 6
+bits = 6
+
+[mapping]
+# corresponding channels for wordlines
+words = [ 16, 17, 18, 48, 49, 50 ]
+
+bits = [ 13, 14, 15, 45, 46, 47 ]
+
