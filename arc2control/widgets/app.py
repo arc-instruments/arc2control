@@ -338,7 +338,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
     def pulseReadSelectedSlices(self, cells, vpulse, pulsewidth, vread):
         slices = {}
 
-        data = self.mainCrossbarWidget.data.T
+        data = self.mainCrossbarWidget.data
 
         for c in cells:
             try:
@@ -362,7 +362,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
                 # arc not connected
                 return
 
-        self.mainCrossbarWidget.setData(data.T)
+        self.mainCrossbarWidget.setData(data)
 
     def pulseReadAll(self, vpulse, pulsewidth, vread):
         if self._arc is None:
@@ -379,13 +379,13 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
             bitline = self.mapper.ch2b[channel]
             data[bitline] = voltage/np.abs(raw[row][self.mapper.word_idxs])
 
-        self.mainCrossbarWidget.setData(data.T)
+        self.mainCrossbarWidget.setData(data)
 
     def readSelectedSlices(self, cells):
 
         slices = {}
 
-        data = self.mainCrossbarWidget.data.T
+        data = self.mainCrossbarWidget.data
 
         for c in cells:
             try:
@@ -407,7 +407,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
                 # arc not connected
                 return
 
-        self.mainCrossbarWidget.setData(data.T)
+        self.mainCrossbarWidget.setData(data)
 
     def __readSlice(self, low, highs):
         if self._arc is None:
@@ -771,7 +771,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         cdset = self._datastore.dataset('crossbar/current')
         cdset[:] = current
         vdset[:] = voltage
-        self.mainCrossbarWidget.setData(np.abs(vdset[:]/cdset[:]).T)
+        self.mainCrossbarWidget.setData(np.abs(vdset[:]/cdset[:]))
 
     def newDataset(self):
         if self._datastore is not None:
@@ -889,7 +889,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         self.refreshCurrentPlot()
         vdset = self._datastore.dataset('crossbar/voltage')
         cdset = self._datastore.dataset('crossbar/current')
-        self.mainCrossbarWidget.setData(np.abs(vdset[:]/cdset[:]).T)
+        self.mainCrossbarWidget.setData(np.abs(vdset[:]/cdset[:]))
         signals.datastoreReplaced.emit(weakref.ref(self._datastore))
         self.setWindowTitle('%s [%s]' % \
             (_APP_TITLE, os.path.basename(self._datastore.fname)))
