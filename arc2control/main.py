@@ -1,5 +1,6 @@
 from PyQt6 import QtCore, QtWidgets
 from arc2control.widgets.app import App
+from arc2control.widgets.crossbarconfig_dialog import CrossbarConfigDialog
 import os.path
 import glob
 from . import graphics
@@ -117,8 +118,16 @@ def main(args=None):
                 print('Could not parse local mapping file %s:' % \
                     os.path.basename(ff), exc)
 
+    cnfdlg = CrossbarConfigDialog(mappers=mappers, parent=None)
+    cnfdlg.show()
+    if not cnfdlg.exec():
+        return
+    res = cnfdlg.result()
+
     # load the app, merging all modules into a dict
-    wdg = App(mappers, modules={**mods, **emods})
+    wdg = App(mappers, shape=(res['nbits'], res['nwords']), \
+        modules={**mods, **emods}, mapper=res['mapper'], \
+        dset=res['dataset'])
     wdg.show()
     app.exec()
 

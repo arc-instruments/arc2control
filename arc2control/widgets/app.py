@@ -23,6 +23,7 @@ from .plottingoptions_widget import YScale as PlotYScale
 from .plottingoptions_widget import PlottingOptionsWidget
 from .device_explorer_widget import DeviceExplorerWidget
 from .about_dialog import AboutDialog
+from .crossbar_widget import PaintWidget
 from .. import graphics
 from ..h5utils import H5DataStore, OpType, H5Mode
 import weakref
@@ -39,15 +40,25 @@ _MOD_FILE_FILTER = 'JSON files (*.json);;All files (*.*)'
 
 class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
 
-    def __init__(self, mappers, modules={}, parent=None):
+    def __init__(self, mappers, shape=(32,32), modules={}, mapper=None, dset=None, parent=None):
         self._arc = None
         self._modules = modules
+        (self._nbits, self._nwords) = shape
         Ui_ArC2MainWindow.__init__(self)
         QtWidgets.QWidget.__init__(self, parent=parent)
 
         self.setupUi(self)
+
+        # replace the placeholder crossbar widget with the actual paint
+        # widget. This is necessary to initialise it to its proper size
+        # instead of the default 32×32
+        newCrossbarWidget = PaintWidget(shape=shape)
+        self.crossbarGridLayout.replaceWidget(self.mainCrossbarWidget, newCrossbarWidget)
+        self.mainCrossbarWidget = newCrossbarWidget
+
         self.__setupControlWidgets()
-        self.arc2ConnectionWidget.setMappers(mappers, default='resarray32.toml')
+        default_mapper = 'resarray32.toml' if mapper is None else mapper
+        self.arc2ConnectionWidget.setMappers(mappers, default=mapper)
 
         self.deviceExplorerWidget = DeviceExplorerWidget()
         self.deviceExplorerWidget.setTagMapper(\
@@ -58,16 +69,23 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         self.__populateModuleComboBox()
         self.__loadIcons()
 
-        self._datastore = H5DataStore(tempfile.NamedTemporaryFile(\
-            suffix='.h5', delete=False).name,\
-            mode=H5Mode.WRITE)
-        self._datastore.__setattr__('is_temporary', True)
+        if dset is None:
+            self._datastore = H5DataStore(tempfile.NamedTemporaryFile(\
+                suffix='.h5', delete=False).name,\
+                mode=H5Mode.WRITE, shape=shape)
+            self._datastore.__setattr__('is_temporary', True)
+
+            # initialise an empty crossbar (all zeros)
+            self.crossbarRefresh(np.zeros(self._datastore.shape),\
+                np.zeros(self._datastore.shape))
+        else:
+            self._datastore = H5DataStore(dset, mode=H5Mode.APPEND, shape=shape)
+            self._datastore.__setattr__('is_temporary', False)
+            self.deviceExplorerWidget.clear()
+            self.deviceExplorerWidget.loadFromStore(self._datastore)
+            self.reloadFromDataset()
 
         self.__connectSignals()
-
-        # initialise an empty crossbar (all zeros)
-        self.crossbarRefresh(np.zeros(self._datastore.shape),\
-            np.zeros(self._datastore.shape))
 
         self.setWindowTitle('%s [%s]' % \
             (_APP_TITLE, os.path.basename(self._datastore.fname)))
@@ -374,10 +392,13 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         raw = self._arc().pulseread_all(vpulse, int(pulsewidth*1.0e9), voltage,
             BiasOrder.Cols)
         self.__finaliseOperation()
-        data = np.empty(shape=(self.mapper.nbits, self.mapper.nwords))
+        data = np.empty(shape=(self._nbits, self._nwords))
         for (row, channel) in enumerate(sorted(self.mapper.ch2b.keys())):
             bitline = self.mapper.ch2b[channel]
-            data[bitline] = voltage/np.abs(raw[row][self.mapper.word_idxs])
+            # skip bitlines > than the total number of configured bitlines
+            if bitline >= self._nbits:
+                continue
+            data[bitline] = voltage/np.abs(raw[row][self.mapper.word_idxs])[0:self._nwords]
 
         self.mainCrossbarWidget.setData(data)
 
@@ -484,10 +505,13 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         self.__initialiseOperation()
         raw = self._arc().read_all(voltage, BiasOrder.Cols)
         self.__finaliseOperation()
-        data = np.empty(shape=(self.mapper.nbits, self.mapper.nwords))
+        data = np.empty(shape=(self._nbits, self._nwords))
         for (row, channel) in enumerate(sorted(self.mapper.ch2b.keys())):
             bitline = self.mapper.ch2b[channel]
-            data[bitline] = raw[row][self.mapper.word_idxs]
+            # skip bitlines > than the total number of configured bitlines
+            if bitline >= self._nbits:
+                continue
+            data[bitline] = raw[row][self.mapper.word_idxs][0:self._nwords]
 
         shape = data.shape
         actual_voltage = np.repeat([voltage], shape[0]*shape[1]).reshape(*shape)
