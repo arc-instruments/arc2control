@@ -8,7 +8,7 @@ repository = "https://github.com/arc-instruments/arc2control"
 exclude = ["venv-pyarc2-update.py"]
 
 [tool.poetry.dependencies]
-python = ">=3.7,<3.11"
+python = ">=3.8,<3.11"
 numpy = "^1.18"
 PyQt6 = "^6.1"
 pyqtgraph = "^0.12.3"
