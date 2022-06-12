@@ -16,9 +16,7 @@ semver = "^2.0"
 requests = '^2.20'
 tomli = "^1.0"
 h5py = "^3.0"
-
-[tool.poetry.extras]
-pyarc2 = ["pyarc2"]
+pyarc2 = ">=0.1"
 
 [tool.poetry.dev-dependencies]
 build = "^0.7.0"
