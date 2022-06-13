@@ -13,6 +13,9 @@
   <property name="windowTitle">
    <string>About ArC2 Control Panel</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true">background-color: white;</string>
+  </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <property name="leftMargin">
     <number>0</number>
