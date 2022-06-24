@@ -6,6 +6,7 @@ from ..graphics import getPixmap
 from ..h5utils import H5DataStore, H5Mode
 
 from .. import ArC2ControlSettings
+from .. import constants
 
 
 class CrossbarConfigDialog(Ui_CrossbarConfigDialog, QtWidgets.QDialog):
@@ -131,7 +132,7 @@ class CrossbarConfigDialog(Ui_CrossbarConfigDialog, QtWidgets.QDialog):
 
     def __selectDatasetClicked(self):
         fname = QtWidgets.QFileDialog.getOpenFileName(self, "Open dataset",\
-            '', 'Datasets (*.h5);;All files (*.*)')
+            '', constants.H5_FILE_FILTER)
 
         if fname is None or len(fname[0]) == 0:
             return

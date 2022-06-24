@@ -30,12 +30,7 @@ import weakref
 import os, tempfile
 from .. import signals
 from ..modules import moduleClassFromJson
-
-
-_APP_TITLE = 'ArC2 Control Panel'
-_H5_FILE_FILTER = 'Datasets (*.h5);;All files (*.*)'
-_H5_TS_EXPORT_FILTER = 'Comma separated file (*.csv);;Tab separated file (*.tsv)'
-_MOD_FILE_FILTER = 'JSON files (*.json);;All files (*.*)'
+from .. import constants
 
 
 class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
@@ -88,7 +83,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         self.__connectSignals()
 
         self.setWindowTitle('%s [%s]' % \
-            (_APP_TITLE, os.path.basename(self._datastore.fname)))
+            (constants.APP_TITLE, os.path.basename(self._datastore.fname)))
         self.resize(950, 800)
 
         self.show()
@@ -633,7 +628,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
             return
 
         fname = QtWidgets.QFileDialog.getSaveFileName(self, "Export Widget Data",\
-            '', _MOD_FILE_FILTER)
+            '', constants.MOD_FILE_FILTER)
 
         if fname is None or len(fname[0]) == 0:
             return
@@ -642,7 +637,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
 
     def loadModuleClicked(self):
         fname = QtWidgets.QFileDialog.getOpenFileName(self, "Open Widget Data",\
-            '', _MOD_FILE_FILTER)
+            '', constants.MOD_FILE_FILTER)
 
         if fname is None or len(fname[0]) == 0:
             return
@@ -808,7 +803,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
                     "Save current dataset?")
                 if res == QtWidgets.QMessageBox.StandardButton.Yes:
                     fname = QtWidgets.QFileDialog.getSaveFileName(self, \
-                        "Save dataset", '', _H5_FILE_FILTER)
+                        "Save dataset", '', constants.H5_FILE_FILTER)
                     if fname is not None and len(fname[0]) > 0:
                         shutil.move(self._datastore.fname, fname[0])
                     else:
@@ -842,7 +837,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
                 "Save current dataset?")
             if res == QtWidgets.QMessageBox.StandardButton.Yes:
                 fname = QtWidgets.QFileDialog.getSaveFileName(self, \
-                    "Save dataset", '', _H5_FILE_FILTER)
+                    "Save dataset", '', constants.H5_FILE_FILTER)
                 if fname is not None and len(fname[0]) > 0:
                     self._datastore.close()
                     shutil.move(self._datastore.fname, fname[0])
@@ -854,7 +849,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
                 remove_old_temp_dataset = True
 
         fname = QtWidgets.QFileDialog.getOpenFileName(self, "Open dataset",\
-            '', _H5_FILE_FILTER)
+            '', constants.H5_FILE_FILTER)
 
         if fname is not None and len(fname[0]) > 0:
 
@@ -876,7 +871,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
 
     def saveDataset(self):
         fname = QtWidgets.QFileDialog.getSaveFileName(self, "Save dataset as",\
-            '', _H5_FILE_FILTER)
+            '', constants.H5_FILE_FILTER)
         if fname is not None and len(fname[0]) > 0:
             if self._datastore is None or not self._datastore.is_temporary:
                 return
@@ -893,7 +888,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
 
     def saveDatasetAs(self):
         fname = QtWidgets.QFileDialog.getSaveFileName(self, "Save dataset as",\
-            '', _H5_FILE_FILTER)
+            '', constants.H5_FILE_FILTER)
         if fname is not None and len(fname[0]) > 0:
             self._datastore.close()
             if self._datastore is not None and self._datastore.is_temporary:
@@ -916,7 +911,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         self.mainCrossbarWidget.setData(np.abs(vdset[:]/cdset[:]))
         signals.datastoreReplaced.emit(weakref.ref(self._datastore))
         self.setWindowTitle('%s [%s]' % \
-            (_APP_TITLE, os.path.basename(self._datastore.fname)))
+            (constants.APP_TITLE, os.path.basename(self._datastore.fname)))
 
     def showAboutDialog(self):
         dlg = AboutDialog(parent=self)
@@ -983,7 +978,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
                 return
 
         (fname, flt) = QtWidgets.QFileDialog.getSaveFileName(self, \
-            "Export timeseries", '', _H5_TS_EXPORT_FILTER)
+            "Export timeseries", '', constants.H5_TS_EXPORT_FILTER)
 
         if fname is None or fname == '':
             return
@@ -1007,7 +1002,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
                     "Save current dataset?")
                 if res == QtWidgets.QMessageBox.StandardButton.Yes:
                     fname = QtWidgets.QFileDialog.getSaveFileName(self, \
-                        "Save dataset", '', _H5_FILE_FILTER)
+                        "Save dataset", '', constants.H5_FILE_FILTER)
                     if fname is not None and len(fname[0]) > 0:
                         self._datastore.close()
                         shutil.move(self._datastore.fname, fname[0])

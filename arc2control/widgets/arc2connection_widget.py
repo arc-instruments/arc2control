@@ -4,6 +4,7 @@ import time
 import numpy as np
 from PyQt6 import QtCore, QtWidgets
 from .generated.arc2connection import Ui_ArC2ConnectionWidget
+from .. import constants
 
 from enum import Enum
 
@@ -90,7 +91,7 @@ class ArC2ConnectionWidget(Ui_ArC2ConnectionWidget, QtWidgets.QWidget):
     def openFirmware(self):
         fname = QtWidgets.QFileDialog.getOpenFileName(self,\
             'Select firmware', os.path.dirname(sys.argv[0]),\
-            "Firmware files (*.bin);;Any file (*.*)")[0]
+            constants.FW_FILE_FILTER)[0]
         if fname is not None and len(fname) > 0:
             self.selectedFirmwareEdit.setText(os.path.realpath(fname))
             self.firmwareSelectionChanged.emit(os.path.realpath(fname))
