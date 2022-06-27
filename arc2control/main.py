@@ -4,6 +4,7 @@ from arc2control.widgets.crossbarconfig_dialog import CrossbarConfigDialog
 import os.path
 import glob
 from . import graphics
+from . import constants
 from .mapper import ChannelMapper
 
 
@@ -58,14 +59,14 @@ def main(args=None):
         module='arc2control\.widgets\..*')
 
     app = QtWidgets.QApplication(args)
-    app.setApplicationName('arc2control')
+    app.setApplicationName(constants.APP_NAME)
     graphics.initialise()
 
     # Try to discover modules in QStandardPaths; locateAll will
     # produce a list of standard data locations with decreasing locality
     # (and therefore decreasing priority). Our data folder *MUST* contain
     # a python package named `arc2emodules` to qualify
-    modulepaths = _standardQtDirectories('arc2emodules')
+    modulepaths = _standardQtDirectories(constants.EMODULES_DIR)
 
     # check all the module paths returned from `locateAll`
     for p in modulepaths:
@@ -89,7 +90,7 @@ def main(args=None):
         # this will only fail if there are no `arc2emodules` packages
         # found during the the loop above, there's nothing to do
         import arc2emodules as baseemodmod
-        emods = _discover_modules(baseemodmod.__path__, 'arc2emodules')
+        emods = _discover_modules(baseemodmod.__path__, constants.EMODULES_DIR)
     except ModuleNotFoundError:
         # no external modules
         emods = {}
