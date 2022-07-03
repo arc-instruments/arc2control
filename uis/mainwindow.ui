@@ -362,6 +362,8 @@
    <addaction name="openDatasetAction"/>
    <addaction name="saveDatasetAction"/>
    <addaction name="saveDatasetAsAction"/>
+   <addaction name="separator"/>
+   <addaction name="firmwareManagerAction"/>
   </widget>
   <action name="openDatasetAction">
    <property name="text">
@@ -406,6 +408,14 @@
   <action name="aboutAction">
    <property name="text">
     <string>About</string>
+   </property>
+  </action>
+  <action name="firmwareManagerAction">
+   <property name="text">
+    <string>Firm&amp;ware Manager</string>
+   </property>
+   <property name="toolTip">
+    <string>Manage ArC2 firmware</string>
    </property>
   </action>
  </widget>

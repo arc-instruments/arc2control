@@ -13,3 +13,10 @@ H5_FILE_FILTER = 'Datasets (*.h5);;All files (*.*)'
 H5_TS_EXPORT_FILTER = 'Comma separated file (*.csv);;Tab separated file (*.tsv)'
 MOD_FILE_FILTER = 'JSON files (*.json);;All files (*.*)'
 PYARC2_EXISTS = __pyarc2_exists()
+ARC_FW_BASEURL = 'http://files.arc-instruments.co.uk/firmware/'
+
+ARCFW_PUBKEY = """
+-----BEGIN PUBLIC KEY-----
+MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEdwUFNsjRcBGWE4oOH/y/WDcFYzup
+6U1ZxzvbIcgNq74nZds1DKlr8GgxBkchJsuWhwK7If6oTfRtr1LocfAKSA==
+-----END PUBLIC KEY-----""".strip()

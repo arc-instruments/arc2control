@@ -5,6 +5,7 @@ import numpy as np
 from PyQt6 import QtCore, QtWidgets
 from .generated.arc2connection import Ui_ArC2ConnectionWidget
 from .. import constants
+from ..fwutils import discoverFirmwares
 
 from enum import Enum
 
@@ -20,6 +21,7 @@ class ArC2ConnectionWidget(Ui_ArC2ConnectionWidget, QtWidgets.QWidget):
     arc2ConfigChanged = QtCore.pyqtSignal(ArC2Config)
     connectionChanged = QtCore.pyqtSignal(bool)
     firmwareSelectionChanged = QtCore.pyqtSignal(str)
+    firmwareRequest = QtCore.pyqtSignal()
 
     def __init__(self, parent=None):
         Ui_ArC2ConnectionWidget.__init__(self)
@@ -27,19 +29,15 @@ class ArC2ConnectionWidget(Ui_ArC2ConnectionWidget, QtWidgets.QWidget):
 
         self.setupUi(self)
 
-        self.selectedFirmwareEdit.setText(os.path.realpath(
-            os.path.join(os.path.dirname(sys.argv[0]), os.path.pardir,\
-            "efm03_20211211_RF.bin")))
-
         self.internalControlRadio.toggled.connect(self.__controlModeChanged)
         self.headerControlRadio.toggled.connect(self.__controlModeChanged)
         self.floatDevsRadio.toggled.connect(self.__idleModeChanged)
         self.softGndDevsRadio.toggled.connect(self.__idleModeChanged)
         self.hardGndDevsRadio.toggled.connect(self.__idleModeChanged)
-        self.selectFirmwareButton.clicked.connect(self.openFirmware)
         self.connectArC2Button.clicked.connect(self.__arc2Connect)
         self.refreshIDsButton.clicked.connect(self.__find_efm_ids)
         self.__find_efm_ids()
+        self.refreshFirmwares()
 
         self._arc = None
 
@@ -47,6 +45,13 @@ class ArC2ConnectionWidget(Ui_ArC2ConnectionWidget, QtWidgets.QWidget):
         self.efmIDsComboBox.clear()
         for i in find_ids():
             self.efmIDsComboBox.addItem('%2d' % i, i)
+
+    def refreshFirmwares(self):
+        self.firmwareComboBox.clear()
+        fws = discoverFirmwares()
+        for (k, v) in reversed(sorted(fws.items())):
+            if v['verified']:
+                self.firmwareComboBox.addItem(k, v['path'])
 
     def __controlModeChanged(self, *args):
 
@@ -88,14 +93,6 @@ class ArC2ConnectionWidget(Ui_ArC2ConnectionWidget, QtWidgets.QWidget):
     def arc2Config(self):
         return ArC2Config(self.idleMode, self.controlMode)
 
-    def openFirmware(self):
-        fname = QtWidgets.QFileDialog.getOpenFileName(self,\
-            'Select firmware', os.path.dirname(sys.argv[0]),\
-            constants.FW_FILE_FILTER)[0]
-        if fname is not None and len(fname) > 0:
-            self.selectedFirmwareEdit.setText(os.path.realpath(fname))
-            self.firmwareSelectionChanged.emit(os.path.realpath(fname))
-
     def setMappers(self, mappers, default=None):
 
         defaultIndex = 0
@@ -111,8 +108,22 @@ class ArC2ConnectionWidget(Ui_ArC2ConnectionWidget, QtWidgets.QWidget):
     def currentMapper(self):
         return self.channelMapperComboBox.currentData()
 
-
     def __arc2Connect(self):
+
+        if self.efmIDsComboBox.count() == 0:
+            QtWidgets.QMessageBox.critical(self, \
+                'Connect ArC2', \
+                'No tools found. Connect an ArC TWO and click the refresh button')
+
+        if self.firmwareComboBox.count() == 0:
+            resp = QtWidgets.QMessageBox.question(self, \
+                'Connect ArC2', \
+                'No suitable firmware found. Open the firmware manager?')
+
+            if resp == QtWidgets.QMessageBox.StandardButton.Yes:
+                self.firmwareRequest.emit()
+            return
+
         if self._arc is not None:
             self.connectionArC2StatusLabel.setText("Disconnected")
             self.connectionArC2StatusLabel.setStyleSheet(_DISCONNECTED_LABEL_STYLE)
@@ -121,17 +132,16 @@ class ArC2ConnectionWidget(Ui_ArC2ConnectionWidget, QtWidgets.QWidget):
             self.connectArC2Button.setText("Connect ArC2")
             self.connectionChanged.emit(False)
             self.selectedFirmwareEdit.setEnabled(True)
-            self.selectFirmwareButton.setEnabled(True)
+            self.firmwareComboBox.setEnabled(True)
             self.efmIDsComboBox.setEnabled(True)
             self.refreshIDsButton.setEnabled(True)
         else:
-            thisdir = os.path.dirname(os.path.realpath(__file__))
-            fw = os.path.realpath(self.selectedFirmwareEdit.text())
+            fw = self.firmwareComboBox.currentData()
             efmid = self.efmIDsComboBox.currentData()
             if not os.path.exists(fw):
                 QtWidgets.QMessageBox.critical(self, \
                     'Connect ArC2', \
-                    'Firmware file %s does not exist' % os.path.basename(fw) )
+                    'Firmware file %s does not exist' % os.path.basename(fw))
                 return
             try:
                 self._arc = Instrument(efmid, fw)
@@ -144,8 +154,8 @@ class ArC2ConnectionWidget(Ui_ArC2ConnectionWidget, QtWidgets.QWidget):
             self.__controlModeChanged()
             self.__idleModeChanged()
             self.selectedFirmwareEdit.setEnabled(False)
-            self.selectFirmwareButton.setEnabled(False)
             self.efmIDsComboBox.setEnabled(False)
+            self.firmwareComboBox.setEnabled(False)
             self.refreshIDsButton.setEnabled(False)
 
     def disconnectArC2(self):

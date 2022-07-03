@@ -12,7 +12,12 @@ _pixmap_files = [
     'action-save.png',
     'action-save-as.png',
     'action-new-dataset.png',
-    'action-exit.png'
+    'action-exit.png',
+    'action-fw-manager.png',
+    'action-delete.png',
+    'action-download.png',
+    'action-refresh.png',
+    'action-cancel.png'
 ]
 
 _svg_files = [

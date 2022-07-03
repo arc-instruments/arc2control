@@ -22,6 +22,7 @@ from .plottingoptions_widget import DisplayType as PlotDisplayType
 from .plottingoptions_widget import YScale as PlotYScale
 from .plottingoptions_widget import PlottingOptionsWidget
 from .device_explorer_widget import DeviceExplorerWidget
+from .fwmanager_dialog import FirmwareManagementDialog
 from .about_dialog import AboutDialog
 from .crossbar_widget import PaintWidget
 from .. import graphics
@@ -123,11 +124,14 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         self.saveDatasetAsAction.triggered.connect(self.saveDatasetAs)
         self.quitAction.triggered.connect(self.close)
         self.aboutAction.triggered.connect(self.showAboutDialog)
+        self.firmwareManagerAction.triggered.connect(self.showFirmwareManagerDialog)
+        self.arc2ConnectionWidget.firmwareRequest.connect(self.showFirmwareManagerDialog)
 
         self.selectionChanged(self.mainCrossbarWidget.selection)
 
         self.deviceExplorerWidget.experimentSelected.connect(self.experimentSelected)
         self.deviceExplorerWidget.exportDeviceHistoryRequested.connect(self.__exportTimeSeries)
+
 
         signals.valueUpdate.connect(self.valueUpdate)
         signals.valueBulkUpdate.connect(self.valueUpdateBulk)
@@ -189,6 +193,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         self.saveDatasetAsAction.setIcon(graphics.getIcon('action-save-as'))
         self.newDatasetAction.setIcon(graphics.getIcon('action-new-dataset'))
         self.quitAction.setIcon(graphics.getIcon('action-exit'))
+        self.firmwareManagerAction.setIcon(graphics.getIcon('action-fw-manager'))
 
     def connectionChanged(self, connected):
         if connected:
@@ -916,6 +921,11 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
     def showAboutDialog(self):
         dlg = AboutDialog(parent=self)
         dlg.exec()
+
+    def showFirmwareManagerDialog(self):
+        dlg = FirmwareManagementDialog(parent=self)
+        dlg.exec()
+        self.arc2ConnectionWidget.refreshFirmwares()
 
     def __exportTimeSeries(self, w, b, complete):
 
