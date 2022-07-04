@@ -218,8 +218,6 @@ class FirmwareManagementDialog(Ui_FirmwareManagementDialog, QtWidgets.QDialog):
             actual_path = os.path.join(p, 'firmware')
             self.firmwarePathComboBox.addItem(actual_path, actual_path)
 
-        pubkey = load_pem_public_key(constants.ARCFW_PUBKEY.encode(), default_backend())
-
         allfws = discoverFirmwares(True)
 
         for (i, (k, v)) in enumerate(allfws.items()):
