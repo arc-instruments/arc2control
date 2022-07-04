@@ -16,7 +16,7 @@ class BaseOperation(QtCore.QThread):
     you running a long operation using ArC2. It will connect all relevant
     signals (configuration, mapper, cell selection, etc.) and expose their
     corresponding values via properties. When a thread based on this operation
-    is started the `run` method will be called and *must* be implemented by all
+    is started the ``run`` method will be called and *must* be implemented by all
     subclasses of this class.
     """
 
@@ -39,7 +39,7 @@ class BaseOperation(QtCore.QThread):
     @property
     def cells(self):
         """
-        Returns a set of tuples representing the currently selected crosspoints
+        A set of tuples representing the currently selected crosspoints
         `(word, bit)`.
         """
         return self.parent._selectedCells
@@ -47,7 +47,7 @@ class BaseOperation(QtCore.QThread):
     @property
     def mapper(self):
         """
-        The currently activated channel mapper (see `arc2control.mapper.ChannelMapper`).
+        The currently activated channel mapper (see :class:`~arc2control.mapper.ChannelMapper`).
         """
         return self.parent._mapper
 
@@ -68,7 +68,18 @@ class BaseModule(QtWidgets.QWidget):
     Base Module for all ArC2Control plugins. A valid ArC2 plugin _MUST_ derive
     from this class to be properly loaded on startup. The base class will track
     all UI and instrument changes and exposes the relevant values via properies
-    and methods.
+    and methods. The constructor for the module will be typically called with
+    the correct arguments when the user clicks the "Add" button on the experiment
+    panel of ArC2Control
+
+    :param arcref: A reference to the currently connected ArC TWO
+    :param arcconf: The current ArC TWO configuration
+    :param vread: Currently configured read voltage
+    :param store: A reference to the currently opened datastore
+    :param name: The name of this module
+    :param tag: A short tag desribing this module
+    :param cells: A reference to the current crosspoint selection
+    :param mapper: A reference to the current channel mapper
     """
 
     experimentFinished = QtCore.pyqtSignal(int, int, str)
@@ -105,8 +116,8 @@ class BaseModule(QtWidgets.QWidget):
     @property
     def arc(self):
         """
-        Return a reference to the currently active ArC2 instrument, or
-        None, if no connection exists
+        A reference to the currently active ArC TWO instrument, or None, if no
+        connection exists
         """
         try:
             return self._arc()
@@ -117,28 +128,28 @@ class BaseModule(QtWidgets.QWidget):
     @property
     def cells(self):
         """
-        Return the currently selected cells
+        The currently selected cells
         """
         return self._selectedCells
 
     @property
     def mapper(self):
         """
-        Return the current bit/word to channel mapping configuration
+        The current bit/word to channel mapping configuration
         """
         return self._mapper
 
     @property
     def arc2Config(self):
         """
-        Return the current arc2 configuration
+        The current ArC TWO configuration
         """
         return self._arcconf
 
     @property
     def readoutVoltage(self):
         """
-        Currently selected read-out voltage
+        The active read-out voltage
         """
         return self._readoutVoltage
 
@@ -151,7 +162,7 @@ class BaseModule(QtWidgets.QWidget):
     @property
     def fullModuleName(self):
         """
-        Returns the fully qualified python class name
+        The fully qualified python class name
         """
         klass = self.__class__
         fullType = klass.__module__ + '.' + klass.__qualname__
@@ -161,7 +172,7 @@ class BaseModule(QtWidgets.QWidget):
     @property
     def datastore(self):
         """
-        A reference to the current datastore. See `arc2control.h5utils.H5DataStore`.
+        A reference to the current datastore. See :class:`~arc2control.h5utils.H5DataStore`.
         """
         return self._datastore()
 
@@ -178,22 +189,29 @@ class BaseModule(QtWidgets.QWidget):
         """
         Register the setters and getters of a non standard
         widgets that should be serialized with ``exportToJson``.
-        Typically `typ` would be a custom widget and `setter` and
-        `getter` are functions of that custom widget that load and
+        Typically ``typ`` would be a custom widget and ``setter`` and
+        ``getter`` are functions of that custom widget that load and
         set its state. Custom widgets must be registered with this
         function in order to be properly serialised to and retrieved
         from a file.
+
+        :param typ: The widget Python type
+        :param getter: The ``get`` function to retrieve its value
+        :param setter: The ``set`` function to set its value
         """
         self._serializableTypes.append((typ, getter, setter))
 
     def exportToJson(self, fname):
         """
-        Export all the adjustable children of this module to a JSON
-        file. All individual widgets must set a unique name using
-        `setObjectName` for this to work properly. Standard Qt
-        Widgets and custom widgets that are made up from standard
-        widgets are dealed with automatically. For bespoke widgets,
-        these must be registered with ``self.addSerializableType``.
+        Export all the adjustable children of this module to a JSON file. All
+        individual widgets must set a unique name using ``setObjectName`` for
+        this to work properly. Standard Qt Widgets and custom widgets that are
+        made up from standard widgets are dealed with automatically. For
+        bespoke widgets, these must be registered with
+        :meth:`~arc2control.modules.base.BaseModule.addSerializableType`.
+
+        :param str fname: The filename of the JSON file to export current
+                          module's values.
         """
         types = tuple(self._serializableTypes.keys())
 
@@ -226,10 +244,12 @@ class BaseModule(QtWidgets.QWidget):
 
     def loadFromJson(self, fname):
         """
-        Load panel settings from a JSON file. Most common widget values
-        are stored automatically but if custom widgets are present the
-        subclass *must* register a setter and a getter method for the
-        class using `ar2control.modules.base.BaseModule.addSerializableType`.
+        Load panel settings from a JSON file. Most common widget values are
+        stored automatically but if custom widgets are present the subclass
+        *must* register a setter and a getter method for the class using
+        :meth:`~ar2control.modules.base.BaseModule.addSerializableType`.
+
+        :param str fname: The filename to load values from
         """
         raw = json.loads(open(fname, 'r').read())['widgets']
 

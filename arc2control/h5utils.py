@@ -14,9 +14,9 @@ _H5DS_VERSION_MINOR = 2
 
 class H5Mode(Enum):
     """
-    HDF5 [access mode][1] when opening or creating files.
+    HDF5 `access mode`_ when opening or creating files.
 
-      [1]: https://docs.h5py.org/en/stable/quick.html#appendix-creating-a-file
+    ..  _`access mode`: https://docs.h5py.org/en/stable/quick.html#appendix-creating-a-file
     """
     READ = 'r'
     WRITE = 'w'
@@ -28,12 +28,19 @@ class OpType(IntEnum):
     """
     Operation type. This is essentially 2-bit bitmask.
     """
+
     READ      =  0b01
-    """Bit 0 raised means a read operation."""
+    """
+    Bit 0 raised means a read operation.
+    """
     PULSE     =  0b10
-    """Bit 1 raised means a pulse operation."""
+    """
+    Bit 1 raised means a pulse operation.
+    """
     PULSEREAD =  0b11
-    """Both bits are raised"""
+    """
+    Both bits are raised
+    """
 
 
 class H5AccessError(Exception):
@@ -63,84 +70,21 @@ def _dataset_append(dset, row):
 
 class H5DataStore:
     """
-    ## HDF5 format description
+    This is the toplevel class that interacts with an HDF5 datastore suitable
+    for storing arc2control data.
 
-    ### Attributes
+    A name can be provided but will default to `basename(fname)` if none is
+    provided. When creating a new file with ``H5Mode.WRITE`` the crossbar
+    dimensions must be specified and they default to 32×32. In append and
+    read modes the size is picked up from the metadata of the file itself.
 
-    ```
-           root node: H5DS_VERSION_MAJOR: int64 (mandatory)
-                      H5DS_VERSION_MINOR: int64 (mandatory)
-                      PYTABLES_FORMAT_VERSION: str128
-                                               (optional; for vitables compat)
-                      words: int64 (mandatory)
-                      bits: int64 (mandatory)
-                      TITLE: str256 (optional; user-provided, defaults to fname)
-     synthetics node: none
-    crosspoints node: none
-       crossbar node: words: int64 (mandatory)
-                      bits: int64 (mandatory)
+    An ``H5DataStore`` can also be used as a context manager for brief
+    interactions with data files
 
-     synthetic tests: crosspoints: [int64]; shape=(crosspoints, 2) (mandatory)
-                                                                │
-                                                                └─ (bit, word)
-    crosspoint tests: crosspoints: [int64]; shape=(1, 2) (mandatory)
-                                                      │
-                                                      └─ (bit, word)
-     crossbar leaves: none
-    ```
-
-    ### File structure
-
-    Format of the HDF backing store as of v0.2 (G: Group, D: Dataset)
-
-    ```
-    [G] / # root node; always present (duh!)
-     │
-     ├── [G] synthetics # tests with more than one crosspoint, always present
-     │    │
-     │    ├─ [D] test00 # data, shape depending on experiment
-     │    ├─ [D] test01 # data, shape depending on experiment
-     |    └─ [G] test02 # experiment with more than one tables
-     │        │
-     │        └─ [D] test02a # experiment data
-     │
-     ├── [G] crosspoints # data tied to a single device
-     │    │
-     │    └── [G] W00B00 # crosspoint
-     │         │
-     │         ├─ [D] timeseries # history of device biasing
-     │         │                 # current, voltage, pulse_width, read_voltage, type
-     │         │                 # 5 columns, expandable length, always present
-     │         │
-     │         └─ [G] experiments
-     │             │
-     │             ├─ [D] test00 # data, shape depending on experiment
-     │             ├─ [D] test01 # data, shape depending on experiment
-     │             └─ [G] test02 # experiment with more than one tables
-     │                 │
-     │                 └─ [D] test02a # experiment data
-     │
-     │
-     │
-     └── [G] crossbar # crossbar raster view, always present
-          │           # this only holds the last crossbar status
-          │           # individual device history is covered by
-          │           # crosspoints/WXXBYY/timeseries
-          │
-          ├─ [D] voltage # shape = (bits × words), always present
-          └─ [D] current # shape = (bits × words), always present
-
-    ```
-
-    ### Note on expandable datasets
-
-    Datasets can be created in the backing store as appendable datasets. This is
-    not a list in the python sense but lots of chunked tables tied together
-    efficiently (hopefully). All expandable datasets created with this class,
-    including the built-in timeseries, *MUST* have an `NROWS` attribute that
-    signified the next available index. This is done automatically for methods
-    `make_wb_table` and `make_synthetic_table` as well as the datasets returned
-    by the `dataset` methods.
+    >>> from h5utils import H5DataStore
+    >>> with H5DataStore('/path/to/store', 'dataset') as ds:
+    >>>     ds.update_status(0, 0, 10e-6, 1.0, 100e-6, 0.2)
+    >>> # file is saved here
     """
 
     _TSERIES_DTYPE=[
@@ -153,21 +97,6 @@ class H5DataStore:
     _BASE_SIZE = 1000
 
     def __init__(self, fname, name=None, mode=H5Mode.APPEND, shape=(32, 32)):
-        """
-        Create a new data store backed by file `fname`. A name can be provided
-        but will default to `basename(fname)` if none is provided. When creating
-        a new file with ``H5Mode.WRITE`` the crossbar dimensions must be specified
-        and they default to 32×32. In append and read modes the size is picked up
-        from the metadata of the file itself.
-
-        An ``H5DataStore`` can also be used as a context manager for brief
-        interactions with data files
-
-        >>> from h5utils import H5DataStore
-        >>> with H5DataStore('/path/to/store', 'dataset') as ds:
-        >>>     ds.update_status(0, 0, 10e-6, 1.0, 100e-6, 0.2)
-        >>> # file is saved here
-        """
         self._fname = fname
         if name is None:
             name = os.path.basename(fname)
@@ -243,14 +172,14 @@ class H5DataStore:
     @property
     def fname(self):
         """
-        Return the filename associated with this data store
+        The filename associated with this data store
         """
         return self._fname
 
     @property
     def name(self):
         """
-        Return the name associated with this data store
+        The name associated with this data store
         """
         try:
             return self._h5.attrs['TITLE']
@@ -262,6 +191,8 @@ class H5DataStore:
         """
         Change the name of this data store. This is _not_ the filename
         but the internal name of the dataset for identification purposes.
+
+        :param str name: The new name of the dataset
         """
         self._h5.attrs['TITLE'] = name
 
@@ -321,7 +252,9 @@ class H5DataStore:
 
     def keys(self):
         """
-        Return all top-level keys of this dataset
+        Top-level keys of this dataset
+
+        :return: Top-level keys for this dataset (excluding the root node)
         """
         return self._h5.keys()
 
@@ -340,6 +273,11 @@ class H5DataStore:
     def timeseries(self, word, bit):
         """
         Complete biasing history of specified crosspoint
+
+        :param int word: The wordline of the crosspoint
+        :param int bit: The bitline of the crosspoint
+
+        :return: A structured numpy array containing the biasing history
         """
         grp_name = 'W%02dB%02d' % (word, bit)
         crosspoint = self._h5['crosspoints'][grp_name]
@@ -350,6 +288,15 @@ class H5DataStore:
     def update_status(self, word, bit, current, voltage, pulse, read_voltage, optype=OpType.READ):
         """
         Add a new biasing history entry for the specified crosspoint.
+
+        :param int word: The wordline of the crosspoint
+        :param int bit: The bitline of the crosspoint
+        :param float current: The measured current of the crosspoint
+        :param float voltage: The voltage applied to this crosspoint
+        :param float pulse: The pulsewidth, if any, of the applied pulse
+        :param float read_voltage: The voltage used to read the device
+        :param optype: An instance of :class:`~OpType` indicating the type
+                       of the operation associated with this entry
         """
         # this will do nothing if timeseries already exists
         self.__create_timeseries(word, bit)
@@ -374,9 +321,20 @@ class H5DataStore:
 
     def update_status_bulk(self, word, bit, currents, voltages, pulses, read_voltages, optypes):
         """
-        Similar to ``update_status`` but with bulk insertion of values. All parameters must
-        be equally sized numpy arrays. Arguments ``read_voltages`` and ``optypes`` can be
-        scalar and their values will be brodcasted over the relevant rows
+        Similar to :meth:`~arc2control.h5utils.H5DataStore.update_status` but
+        with bulk insertion of values. All parameters must be equally sized
+        numpy arrays. Arguments ``read_voltages`` and ``optypes`` can be scalar
+        and their values will be brodcasted over the relevant rows
+
+        :param int word: The wordline of the crosspoint
+        :param int bit: The bitline of the crosspoint
+        :param currents: An ndarray containing a series of measured currents
+        :param voltages: An ndarray containing a series of applied voltages
+        :param pulses: An ndarray containing a series of applied pulse widths
+        :param read_voltages: An ndarray or single float value that corresponds
+                              to the voltage used to read back the crosspoint
+        :param optype: An array or single instance of :class:`arc2control.h5utils.OpType`
+                       indicating the type of the operations applied to the crosspoint.
         """
 
         self.__create_timeseries(word, bit)
@@ -493,8 +451,16 @@ class H5DataStore:
         """
         Create a new experiment group tied to a specific crosspoint. This can be
         used to group multiple data tables under a single experimental node. This
-        will return the underlying HDF group. Unless `tstamp` is set to `False`
+        will return the underlying HDF group. Unless ``tstamp`` is set to ``False``
         the current timestamp with ns precision will be added to the group name.
+
+        :param int word: The wordline of the crosspoint
+        :param int bit: The bitline of the crosspoint
+        :param str name: The identifier of this group
+        :param bool tstamp: Whether the current timestamp should be appended to the
+                            group name
+
+        :return: A reference to the newly created HDF5 group
         """
 
         if tstamp:
@@ -511,15 +477,30 @@ class H5DataStore:
     def make_wb_table(self, word, bit, name, shape, dtype, grp=None, maxshape=None, tstamp=True):
         """
         Create a new experiment table tied to a specific crosspoint. Arguments
-        `shape` and `dtype` follow numpy conventions. This will return the
-        underlying HDF dataset. If `maxshape` is `None` the dataset will
-        always be chunked but will allow appends (default). Unless `tstamp` is set
-        to `False` the current timestamp with ns precision will be added to the
-        dataset names. If `grp` is specified then the table will be created as
+        ``shape`` and ``dtype`` follow numpy conventions. This will return the
+        underlying HDF dataset. If ``maxshape`` is ``None`` the dataset will
+        always be chunked but will allow appends (default). Unless ``tstamp`` is set
+        to ``False`` the current timestamp with ns precision will be added to the
+        dataset names. If ``grp`` is specified then the table will be created as
         a child of the specified experiment group. Group name can be either
         relative (no leading '/') or absolute. In the latter case the parent path
         must match the corrent word/bit coordinate otherwise an exception will
-        be raised. Group can either be an instance of `h5py.Group` or `str`.
+        be raised. Group can either be an instance of ``h5py.Group`` or ``str``.
+
+        :param int word: The wordline of the crosspoint
+        :param int bit: The bitline of the crosspoint
+        :param str name: The identifier of this dataset
+        :param shape: A numpy shape for this dataset
+        :param dtype: The numpy dtype of this dataset
+        :param grp: Path of the group this table belongs to or ``None`` if it's
+                    a singular dataset. This can also be an instance of
+                    ``h5py.Group``.
+        :param maxshape: A maximum numpy shape for this dataset; if ``None`` an
+                         expandable chunked dataset will be created instead
+        :param bool tstamp: Whether the current timestamp should be appended to the
+                            dataset name
+
+        :return: A newly created HDF5 dataset
         """
         # make sure time series exists
         try:
@@ -561,8 +542,16 @@ class H5DataStore:
         """
         Create a new synthetic experiment group. This can be used to group
         multiple data tables under a single experimental node. This will return
-        the underlying HDF group. Unless `tstamp` is set to `False` the current
-        timestamp with ns precision will be added to the group name.
+        the underlying HDF5 group. Unless ``tstamp`` is set to ``False`` the
+        current timestamp with ns precision will be added to the group name.
+
+        :param crosspoints: An array of (wordline, bitline) tuples with all the
+                            crosspoints involved
+        :param str name: The identifier of this group
+        :param bool tstamp: Whether the current timestamp should be appended to the
+                            group name
+
+        :return: A reference to the newly created HDF5 group
         """
 
         if tstamp:
@@ -577,15 +566,30 @@ class H5DataStore:
     def make_synthetic_table(self, crosspoints, name, shape, dtype, grp=None, maxshape=None, tstamp=True):
         """
         Create a new experiment table encompassing many crosspoints. Arguments
-        `shape` and `dtype` follow numpy conventions. This will return the
-        underlying HDF dataset. If `maxshape` is `None` the dataset will
-        always be chunked but will allow appends (default). Unless `tstamp` is set
-        to `False` the current timestamp with ns precision will be added to the
-        dataset names. If `grp` is specified then the table will be created as
+        ``shape`` and `dtype` follow numpy conventions. This will return the
+        underlying HDF5 dataset. If ``maxshape`` is ``None`` the dataset will
+        always be chunked but will allow appends (default). Unless ``tstamp`` is set
+        to ``False`` the current timestamp with ns precision will be added to the
+        dataset names. If ``grp`` is specified then the table will be created as
         a child of the specified experiment group. Group name can be either
         relative (no leading '/') or absolute. In the latter case the parent path
         must match the corrent word/bit coordinate otherwise an exception will
-        be raised. Group can either be an instance of `h5py.Group` or `str`.
+        be raised. Group can either be an instance of ``h5py.Group`` or ``str``.
+
+        :param crosspoints: An array of (wordline, bitline) tuples with all the
+                            crosspoints involved
+        :param str name: The identifier of this dataset
+        :param shape: A numpy shape for this dataset
+        :param dtype: The numpy dtype of this dataset
+        :param grp: Path of the group this table belongs to or ``None`` if it's
+                    a singular dataset. This can also be an instance of
+                    ``h5py.Group``.
+        :param maxshape: A maximum numpy shape for this dataset; if ``None`` an
+                         expandable chunked dataset will be created instead
+        :param bool tstamp: Whether the current timestamp should be appended to the
+                            dataset name
+
+        :return: A newly created HDF5 dataset
         """
         # make sure individual time series exists
         for (w, b) in crosspoints:
@@ -638,6 +642,9 @@ class H5DataStore:
         return dset
 
     def dataset(self, name):
+        """
+        Return the HDF5 dataset specified by ``name``
+        """
 
         dset = self._h5[name]
         dset.append = types.MethodType(_dataset_append, dset)

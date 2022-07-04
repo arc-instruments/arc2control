@@ -10,18 +10,22 @@ class ChannelMapper:
     potential terminals (wordlines) and others to low potential terminals (bitlines).
     This class provides convenience functions to switch back and forth.
 
-    The most typical way of loading a mapper would be through `ChannelMapper.from_toml`
-    to read the values from the configuration file, rather than create the objects
+    The most typical way of loading a mapper would be through
+    :meth:`~arc2control.mapper.ChannelMapper.from_toml` to read the values from
+    the configuration file, rather than create the objects
     manually.
+
+    :param int nwords: The number of wordlines
+    :param int nbits: The number of bitlines
+    :param wordarr: List of channels associated with wordlines 0 to ``nwords``
+    :param bitarr: List of channels associated with bitlines 0 to ``nbits``
+    :param str name: The name of this channel mapper
+
+    :return: A new :class:`~arc2control.mapper.ChannelMapper`.
     """
 
     def __init__(self, nwords, nbits, wordarr, bitarr, name):
-        """
-        Create a new Channel mapper with `nwords` wordlines and
-        `nbits` bitlines. Argument `wordarr` (`bitarr`) is the list
-        of channels associated with wordlines (bitlines) `0` to `nwords`
-        (`0` to `nbits`) in ascending order.
-        """
+
         self._wb2ch = []
         self._ch2w = {}
         self._ch2b = {}
@@ -67,7 +71,9 @@ class ChannelMapper:
         """
         Convert a (wordline, bitline) combination to a channel pair
 
-        >>> (high, low) = mapper.wb2ch[wordline][bitline]
+        .. code-block:: pycon
+
+           >>> (high, low) = mapper.wb2ch[wordline][bitline]
         """
         return self._wb2ch
 
@@ -128,7 +134,7 @@ class ChannelMapper:
         """
         Indices of the word-associated channels in the ArC2 raw response.
         Typically libarc2 reports all channels, 0 to 63, in ascending channel
-        order. This property will return the channels associated with _wordlines_
+        order. This property will return the channels associated with *wordlines*
         in the current configuration in *ascending wordline number order*.
         """
         return self._word_adc2cb
@@ -143,45 +149,11 @@ class ChannelMapper:
     @staticmethod
     def from_toml(fname):
         """
-        Create a new ChannelMapper from a toml configuration file. The format of the
-        TOML file is (example is mapping `standard32.toml` found under `mappings`).
+        Create a new ChannelMapper from a toml configuration file.
 
-        ```
-        [config]
-        # optional name for this configuration
-        # if left empty will default to the filename
-        name = "PLCC 32×32"
-        # number of total word- and bitlines (required)
-        words = 32
-        bits = 32
+        :param str fname: The filename of the mapper to load
 
-        [mapping]
-        # corresponding channels for wordlines
-        # in this case wordline 0 is channel 16, wordline 1 is channel 63
-        # and so on.
-        words = [
-            16, 63, 17, 62, 18, 61, 19, 60,
-            20, 59, 21, 58, 22, 57, 23, 56,
-            24, 55, 25, 54, 26, 53, 27, 52,
-            28, 51, 29, 50, 30, 49, 31, 48
-        ]
-
-        # corresponding channels for bitlines
-        # in this case bitline 0 is channel 15, bitline 1 is channel 32
-        # and so on.
-        bits = [
-            15, 32, 14, 33, 13, 34, 12, 35,
-            11, 36, 10, 37,  9, 38,  8, 39,
-             7, 40,  6, 41,  5, 42,  4, 43,
-             3, 44,  2, 45,  1, 46,  0, 47
-        ]
-        ```
-
-        ArC2Control comes with some standard mappings which are always available.
-        Further mappings can be added in the local data directory, typically
-        `%APPDATA%\\Roaming\\arc2control\\mappings` in Windows, or
-        `~/.local/share/arc2control/mappings` on Linux. Files **must** end in `.toml`
-        to be loaded properly during ArC2Control startup.
+        :return: A new :class:`~arc2control.mapper.ChannelMapper`.
         """
         mapraw = tomli.loads(open(fname).read())
         words = mapraw['config']['words']
