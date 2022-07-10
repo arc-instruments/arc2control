@@ -44,6 +44,7 @@ Contents of this guide
    api_modules
    api_storage
    api_mapper
+   api_signals
 
 .. _pyarc2: https://github.com/arc-instruments/pyarc2
 .. _beastlink: https://www.cesys.com/en/our-products/software-ip/beastlink.html
