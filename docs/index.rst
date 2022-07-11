@@ -40,6 +40,7 @@ Contents of this guide
 
 .. toctree::
    :maxdepth: 2
+   :caption: Developer's documentation
 
    api_modules
    api_storage
