@@ -131,7 +131,6 @@ class ArC2ConnectionWidget(Ui_ArC2ConnectionWidget, QtWidgets.QWidget):
             self._arc = None
             self.connectArC2Button.setText("Connect ArC2")
             self.connectionChanged.emit(False)
-            self.selectedFirmwareEdit.setEnabled(True)
             self.firmwareComboBox.setEnabled(True)
             self.efmIDsComboBox.setEnabled(True)
             self.refreshIDsButton.setEnabled(True)
@@ -153,7 +152,6 @@ class ArC2ConnectionWidget(Ui_ArC2ConnectionWidget, QtWidgets.QWidget):
             self.connectionChanged.emit(True)
             self.__controlModeChanged()
             self.__idleModeChanged()
-            self.selectedFirmwareEdit.setEnabled(False)
             self.efmIDsComboBox.setEnabled(False)
             self.firmwareComboBox.setEnabled(False)
             self.refreshIDsButton.setEnabled(False)
