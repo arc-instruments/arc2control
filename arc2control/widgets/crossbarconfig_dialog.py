@@ -2,7 +2,7 @@ import os.path
 from PyQt6 import QtCore, QtWidgets
 from functools import partial
 from .generated.crossbarconf import Ui_CrossbarConfigDialog
-from ..graphics import getPixmap
+from ..graphics import getPixmap, getIcon
 from ..h5utils import H5DataStore, H5Mode
 
 from .. import ArC2ControlSettings
@@ -17,6 +17,7 @@ class CrossbarConfigDialog(Ui_CrossbarConfigDialog, QtWidgets.QDialog):
         self.mappers = mappers
 
         self.setupUi(self)
+        self.setWindowIcon(getIcon('arc2-logo'))
         self.logoLabel.setPixmap(getPixmap('splash'))
         self.__populateMappers()
         self.__populateDatasets()

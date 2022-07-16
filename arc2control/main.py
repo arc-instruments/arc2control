@@ -50,6 +50,11 @@ def main(args=None):
     if args is None:
         args = sys.argv[1:]
 
+    if sys.platform == 'win32':
+        import ctypes
+        ctypes.windll.shell32\
+              .SetCurrentProcessExplicitAppUserModelID('ArC2 Control Panel')
+
     warnings.filterwarnings('ignore', category=RuntimeWarning, \
         message='.*invalid value encountered in true_divide.*', \
         module='arc2control\.widgets\..*')
