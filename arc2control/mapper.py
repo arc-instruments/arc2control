@@ -149,13 +149,14 @@ class ChannelMapper:
     @staticmethod
     def from_toml(fname):
         """
-        Create a new ChannelMapper from a toml configuration file.
+        Create a new ChannelMapper from a toml configuration file. The
+        mapper file **MUST** be UTF-8 encoded.
 
         :param str fname: The filename of the mapper to load
 
         :return: A new :class:`~arc2control.mapper.ChannelMapper`.
         """
-        mapraw = tomli.loads(open(fname).read())
+        mapraw = tomli.loads(open(fname, encoding='utf-8').read())
         words = mapraw['config']['words']
         bits = mapraw['config']['bits']
         wordarr = mapraw['mapping']['words']
