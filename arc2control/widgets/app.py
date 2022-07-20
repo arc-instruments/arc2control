@@ -1006,11 +1006,22 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
 
     def quit(self):
 
+        buttons = QtWidgets.QMessageBox.StandardButton.Yes | \
+            QtWidgets.QMessageBox.StandardButton.No | \
+            QtWidgets.QMessageBox.StandardButton.Cancel
+
+        def confirmQuit(parent):
+            res = QtWidgets.QMessageBox.question(parent, "Quit ArC2", \
+                "Are you sure you want to quit ArC2Control?")
+            return res == QtWidgets.QMessageBox.StandardButton.Yes
+
         if self._datastore is not None:
             if self._datastore.is_temporary:
                 res = QtWidgets.QMessageBox.question(self, "Quit ArC2", \
-                    "Save current dataset?")
-                if res == QtWidgets.QMessageBox.StandardButton.Yes:
+                    "Save current dataset?", buttons)
+                if res == QtWidgets.QMessageBox.StandardButton.Cancel:
+                    return False
+                elif res == QtWidgets.QMessageBox.StandardButton.Yes:
                     fname = QtWidgets.QFileDialog.getSaveFileName(self, \
                         "Save dataset", '', constants.H5_FILE_FILTER)
                     if fname is not None and len(fname[0]) > 0:
@@ -1022,9 +1033,13 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
                     os.remove(self._datastore.fname)
                     return True
             else:
+                if not confirmQuit(self):
+                    return False
                 self._datastore.close()
                 return True
         else:
+            if not confirmQuit(self):
+                return False
             return True
 
         return False
