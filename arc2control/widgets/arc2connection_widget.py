@@ -6,6 +6,7 @@ from PyQt6 import QtCore, QtWidgets
 from .generated.arc2connection import Ui_ArC2ConnectionWidget
 from .. import constants
 from ..fwutils import discoverFirmwares
+from ..mapper import ChannelMapper
 
 from enum import Enum
 
@@ -20,6 +21,7 @@ class ArC2ConnectionWidget(Ui_ArC2ConnectionWidget, QtWidgets.QWidget):
 
     arc2ConfigChanged = QtCore.pyqtSignal(ArC2Config)
     connectionChanged = QtCore.pyqtSignal(bool)
+    mapperChanged = QtCore.pyqtSignal(ChannelMapper)
     firmwareSelectionChanged = QtCore.pyqtSignal(str)
     firmwareRequest = QtCore.pyqtSignal()
 
@@ -36,6 +38,7 @@ class ArC2ConnectionWidget(Ui_ArC2ConnectionWidget, QtWidgets.QWidget):
         self.hardGndDevsRadio.toggled.connect(self.__idleModeChanged)
         self.connectArC2Button.clicked.connect(self.__arc2Connect)
         self.refreshIDsButton.clicked.connect(self.__find_efm_ids)
+        self.channelMapperComboBox.currentIndexChanged.connect(self.__mapperChanged)
         self.__find_efm_ids()
         self.refreshFirmwares()
 
@@ -72,6 +75,10 @@ class ArC2ConnectionWidget(Ui_ArC2ConnectionWidget, QtWidgets.QWidget):
 
         self._arc.finalise_operation(mode=self.arc2Config.idleMode)
         self.arc2ConfigChanged.emit(self.arc2Config)
+
+    def __mapperChanged(self, idx):
+        mapper = self.channelMapperComboBox.itemData(idx)
+        self.mapperChanged.emit(mapper)
 
     @property
     def controlMode(self):
