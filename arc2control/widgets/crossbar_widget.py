@@ -65,12 +65,13 @@ def _clip(value, low, high, inclusive=False):
 
 class CachedBackground:
 
-    def __init__(self, data, bits, words):
+    def __init__(self, data, bits, words, mask):
         self._data = data
         self._bits = bits
         self._words = words
         self._cbpad = min(CBPADX(self._words), CBPADY(self._bits))
         self._dd = min(DX(self._words), DY(self._bits))
+        self._mask = mask
         self._pixmap = self.makePixmap()
 
     @property
@@ -96,6 +97,8 @@ class CachedBackground:
         painter.setPen(GRIDPEN)
         for row in range(self._bits):
             for col in range(self._words):
+                if self._mask is not None and self._mask[row][col] == 0:
+                    continue
                 val = self._data[row][col]
                 if (val is not np.nan) and (val < np.iinfo(np.int32).max):
                     #idx = int(val*7.9)
@@ -147,6 +150,8 @@ class CachedBackground:
         painter.setPen(GRIDPEN)
         for coord in indices:
             (row, col) = (coord[0], coord[1])
+            if self._mask is not None and self._mask[row][col] == 0:
+                continue
             val = self._data[row][col]
             if (val is not np.nan) and (val > 0.0) and (val < np.iinfo(np.int32).max):
                 # idx = int(val*7.9)
@@ -185,7 +190,7 @@ class PaintWidget(QtWidgets.QWidget):
     mousePositionChanged = QtCore.pyqtSignal(Cell)
     selectionChanged = QtCore.pyqtSignal(set)
 
-    def __init__(self, shape=(32, 32), parent=None):
+    def __init__(self, shape=(32, 32), mask=None, parent=None):
         super().__init__(parent)
         self.selection = set()
         self.events = True
@@ -202,10 +207,11 @@ class PaintWidget(QtWidgets.QWidget):
         self._data[:] = np.nan
         self._cbpad = min(CBPADX(self._words), CBPADY(self._bits))
         self._dd = min(DX(self._words), DY(self._bits))
+        self._mask = mask
 
         self.setMinimumSize(self._dd*self._words+2*self._cbpad, self._dd*self._bits+2*self._cbpad)
         self.setMaximumSize(self._dd*self._words+2*self._cbpad, self._dd*self._bits+2*self._cbpad)
-        self.background = CachedBackground(self._data, self._bits, self._words)
+        self.background = CachedBackground(self._data, self._bits, self._words, mask)
 
     def paintEvent(self, evt):
         painter = QtGui.QPainter(self)
@@ -222,7 +228,12 @@ class PaintWidget(QtWidgets.QWidget):
         self._data[:] = np.nan
         self.setMinimumSize(DD*self._words+2*CBPAD, DD*self._bits+2*CBPAD)
         self.setMaximumSize(DD*self._words+2*CBPAD, DD*self._bits+2*CBPAD)
-        self.background = CachedBackground(self._data, self._bits, self._words)
+        self.background = CachedBackground(self._data, self._bits, self._words, self._mask)
+        self.repaint()
+
+    def setMask(self, mask):
+        self._mask = mask
+        self.background = CachedBackground(self._data, self._bits, self._words, self._mask)
         self.repaint()
 
     @property
@@ -255,6 +266,8 @@ class PaintWidget(QtWidgets.QWidget):
 
         for cell in self.selection:
             if cell.b < 0 or cell.w < 0:
+                continue
+            if self._mask is not None and self._mask[cell.b][cell.w] == 0:
                 continue
             painter.setPen(SELPEN)
             painter.drawRect(QtCore.QRect(cell.w*DD+1, cell.b*DD+1, DD-1, DD-1))
@@ -306,6 +319,8 @@ class PaintWidget(QtWidgets.QWidget):
     def selectAll(self):
         for w in range(self._words):
             for b in range(self._bits):
+                if self._mask is not None and self._mask[b][w] == 0:
+                    continue
                 self.selection.add(Cell(w, b))
         self.selectionChanged.emit(self.selection)
         self.repaint()
@@ -327,6 +342,9 @@ class PaintWidget(QtWidgets.QWidget):
         if x < CBPAD+1 or y < CBPAD+1:
             return
         (w, b) = (int((x-CBPAD)/DD), int((y-CBPAD)/DD))
+
+        if self._mask is not None and self._mask[b][w] == 0:
+            return
 
         cells = set([Cell(w, b)])
 
@@ -426,7 +444,11 @@ class PaintWidget(QtWidgets.QWidget):
             # cell than the one it's currently on
             if newPos != self.mousePosition:
                 self.mousePosition = newPos
-                self.mousePositionChanged.emit(Cell(*newPos))
+                cell = Cell(*newPos)
+                if self._mask is not None and self._mask[cell.b][cell.w] == 0:
+                    cell = Cell(-1, -1)
+                self.mousePositionChanged.emit(cell)
+
         else:
             # this is a click-and-drag operation but check first
             # if the mouse has set a start position first!
@@ -523,8 +545,13 @@ class PaintWidget(QtWidgets.QWidget):
         minb = min((b0, bf))
         maxb = max((b0, bf))+1
 
-        cells = set([Cell(w, b) for (w, b)
-            in itertools.product(range(minw, maxw), range(minb, maxb))])
+        if self._mask is None:
+            cells = set([Cell(w, b) for (w, b)
+                in itertools.product(range(minw, maxw), range(minb, maxb))])
+        else:
+            cells = set([Cell(w, b) for (w, b)
+                in itertools.product(range(minw, maxw), range(minb, maxb))
+                    if self._mask[b][w] == 1])
 
         return cells
 

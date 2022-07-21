@@ -24,6 +24,17 @@ that's included in ArC2Control installation.
    # number of total word- and bitlines (required)
    words = 32
    bits = 32
+   # optional list of masked crosspoints. If this
+   # key is set only the specified word/bitlines
+   # will be available in the crossbar view. This
+   # example enables every other crosspoint along
+   # the main diagonal
+   mask = [
+     [ 0,  0], [ 2,  2], [ 4,  4], [ 6,  6],
+     [ 8,  8], [10, 10], [12, 12], [14, 14],
+     [16, 16], [18, 18], [20, 20], [22, 22],
+     [24, 24], [26, 26], [28, 28], [30, 30]
+   ]
 
    [mapping]
    # corresponding channels for wordlines

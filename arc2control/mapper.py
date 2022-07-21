@@ -1,5 +1,6 @@
 import os.path
 import tomli
+import numpy as np
 
 
 class ChannelMapper:
@@ -24,7 +25,7 @@ class ChannelMapper:
     :return: A new :class:`~arc2control.mapper.ChannelMapper`.
     """
 
-    def __init__(self, nwords, nbits, wordarr, bitarr, name):
+    def __init__(self, nwords, nbits, wordarr, bitarr, mask, name):
 
         self._wb2ch = []
         self._ch2w = {}
@@ -34,6 +35,7 @@ class ChannelMapper:
         self._nwords = nwords
         self._nbits = nbits
         self._name = name
+        self._mask = mask
 
         for word in range(0, nwords):
             wordline = []
@@ -144,7 +146,14 @@ class ChannelMapper:
         """
         Total number of configured crosspoints.
         """
-        return self._nwords * self._nbits
+        return np.count_nonzero(self._mask)
+
+    @property
+    def mask(self):
+        """
+        Crossbar mask (available word-/bitlines)
+        """
+        return self._mask
 
     @staticmethod
     def from_toml(fname):
@@ -161,10 +170,22 @@ class ChannelMapper:
         bits = mapraw['config']['bits']
         wordarr = mapraw['mapping']['words']
         bitarr = mapraw['mapping']['bits']
+        # set the mask initially to 0 (none selected)
+        mask = np.tile(0, (bits, words))
+
+        try:
+            # if mask key exists, flip the mask indices
+            limits = mapraw['config']['mask']
+            for (w, b) in limits:
+                mask[b][w] = 1
+        except KeyError:
+            # if mask does not exist set everything to 1
+            # (everything selected)
+            mask[:] = 1
 
         try:
             name = mapraw['config']['name']
         except KeyError:
             (name, _) = os.path.splitext(os.path.basename(fname))
 
-        return ChannelMapper(words, bits, wordarr, bitarr, name=name)
+        return ChannelMapper(words, bits, wordarr, bitarr, mask=mask, name=name)

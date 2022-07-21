@@ -59,6 +59,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
             if v.nwords == self._nwords and v.nbits == self._nbits:
                 actual_mappers[k] = v
         self.arc2ConnectionWidget.setMappers(actual_mappers, default=default_mapper)
+        self.mainCrossbarWidget.setMask(actual_mappers[default_mapper].mask)
 
         self.deviceExplorerWidget = DeviceExplorerWidget()
         self.deviceExplorerWidget.setTagMapper(\
@@ -108,6 +109,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         self.readOpsWidget.readoutVoltageChanged.connect(self.readoutVoltageChanged)
         self.arc2ConnectionWidget.connectionChanged.connect(self.connectionChanged)
         self.arc2ConnectionWidget.arc2ConfigChanged.connect(signals.arc2ConfigChanged.emit)
+        self.arc2ConnectionWidget.mapperChanged.connect(self.__mapperChanged)
 
         self.pulseOpsWidget.positivePulseClicked.connect(\
             partial(self.pulseSelectedClicked, polarity=Polarity.POSITIVE))
@@ -799,7 +801,10 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         cdset = self._datastore.dataset('crossbar/current')
         cdset[:] = current
         vdset[:] = voltage
-        self.mainCrossbarWidget.setData(np.abs(vdset[:]/cdset[:]))
+        mapper = self.mapper
+
+        data = np.where(mapper.mask, np.abs(vdset[:]/cdset[:]), np.nan)
+        self.mainCrossbarWidget.setData(data)
 
     def newDataset(self):
         if self._datastore is not None:
@@ -917,7 +922,10 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         self.refreshCurrentPlot()
         vdset = self._datastore.dataset('crossbar/voltage')
         cdset = self._datastore.dataset('crossbar/current')
-        self.mainCrossbarWidget.setData(np.abs(vdset[:]/cdset[:]))
+        mapper = self.mapper
+
+        data = np.where(mapper.mask, np.abs(vdset[:]/cdset[:]), np.nan)
+        self.mainCrossbarWidget.setData(data)
         signals.datastoreReplaced.emit(weakref.ref(self._datastore))
         self.setWindowTitle('%s [%s]' % \
             (constants.APP_TITLE, os.path.basename(self._datastore.fname)))
@@ -1007,6 +1015,8 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         # ts is defined here
         np.savetxt(fname, ts, delimiter=delimiter)
 
+    def __mapperChanged(self, mapper):
+        self.mainCrossbarWidget.setMask(mapper.mask)
 
     def quit(self):
 
