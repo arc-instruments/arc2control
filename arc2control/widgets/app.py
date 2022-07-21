@@ -54,7 +54,11 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
 
         self.__setupControlWidgets()
         default_mapper = 'resarray32.toml' if mapper is None else mapper
-        self.arc2ConnectionWidget.setMappers(mappers, default=mapper)
+        actual_mappers = {}
+        for (k, v) in mappers.items():
+            if v.nwords == self._nwords and v.nbits == self._nbits:
+                actual_mappers[k] = v
+        self.arc2ConnectionWidget.setMappers(actual_mappers, default=default_mapper)
 
         self.deviceExplorerWidget = DeviceExplorerWidget()
         self.deviceExplorerWidget.setTagMapper(\
