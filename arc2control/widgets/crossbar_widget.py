@@ -565,6 +565,11 @@ class PaintWidget(QtWidgets.QWidget):
     def selectedCells(self):
         return sorted(self.selection)
 
+    @property
+    def allCells(self):
+        w = np.where(self._mask == 1)
+        return sorted(set(Cell(w, b) for (w, b) in zip(w[0], w[1])))
+
     def valueOf(self, selection):
         (b, w) = (selection.b, selection.w)
         return self._data[b][w]

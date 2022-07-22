@@ -393,6 +393,12 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
             print("arc2 is not connected")
             return
 
+        # if crossbar is masked this is not really a full crossbar operation
+        # so do a sliced operation instead
+        if self.mapper.is_masked:
+            self.pulseReadSelectedSlices(self.mainCrossbarWidget.allCells)
+            return
+
         voltage = self.readOpsWidget.readoutVoltage()
         self.__initialiseOperation()
         raw = self._arc().pulseread_all(vpulse, int(pulsewidth*1.0e9), voltage,
@@ -507,6 +513,12 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
             print("arc2 is not connected")
             return
 
+        # if crossbar is masked this is not really a full crossbar read
+        # so do slice read instead
+        if self.mapper.is_masked:
+            self.readSelectedSlices(self.mainCrossbarWidget.allCells)
+            return
+
         voltage = self.readOpsWidget.readoutVoltage()
         self.__initialiseOperation()
         raw = self._arc().read_all(voltage, BiasOrder.Cols)
@@ -571,6 +583,12 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
     def pulseAll(self, voltage, pulsewidth):
         if self._arc is None:
             print("arc2 is not connected")
+            return
+
+        # if crossbar is masked this is not really a full crossbar operation
+        # so do a sliced operation instead
+        if self.mapper.is_masked:
+            self.pulseSelectedSlices(self.mainCrossbarWidget.allCells)
             return
 
         self.__initialiseOperation()

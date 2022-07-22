@@ -155,6 +155,13 @@ class ChannelMapper:
         """
         return self._mask
 
+    @property
+    def is_masked(self):
+        """
+        Check if mapper has a crosspoint mask applied
+        """
+        return not np.all(self._mask == 1)
+
     @staticmethod
     def from_toml(fname):
         """
