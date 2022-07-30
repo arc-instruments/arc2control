@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=ArC2Control
+Exec=arc2control
+Comment=Graphical frontend for ArC TWO
+Icon=arc2control
+Categories=Science;

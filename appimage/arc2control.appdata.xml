@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+	<id>arc2control</id>
+  <metadata_license>MIT</metadata_license>
+  <project_license>MPL-2.0</project_license>
+  <name>ArC2Control</name>
+  <summary>Graphical frontend for ArC TWO</summary>
+  <description>
+		<p>
+			A graphical frontent for the ArC TWO parallel characterisation
+			platform.
+		</p>
+  </description>
+	<launchable type="desktop-id">arc2control.desktop</launchable>
+	<url type="homepage">https://github.com/arc-instruments/arc2control</url>
+	<provides>
+			<binary>arc2control</binary>
+	</provides>
+</component>
