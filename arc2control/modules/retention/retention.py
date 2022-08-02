@@ -113,7 +113,7 @@ class RetentionOperation(BaseOperation):
 
 
     def retentionData(self):
-        return self.cellData
+        return (self.params, self.cellData)
 
 
 class Retention(BaseModule):
@@ -216,13 +216,14 @@ class Retention(BaseModule):
     def __threadFinished(self):
         self._thread.wait()
         self._thread.setParent(None)
-        data = self._thread.retentionData()
+        ((readfor, readevery, vread), data) = self._thread.retentionData()
         self._thread = None
 
         for (cell, values) in data.items():
             (w, b) = (cell.w, cell.b)
             dset = self.datastore.make_wb_table(w, b, MOD_TAG, \
                 values.shape, _RET_DTYPE)
+            dset.attrs['vread'] = vread
             for (field, _) in _RET_DTYPE:
                 dset[:, field] = values[field]
             self.experimentFinished.emit(w, b, dset.name)
