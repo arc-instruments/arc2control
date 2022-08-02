@@ -115,7 +115,7 @@
      <item>
       <widget class="QPushButton" name="rampSelectedButton">
        <property name="text">
-        <string>Ramp Selected</string>
+        <string>Apply to Selected</string>
        </property>
       </widget>
      </item>
