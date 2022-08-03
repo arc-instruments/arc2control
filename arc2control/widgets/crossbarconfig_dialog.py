@@ -63,6 +63,33 @@ class CrossbarConfigDialog(Ui_CrossbarConfigDialog, QtWidgets.QDialog):
 
         return result
 
+    def accept(self, *args):
+
+        # if user selected a dataset bring the last selection forward
+        if self.datasetRadioButton.isChecked():
+
+            currentIdx = self.datasetSelectionComboBox.currentIndex()
+
+            if currentIdx == 0:
+                # selected dataset is indeed the latest; nothing to do
+                return QtWidgets.QDialog.accept(self, *args)
+
+            settings = ArC2ControlSettings
+
+            dsets = []
+            # add the latest selected dataset first
+            dsets.append(self.datasetSelectionComboBox.currentData())
+
+            # and all the others afterwards
+            for i in range(self.datasetSelectionComboBox.count()):
+                if currentIdx != i:
+                    dsets.append(self.datasetSelectionComboBox.itemData(i))
+
+            # updated the recent dataset config on disk
+            settings.setValue('crossbarconfig/datasets', dsets[:10])
+
+        QtWidgets.QDialog.accept(self, *args)
+
     def __updateSelectedSize(self, wdg):
         if wdg is self.sizeRadioButton:
             nwords = self.wordsSpinBox.value()
@@ -117,7 +144,7 @@ class CrossbarConfigDialog(Ui_CrossbarConfigDialog, QtWidgets.QDialog):
         if len(removedIdxs) > 0:
             for idx in removedIdxs:
                 dsets.pop(idx)
-            settings.setValue('crossbarconfig/datasets', dsets)
+            settings.setValue('crossbarconfig/datasets', dsets[:10])
 
     def __sizeSpecificationChanged(self, wdg, status):
         for (k, v) in self.wdgGroup.items():
