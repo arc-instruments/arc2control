@@ -44,6 +44,7 @@ Contents of this guide
 
    overview
 
+   specs
 
 .. toctree::
    :maxdepth: 2
