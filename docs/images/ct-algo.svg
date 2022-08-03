@@ -1,0 +1,489 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="1002.9947"
+   height="254.77141"
+   id="svg6733"
+   version="1.1"
+   inkscape:version="1.2.1 (9c6d41e410, 2022-07-14)"
+   sodipodi:docname="ct-algo.svg"
+   viewBox="0 0 940.3075 238.8482"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <defs
+     id="defs6735" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1.4"
+     inkscape:cx="444.28572"
+     inkscape:cy="34.642857"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1920"
+     inkscape:window-height="1019"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     showguides="true"
+     inkscape:guide-bbox="true"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     inkscape:showpageshadow="2"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1" />
+  <metadata
+     id="metadata6738">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-23.1909,-766.1991)">
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1.74800003;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 51.827256,889.78388 c 896.154774,0 896.154774,0 896.154774,0"
+       id="path2985"
+       inkscape:connector-curvature="0"
+       inkscape:export-xdpi="112.33018"
+       inkscape:export-ydpi="112.33018" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0%;font-family:Montserrat;-inkscape-font-specification:Montserrat;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
+       x="497.77161"
+       y="948.50824"
+       id="text4120"
+       inkscape:export-xdpi="112.33018"
+       inkscape:export-ydpi="112.33018"><tspan
+         sodipodi:role="line"
+         id="tspan4122"
+         x="497.77161"
+         y="948.50824"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14px;line-height:1.25;font-family:Arial;-inkscape-font-specification:Arial">Voltage step</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0%;font-family:Montserrat;-inkscape-font-specification:Montserrat;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
+       x="278.8045"
+       y="916.8269"
+       id="text5054"
+       inkscape:export-xdpi="112.33018"
+       inkscape:export-ydpi="112.33018"><tspan
+         sodipodi:role="line"
+         x="278.8045"
+         y="916.8269"
+         id="tspan5058"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14px;line-height:1.25;font-family:Arial;-inkscape-font-specification:Arial">READ time (variable)</tspan></text>
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:1, 1;stroke-dashoffset:0;stroke-opacity:1"
+       d="m 589.76452,928.81576 c -57.72645,0 -58.49958,0 -58.49958,0"
+       id="path5174"
+       inkscape:connector-curvature="0"
+       inkscape:export-xdpi="112.33018"
+       inkscape:export-ydpi="112.33018" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 404.01744,799.8506 c 0,56.42855 0,56.42855 0,56.42855"
+       id="path6833"
+       inkscape:connector-curvature="0"
+       inkscape:export-xdpi="112.33018"
+       inkscape:export-ydpi="112.33018" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1.04942656px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 394.57777,856.27915 c 18.87935,0 18.87935,0 18.87935,0"
+       id="path6835"
+       inkscape:connector-curvature="0"
+       inkscape:export-xdpi="112.33018"
+       inkscape:export-ydpi="112.33018" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0%;font-family:Montserrat;-inkscape-font-specification:Montserrat;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
+       x="402.03156"
+       y="777.4563"
+       id="text6837"
+       inkscape:export-xdpi="112.33018"
+       inkscape:export-ydpi="112.33018"><tspan
+         sodipodi:role="line"
+         id="tspan6839"
+         x="402.03156"
+         y="777.4563"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14px;line-height:1.25;font-family:Arial;-inkscape-font-specification:Arial;text-align:center;text-anchor:middle">Interpulse</tspan><tspan
+         sodipodi:role="line"
+         x="402.03156"
+         y="794.9563"
+         id="tspan6841"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14px;line-height:1.25;font-family:Arial;-inkscape-font-specification:Arial;text-align:center;text-anchor:middle">time</tspan></text>
+    <rect
+       style="fill:#ff0000;fill-opacity:1;stroke:none"
+       id="rect3759"
+       width="40"
+       height="40"
+       x="57.902538"
+       y="850.6579"
+       inkscape:export-xdpi="112.33018"
+       inkscape:export-ydpi="112.33018" />
+    <rect
+       style="fill:#0000ff;fill-opacity:1;stroke:none"
+       id="rect3759-6"
+       width="20"
+       height="40"
+       x="97.885658"
+       y="850.6579"
+       inkscape:export-xdpi="112.33018"
+       inkscape:export-ydpi="112.33018" />
+    <rect
+       style="fill:#ff0000;fill-opacity:1;stroke:none;stroke-width:1.32287562"
+       id="rect3759-7"
+       width="40"
+       height="70"
+       x="148.38171"
+       y="820.6579"
+       inkscape:export-xdpi="112.33018"
+       inkscape:export-ydpi="112.33018" />
+    <rect
+       style="fill:#0000ff;fill-opacity:1;stroke:none;stroke-width:1.32287562"
+       id="rect3759-6-0"
+       width="20"
+       height="70"
+       x="188.36484"
+       y="820.6579"
+       inkscape:export-xdpi="112.33018"
+       inkscape:export-ydpi="112.33018" />
+    <rect
+       style="fill:#ff0000;fill-opacity:1;stroke:none;stroke-width:1.58113885"
+       id="rect3759-7-6"
+       width="40"
+       height="100"
+       x="238.8609"
+       y="790.65784"
+       inkscape:export-xdpi="112.33018"
+       inkscape:export-ydpi="112.33018" />
+    <rect
+       style="fill:#0000ff;fill-opacity:1;stroke:none;stroke-width:1.58113885"
+       id="rect3759-6-0-7"
+       width="20"
+       height="100"
+       x="278.84402"
+       y="790.65784"
+       inkscape:export-xdpi="112.33018"
+       inkscape:export-ydpi="112.33018" />
+    <rect
+       style="fill:#ff0000;fill-opacity:1;stroke:none;stroke-width:1.32287562"
+       id="rect3759-7-8"
+       width="40"
+       height="70"
+       x="329.34009"
+       y="820.6579"
+       inkscape:export-xdpi="112.33018"
+       inkscape:export-ydpi="112.33018" />
+    <rect
+       style="fill:#0000ff;fill-opacity:1;stroke:none;stroke-width:1.32287562"
+       id="rect3759-6-0-4"
+       width="20"
+       height="70"
+       x="369.32321"
+       y="820.6579"
+       inkscape:export-xdpi="112.33018"
+       inkscape:export-ydpi="112.33018" />
+    <rect
+       style="fill:#ff0000;fill-opacity:1;stroke:none"
+       id="rect3759-2"
+       width="40"
+       height="40"
+       x="419.81927"
+       y="850.6579"
+       inkscape:export-xdpi="112.33018"
+       inkscape:export-ydpi="112.33018" />
+    <rect
+       style="fill:#0000ff;fill-opacity:1;stroke:none"
+       id="rect3759-6-6"
+       width="20"
+       height="40"
+       x="459.8024"
+       y="850.6579"
+       inkscape:export-xdpi="112.33018"
+       inkscape:export-ydpi="112.33018" />
+    <rect
+       style="fill:#ff0000;fill-opacity:1;stroke:none"
+       id="rect3759-77"
+       width="40"
+       height="40"
+       x="510.29846"
+       y="-928.90991"
+       inkscape:export-xdpi="112.33018"
+       inkscape:export-ydpi="112.33018"
+       transform="scale(1,-1)" />
+    <rect
+       style="fill:#0000ff;fill-opacity:1;stroke:none"
+       id="rect3759-6-4"
+       width="20"
+       height="40"
+       x="550.28156"
+       y="-928.90991"
+       inkscape:export-xdpi="112.33018"
+       inkscape:export-ydpi="112.33018"
+       transform="scale(1,-1)" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:1, 1;stroke-dashoffset:0;stroke-opacity:1"
+       d="M 617.72282,958.98346 H 531.26494"
+       id="path647"
+       inkscape:connector-curvature="0"
+       inkscape:export-xdpi="112.33018"
+       inkscape:export-ydpi="112.33018"
+       sodipodi:nodetypes="cc" />
+    <rect
+       style="fill:#ff0000;fill-opacity:1;stroke:none;stroke-width:1.32287562"
+       id="rect3759-7-9"
+       width="40"
+       height="70"
+       x="600.77759"
+       y="-958.90991"
+       inkscape:export-xdpi="112.33018"
+       inkscape:export-ydpi="112.33018"
+       transform="scale(1,-1)" />
+    <rect
+       style="fill:#0000ff;fill-opacity:1;stroke:none;stroke-width:1.32287562"
+       id="rect3759-6-0-8"
+       width="20"
+       height="70"
+       x="640.76074"
+       y="-958.90991"
+       inkscape:export-xdpi="112.33018"
+       inkscape:export-ydpi="112.33018"
+       transform="scale(1,-1)" />
+    <rect
+       style="fill:#ff0000;fill-opacity:1;stroke:none;stroke-width:1.58113885"
+       id="rect3759-7-6-0"
+       width="40"
+       height="100"
+       x="691.25677"
+       y="-988.90985"
+       inkscape:export-xdpi="112.33018"
+       inkscape:export-ydpi="112.33018"
+       transform="scale(1,-1)" />
+    <rect
+       style="fill:#0000ff;fill-opacity:1;stroke:none;stroke-width:1.58113885"
+       id="rect3759-6-0-7-2"
+       width="20"
+       height="100"
+       x="731.23993"
+       y="-988.90985"
+       inkscape:export-xdpi="112.33018"
+       inkscape:export-ydpi="112.33018"
+       transform="scale(1,-1)" />
+    <rect
+       style="fill:#ff0000;fill-opacity:1;stroke:none;stroke-width:1.32287562"
+       id="rect3759-7-8-3"
+       width="40"
+       height="70"
+       x="781.73596"
+       y="-958.90991"
+       inkscape:export-xdpi="112.33018"
+       inkscape:export-ydpi="112.33018"
+       transform="scale(1,-1)" />
+    <rect
+       style="fill:#0000ff;fill-opacity:1;stroke:none;stroke-width:1.32287562"
+       id="rect3759-6-0-4-6"
+       width="20"
+       height="70"
+       x="821.71912"
+       y="-958.90991"
+       inkscape:export-xdpi="112.33018"
+       inkscape:export-ydpi="112.33018"
+       transform="scale(1,-1)" />
+    <rect
+       style="fill:#ff0000;fill-opacity:1;stroke:none"
+       id="rect3759-2-1"
+       width="40"
+       height="40"
+       x="872.21515"
+       y="-928.90991"
+       inkscape:export-xdpi="112.33018"
+       inkscape:export-ydpi="112.33018"
+       transform="scale(1,-1)" />
+    <rect
+       style="fill:#0000ff;fill-opacity:1;stroke:none"
+       id="rect3759-6-6-5"
+       width="20"
+       height="40"
+       x="912.1983"
+       y="-928.90991"
+       inkscape:export-xdpi="112.33018"
+       inkscape:export-ydpi="112.33018"
+       transform="scale(1,-1)" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 299.5325,893.71013 v 5.87554 h -20.38827 v -5.87554"
+       id="rect5085-2"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cccc"
+       inkscape:export-xdpi="112.33018"
+       inkscape:export-ydpi="112.33018" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 209.19576,893.22098 v 5.87554 h -62.69083 v -5.87554"
+       id="rect5085-2-5"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cccc"
+       inkscape:export-xdpi="112.33018"
+       inkscape:export-ydpi="112.33018" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 132.85479,798.85017 c 0,56.42855 0,56.42855 0,56.42855"
+       id="path6833-2"
+       inkscape:connector-curvature="0"
+       inkscape:export-xdpi="112.33018"
+       inkscape:export-ydpi="112.33018" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1.04942656px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 123.41512,855.27872 c 18.87935,0 18.87935,0 18.87935,0"
+       id="path6835-6"
+       inkscape:connector-curvature="0"
+       inkscape:export-xdpi="112.33018"
+       inkscape:export-ydpi="112.33018" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0%;font-family:Montserrat;-inkscape-font-specification:Montserrat;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
+       x="133.91902"
+       y="776.5871"
+       id="text6837-0"
+       inkscape:export-xdpi="112.33018"
+       inkscape:export-ydpi="112.33018"><tspan
+         sodipodi:role="line"
+         id="tspan6839-6"
+         x="133.91902"
+         y="776.5871"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14px;line-height:1.25;font-family:Arial;-inkscape-font-specification:Arial;text-align:center;text-anchor:middle">Interpulse</tspan><tspan
+         sodipodi:role="line"
+         x="133.91902"
+         y="794.0871"
+         id="tspan6841-1"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14px;line-height:1.25;font-family:Arial;-inkscape-font-specification:Arial;text-align:center;text-anchor:middle">time</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0%;font-family:Montserrat;-inkscape-font-specification:Montserrat;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
+       x="166.11304"
+       y="915.91022"
+       id="text6837-1"
+       inkscape:export-xdpi="112.33018"
+       inkscape:export-ydpi="112.33018"><tspan
+         sodipodi:role="line"
+         x="166.11304"
+         y="915.91022"
+         id="tspan6841-7"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14px;line-height:1.25;font-family:Arial;-inkscape-font-specification:Arial">PW</tspan></text>
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:1, 1;stroke-dashoffset:0;stroke-opacity:1"
+       d="m 119.38621,849.50504 c -89.190921,0 -89.190921,0 -89.190921,0"
+       id="path5172-3"
+       inkscape:connector-curvature="0"
+       inkscape:export-xdpi="112.33018"
+       inkscape:export-ydpi="112.33018" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0%;font-family:Montserrat;-inkscape-font-specification:Montserrat;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
+       x="27.780342"
+       y="844.12457"
+       id="text6837-0-0"
+       inkscape:export-xdpi="112.33018"
+       inkscape:export-ydpi="112.33018"><tspan
+         sodipodi:role="line"
+         x="27.780342"
+         y="844.12457"
+         id="tspan6841-1-4"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14px;line-height:1.25;font-family:Arial;-inkscape-font-specification:Arial">Start voltage</tspan></text>
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot8061"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:Montserrat;-inkscape-font-specification:Montserrat;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"><flowRegion
+         id="flowRegion8063"><rect
+           id="rect8065"
+           width="50"
+           height="14.642858"
+           x="12.5"
+           y="269.64285" /></flowRegion><flowPara
+         id="flowPara8067"
+         style="font-size:14px;line-height:1.25"> </flowPara></flowRoot>
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:1, 1;stroke-dashoffset:0;stroke-opacity:1"
+       d="m 298.70894,790.71062 c -89.19092,0 -89.19092,0 -89.19092,0"
+       id="path5172-3-8"
+       inkscape:connector-curvature="0"
+       inkscape:export-xdpi="112.33018"
+       inkscape:export-ydpi="112.33018" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0%;font-family:Montserrat;-inkscape-font-specification:Montserrat;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
+       x="208.35529"
+       y="785.3302"
+       id="text6837-0-0-3"
+       inkscape:export-xdpi="112.33018"
+       inkscape:export-ydpi="112.33018"><tspan
+         sodipodi:role="line"
+         x="208.35529"
+         y="785.3302"
+         id="tspan6841-1-4-0"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14px;line-height:1.25;font-family:Arial;-inkscape-font-specification:Arial">Positive voltage max</tspan></text>
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:1, 1;stroke-dashoffset:0;stroke-opacity:1"
+       d="m 752.6454,988.65175 c -89.19092,0 -89.19092,0 -89.19092,0"
+       id="path5172-3-8-1"
+       inkscape:connector-curvature="0"
+       inkscape:export-xdpi="112.33018"
+       inkscape:export-ydpi="112.33018" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0%;font-family:Montserrat;-inkscape-font-specification:Montserrat;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
+       x="618.62823"
+       y="1002.2613"
+       id="text6837-0-0-3-2"
+       inkscape:export-xdpi="112.33018"
+       inkscape:export-ydpi="112.33018"><tspan
+         sodipodi:role="line"
+         x="618.62823"
+         y="1002.2613"
+         id="tspan6841-1-4-0-9"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14px;line-height:1.25;font-family:Arial;-inkscape-font-specification:Arial">Negative voltage max</tspan></text>
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:1, 1;stroke-dashoffset:0;stroke-opacity:1"
+       d="m 961.17256,928.67651 c -89.19093,0 -89.19093,0 -89.19093,0"
+       id="path5172-3-0"
+       inkscape:connector-curvature="0"
+       inkscape:export-xdpi="112.33018"
+       inkscape:export-ydpi="112.33018" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0%;font-family:Montserrat;-inkscape-font-specification:Montserrat;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
+       x="870.63269"
+       y="942.48889"
+       id="text6837-0-0-38"
+       inkscape:export-xdpi="112.33018"
+       inkscape:export-ydpi="112.33018"><tspan
+         sodipodi:role="line"
+         x="870.63269"
+         y="942.48889"
+         id="tspan6841-1-4-8"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14px;line-height:1.25;font-family:Arial;-inkscape-font-specification:Arial">Start voltage</tspan></text>
+  </g>
+</svg>

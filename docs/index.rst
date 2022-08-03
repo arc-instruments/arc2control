@@ -47,7 +47,7 @@ Contents of this guide
    :caption: User guide
 
    overview
-
+   built_in_modules
    specs
 
 .. toctree::
