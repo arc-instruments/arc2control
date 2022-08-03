@@ -4,14 +4,20 @@
 # ARC2_PYI_PATHEX (optional): This is the full path of the arc2control source
 # ARC2_PYI_CONSOLE (optional): Set to 0 to disable the console window
 
+import ast
+from glob import glob
 import os
+import os.path
 import re
 import sys
-import os.path
 import semver
 
 from setuptools import find_packages
 from pkgutil import iter_modules
+
+
+PATHEX = os.environ.get('ARC2_PYI_PATHEX', os.path.dirname(SPECPATH))
+CONSOLE = bool(int(os.environ.get('ARC2_PYI_CONSOLE', 1)))
 
 
 def find_submodules(path, name=None):
@@ -37,8 +43,27 @@ def find_version():
     from arc2control import version
     return version.__version__
 
-PATHEX = os.environ.get('ARC2_PYI_PATHEX', os.path.dirname(SPECPATH))
-CONSOLE = bool(int(os.environ.get('ARC2_PYI_CONSOLE', 1)))
+
+def isemodule(d):
+
+    if not os.path.isdir(d):
+        return False
+
+    try:
+        init = open(os.path.join(PATHEX, d, '__init__.py'), 'r').read()
+    except FileNotFoundError:
+        return False
+
+    tree = ast.parse(init).body
+
+    # iterate through the AST to find ENTRY_POINT
+    for elem in tree:
+        if isinstance(elem, ast.Assign):
+            for t in elem.targets:
+                if isinstance(t, ast.Name) and t.id == 'ENTRY_POINT':
+                    return True
+
+    return False
 
 
 # DETERMINE VERSION
@@ -67,16 +92,17 @@ added_files = [
 modimports = [
     'pyqtgraph',
     'pyarc2',
-    'arc2control',
-    'arc2control.modules']
+    'arc2control']
 
 # BUILT-IN MODULES
 
-for m in ['curvetracer', 'retention']:
-    print('Adding built-in module', m)
-    modimports.append('arc2control.modules.%s' % m)
-    if os.path.exists(os.path.join('arc2control', 'modules', m, 'generated')):
-        modimports.append('arc2control.modules.%s.generated' % m)
+for m in glob(os.path.join(PATHEX, 'arc2control', 'modules/*')):
+    if isemodule(m):
+        modname = os.path.basename(m)
+        print('Adding built-in module hidden import', modname)
+        modimports.append('arc2control.modules.%s' % modname)
+        if os.path.exists(os.path.join('arc2control', 'modules', modname, 'generated')):
+            modimports.append('arc2control.modules.%s.generated' % modname)
 
 # PYQTGRAPH DYNAMIC IMPORTS
 
