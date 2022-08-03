@@ -257,6 +257,133 @@ will lit up and you are now ready to use ArC TWO. Clicking the
 *Connect/Disconnect ArC2* button will disconnect the tool and the red
 *Disconnected* indicator will now appear.
 
+Control modes and idle status
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+ArC TWO provides two control modes of operation, found under the *ArC2
+Connection* panel. In *Internal* mode ArC TWO biasing will be diverted to the
+internal switching matrix. In *Header* mode it will use the external control
+scheme. In the context of the 32NNA68 daughterboard, for example, that means
+either the PLCC68 socket (internal) or the header bank (header). Different
+daughterboard utilise the control modes differently so follow the documentation
+provided with the daughterboard.
+
+The *Idle Status* control determines how ArC TWO will manage the channels once
+an operation has been completed. In all cases voltage will be set to 0.0 V but
+channel connections will differ depending on the selected option. There are
+three different possibilities: (a) *Float* to completely disconnect the
+channels from biasing; (b) *Soft GND* will set all channels to 0.0 V but still
+connect them to output source and (c) *GND* will switch the channels to the
+physical ground.
+
+The channel mapper
+^^^^^^^^^^^^^^^^^^
+
+ArC TWO presents 64 arbitrarily interconnected channels. In order to effectively
+utilise them for a specific experimental scenario a *channel mapper* is required.
+The channel mapping mechanism provides a way to map the internal ArC TWO channels
+to useful word- and bitlines in a crossbar configuration. ArC2Control comes with
+a set of default mappers, namely *PLCC 32×32* that can be used for packaged devices;
+*Test board* for debugging purposes; *64-pin probecard* for our standard 1R
+probecards; *SA 64-pin probecard* for our standard 1R probecards in stand-alone
+configuration (1 device per wordline) and *BNC breakout* for the 6×6 BNC board.
+Channel mappers can be selected on the fly from the *Channel mapping* dropbown
+located under the *ArC2 Connection* panel.
+
+.. figure:: images/channel-mapper-dropdown.png
+   :alt: The channel mapper dropdown
+   :align: center
+
+   The channel mapper dropdown listing mappings suitable for a 32×32 crossbar
+   array.
+
+.. note::
+   The mappers available on the *Channel mapping* dropdown are only the ones
+   suitable for the currently configured crossbar size. For instance if you
+   setup a 32×32 crossbar the *BNC breakout* channel mapping will not be
+   available as it is only applicable 6×6 crossbar configuration. You can
+   configure the crossbar dimensions during ArC2Control startup.
+
+You can create additional mappings depending on your experimental setup.
+Further documentation on how to do so can be found in our :doc:`developer
+documentation </api_mapper>`.
+
+The crossbar view
+^^^^^^^^^^^^^^^^^
+
+.. figure:: images/crossbar-views.png
+   :alt: Crossbar views in different configurations
+   :align: center
+
+   A fully populated 1 kb 32×32 crossbar (left) and a crossbar with one
+   crosspoint per wordline ("standalone array")
+
+
+The crossbar panel shows an overview of the current status of all configured
+crosspoints. Depending on the active mapper and crossbar configuration during
+ArC2Control startup the number of crosspoints as well as the geometry of the
+array itself can vary. On the image above the crossbar on the left depicts a
+full 32×32 array whereas the one on the right a "standalone array" ie. an
+array with only one crosspoint per word-/bitline. Hovering over a crosspoint
+will display the coordinates and value of the crosspoint under the cursor.
+*Double-clicking* on the crossbar view will select the crosspoint under the
+cursor. You can hold down the *Ctrl* key and double-click on additional
+crosspoints to expand the selection. Alternatively you can click and drag
+on the crossbar view to select more than one crosspoints. The current
+selection can be cleared by *right-clicking*.
+
+Device history
+^^^^^^^^^^^^^^
+
+The *Device History* panel lists all experiments performed to individual
+crosspoints in chronological order (oldest first). Depending on the
+experiment, double-clicking on an experiment will bring up the collected
+data and the experiment attributes, if any.
+
+Additionally, right clicking on a crosspoint ID will allow you to export
+the biasing history of that crosspoint which includes manual operations
+as well as experiments performed. You can export the full history or a
+specific range in a ``csv`` file.
+
+Manual operations
+^^^^^^^^^^^^^^^^^
+
+ArC2Control offers a series of manual operations that can be applied to one or
+more crosspoints. You can select the read-out voltage used throughout the
+software and you can read one or more selected crosspoints.  ArC2Control will
+optimise the biasing scheme depending on the number of selected channels. If
+channels are located along the same bitline one parallel read instruction will
+be issued with current sinked on the bitline. If channels are located in more
+than one bitlines parallel reads will be done for each one of the selected
+bitlines. When reading the whole array with *Read All* a series of parallel
+reads will be done for each of the bitlines in the current configuration.
+
+.. note::
+   Although read-out voltage is configured globally modules can still use a
+   different read-out voltage depending on their functionality. Most of the
+   built-in modules will offer you an option to configure read voltage without
+   affecting the global read-out voltage.
+
+The same philosophy applies to manual pulse and pulseread operations. The
+positive and negative polarities can be configured independently or the two can
+be locked to the same amplitude and pulse width by toggling the *Lock*
+checkbox. When pulsing you have the option of applying a singular pulse or
+pulsing and then immediately reading the selected crosspoints.
+
+Pulse and reads are denoted with separate symbols on the data plot panel. For
+operations that do not return a value (pulse only) no value is plotted on the
+top half of the data plot but the pulse properties are still recorded.
+
+Display options
+^^^^^^^^^^^^^^^
+
+The final panel of the main ArC2Control UI is the *Display Options* panel which
+controls the value displayed on the main data plot as well as the scaling of
+the X and Y axes. You can select between *resistance*, *conductance*, *current*
+or *absolute current*. You can also control the number of displayed points,
+although it is recommended that you keep the value relatively low for data
+intensive operations.
+
 .. _`CESYS beastlink distribution`: https://www.cesys.com/fileadmin/user_upload/service/FPGA/fpga%20boards%20%26%20modules/BeastLink/beastlink-1.0-windows-free.zip
 .. _`release page`: https://github.com/arc-instruments/arc2control/releases
 .. _`libarc2`: https://github.com/arc-instruments/libarc2
