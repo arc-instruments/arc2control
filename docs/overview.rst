@@ -151,7 +151,7 @@ Or, alternatively, for the latest development snapshot (requires `git
 
    python -m pip install git+https://github.com/arc-instruments/arc2control
 
-Please not that on Linux it is strongly recommended that you install
+Please note that on Linux it is strongly recommended that you install
 ArC2Control as a regular user, **not root**. Regardless of your installation
 method you can launch ArC2Control with the following command
 
@@ -159,7 +159,11 @@ method you can launch ArC2Control with the following command
 
    python -m arc2control
 
-Using the ArC2Control Interface
+On stable releases Windows installers and Linux AppImages will be made
+available from the `release page`_.
+
+
+The ArC2Control Interface
 -------------------------------
 
 Overview
@@ -179,7 +183,9 @@ These are the following functional areas of ArC2Control:
 * **Main Toolbar**: contains buttons that deal with dataset handling as well as
   firmware management.
 * **Device History**: lists all experiments performed on devices defined by
-  crosspoints.
+  crosspoints, oldest first. Depending on the experiment you can double click
+  on any experimental entry to bring up the collected data and experimental
+  attributes.
 * **Data Plot Panel**: displays all biasing history for the selected crosspoint
 * **Connectivity Panel**: controls connection to ArC TWO, firmware selection and
   channel mapping management.
@@ -252,6 +258,7 @@ will lit up and you are now ready to use ArC TWO. Clicking the
 *Disconnected* indicator will now appear.
 
 .. _`CESYS beastlink distribution`: https://www.cesys.com/fileadmin/user_upload/service/FPGA/fpga%20boards%20%26%20modules/BeastLink/beastlink-1.0-windows-free.zip
+.. _`release page`: https://github.com/arc-instruments/arc2control/releases
 .. _`libarc2`: https://github.com/arc-instruments/libarc2
 .. _`pyarc2`: https://github.com/arc-instruments/pyarc2
 .. _`documentation`: http://files.arc-instruments.co.uk/documents/pyarc2/latest/index.html

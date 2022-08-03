@@ -6,7 +6,9 @@ ArC TWO Control Panel
 
 This is the reference application to interact with your ArC TWO multi-channel
 characterisation platform. It is based on the pyarc2_ library which exposes
-a Python interface to all the underlying functionality of ArC TWO.
+a Python interface to all the underlying functionality of ArC TWO. It is
+our recommended way to familiarise yourself with ArC TWO and can serve as
+a platform to further develop your own routines.
 
 .. image:: ../data/screenshots/arc2control-01-main.png
    :alt: Main ArC TWO UI
@@ -15,7 +17,9 @@ a Python interface to all the underlying functionality of ArC TWO.
 Installation
 ------------
 
-ArC TWO Control Panel is currently available from git.
+ArC TWO Control Panel is always available from git. On stable releases
+Windows installers and Linux AppImages will be made available from the
+`release page`_.
 
 .. code-block:: console
 
@@ -59,3 +63,4 @@ Contents of this guide
 .. _beastlink: https://www.cesys.com/en/our-products/software-ip/beastlink.html
 .. _`CESYS download page`: https://www.cesys.com/en/service-support/download-center/fpga.html
 .. _`our repository`: https://github.com/arc-instruments/beastlink-rs/tree/master/contrib
+.. _`release page`: https://github.com/arc-instruments/arc2control/releases
