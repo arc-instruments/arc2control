@@ -123,6 +123,7 @@ def main(args=None):
             except Exception as exc:
                 print('Could not parse local mapping file %s:' % \
                     os.path.basename(ff), exc)
+                continue
 
     cnfdlg = CrossbarConfigDialog(mappers=mappers, parent=None)
     cnfdlg.show()
