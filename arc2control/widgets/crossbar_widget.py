@@ -267,7 +267,7 @@ class PaintWidget(QtWidgets.QWidget):
 
         painter.translate(QtCore.QPoint(CBPAD, CBPAD))
 
-        for cell in self.secselection:
+        for cell in self.secselection - self.selection:
             if cell.b < 0 or cell.w < 0:
                 continue
             if self._mask is not None and self._mask[cell.b][cell.w] == 0:
