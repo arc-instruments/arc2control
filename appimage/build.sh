@@ -2,7 +2,7 @@
 
 DIR=$(realpath $(dirname "$0")/..)
 
-pushd $DIR
+cd $DIR
 # pick up existing requirements
 cp requirements.txt appimage/requirements.txt
 # and also add the directory of arc2control
@@ -15,4 +15,4 @@ if [ -f appimage/requirements.txt ]; then
   rm appimage/requirements.txt
 fi
 
-popd
+cd -
