@@ -3,6 +3,8 @@ from arc2control.widgets.app import App
 from arc2control.widgets.crossbarconfig_dialog import CrossbarConfigDialog
 import os.path
 import glob
+import logging
+logger = logging.getLogger('LOAD')
 from . import graphics
 from . import constants
 from .mapper import ChannelMapper
@@ -25,11 +27,11 @@ def _discover_modules(path, base='arc2control.modules'):
         try:
             mod = importlib.import_module('%s.%s' % (base, name))
             mods[mod.MOD_TAG] = (mod.MOD_NAME, mod.ENTRY_POINT)
-            print("Importing module:", mod)
+            logger.info("Importing module: %s" % mod)
         except (ModuleNotFoundError, ImportError, KeyError, AttributeError) as exc:
             # either `MOD_NAME`/`ENTRY_POINT` are not defined, module
             # does not exist (for some reason) or module contains error
-            print(exc)
+            logger.warn('Module %s.%s could not be loaded: %s' % (base, name, exc))
             continue
 
     return mods
@@ -42,7 +44,27 @@ def _standardQtDirectories(name):
         QtCore.QStandardPaths.LocateOption.LocateDirectory)
 
 
+def _envToLogLevel():
+    level = os.environ.get('ARC2CTRL_LOGLEVEL', 'warn').strip().lower()
+
+    if level == 'debug':
+        return logging.DEBUG
+    elif level == 'info':
+        return logging.INFO
+    elif level == 'warning' or level == 'warn':
+        return logging.WARNING
+    elif level == 'error':
+        return logging.ERROR
+    elif level == 'critical':
+        return logging.CRITICAL
+    else:
+        return logging.WARNING
+
+
 def main(args=None):
+
+    logging.basicConfig(level=_envToLogLevel(), \
+        format='[%(levelname)s] [%(name)s] %(message)s')
 
     import sys
     import warnings
@@ -84,7 +106,7 @@ def main(args=None):
             # name exist
             sys.path.append(os.path.dirname(p))
         else:
-            print("%s exists but doesn't look like a package" % p)
+            logger.warn("%s exists but doesn't look like a package" % p)
 
     # discover built-in modules first
     from . import modules as basemodmod
@@ -121,7 +143,7 @@ def main(args=None):
                 mapper = ChannelMapper.from_toml(ff)
                 mappers[os.path.basename(ff)] = mapper
             except Exception as exc:
-                print('Could not parse local mapping file %s:' % \
+                logger.warn('Could not parse local mapping file %s; ignoring:' % \
                     os.path.basename(ff), exc)
                 continue
 

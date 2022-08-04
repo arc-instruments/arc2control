@@ -1,6 +1,7 @@
 import abc
 import json
 import importlib
+import logging
 try:
     from collections.abc import Iterable
 except ImportError:
@@ -27,6 +28,7 @@ class BaseOperation(QtCore.QThread):
             raise TypeError("Parent is not a subclass of `BaseModule`")
         super().__init__(parent=parent)
 
+        self._logger = logging.getLogger(tag)
         self.parent = parent
 
     @property
@@ -57,6 +59,15 @@ class BaseOperation(QtCore.QThread):
         The currently enabled ArC2 configuration
         """
         return self.parent._arcconf
+
+    @property
+    def logger(self):
+        """
+        Returns the appropriately format logger for this module. See `the
+        python logging documentation for more
+        <https://docs.python.org/3/library/logging.html#logging.Logger>`_.
+        """
+        return self._logger
 
     @abc.abstractmethod
     def run(self):
@@ -106,6 +117,7 @@ class BaseModule(QtWidgets.QWidget):
             QtWidgets.QStackedWidget: ('currentIndex', 'setCurrentIndex'), \
             QtWidgets.QTabWidget: ('currentIndex', 'setCurrentIndex')
         }
+        self._logger = logging.getLogger(tag)
 
         signals.arc2ConnectionChanged.connect(self.__arc2ConnectionChanged)
         signals.crossbarSelectionChanged.connect(self.__crossbarSelectionChanged)
@@ -184,6 +196,15 @@ class BaseModule(QtWidgets.QWidget):
         they need to have a description visible (by default it's empty).
         """
         return ''
+
+    @property
+    def logger(self):
+        """
+        Returns the appropriately format logger for this module. See `the
+        python logging documentation for more
+        <https://docs.python.org/3/library/logging.html#logging.Logger>`_.
+        """
+        return self._logger
 
     def addSerializableType(self, typ, getter, setter):
         """

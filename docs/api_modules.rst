@@ -634,6 +634,36 @@ the entry on the device history tree the widget returned by ``display`` will
 be put on window and displayed to the user, pretty much identically to the
 CurveTracer figure shown above.
 
+Logging information
+-------------------
+
+Regardless of the complexity of your module you will eventually have to log
+information. The humble ``print`` can get you quite far but you might need
+something more structured. Both :class:`arc2control.modules.base.BaseModule`
+and :class:`arc2control.modules.base.BaseOperation` expose the ``logger``
+property that plugs into the main ArC2Control logging facility. You can then
+log information to the console in varying degrees of severity. The verbosity of
+the messages is controlled by an environment variable set before launching
+ArC2Control: ``ARC2CTRL_LOGLEVEL`` which can be any of ``critical``, ``error``,
+``warn``, ``info``, ``debug`` with increasing degree of verbosity and
+decreasing severity. At any given logging level only message of equal or higher
+severity will be displayed. The default logging level is ``warn``. With that in
+mind you can log information at varying severity levels like this
+
+.. code-block:: pycon
+
+   >>> self.logger.error('An error message; this will typically halt the module')
+   [ERROR] [TSM00] An error message; this will typically halt the module
+   >>> self.logger.warn('Something went wrong; results may be unreliable')
+   [WARNING] [TSM00] Something went wrong; results may be unreliable
+   >>> self.logger.info('Useful information')
+   [INFO] [TSM00] Useful information
+   >>> self.logger.debug('Detailed info about the module runtime')
+   [DEBUG] [TSM00] Detailed info about the module runtime
+
+You can read more about Python's logging facilities in the `official
+documentation <https://docs.python.org/3/library/logging.html>`_.
+
 Final words
 -----------
 

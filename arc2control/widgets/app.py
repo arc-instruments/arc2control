@@ -6,6 +6,8 @@ import sys
 import time
 import os.path
 import shutil
+import logging
+logger = logging.getLogger('MAIN')
 import numpy as np
 from functools import partial
 import pyqtgraph as pg
@@ -216,8 +218,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
             wdg = mod.display(dset)
 
             if wdg is None:
-                print('display method exists, but no Widget is produced', \
-                    file=sys.stderr)
+                logger.warn('display method exists, but no Widget is produced')
                 return
 
             dialog = QtWidgets.QDialog(self)
@@ -244,7 +245,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
             dialog.show()
 
         except KeyError as err:
-            print('Could not retrieve dataset or associated module:', err)
+            logger.error('Could not retrieve dataset or associated module: %s' % err)
 
     def treeCrosspointSelected(self, w, b):
         if w >= 0 and b >=0:
@@ -351,11 +352,9 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         cell = cells[0]
         (w, b) = (cell.w, cell.b)
         (high, low) = self.mapper.wb2ch[w][b]
-        print("pulseread (word: %2d bit: %2d ←→ low: %2d high: %2d)" % (w, b, low, high))
-        print("pulseread (V = %g, PW = %g ns)" % (vpulse, pulsewidth*1.0e9))
-        if self._arc is None:
-            print("arc2 is not connected")
-        else:
+        logger.debug("pulseread (word: %2d bit: %2d ←→ low: %2d high: %2d)" % (w, b, low, high))
+        logger.debug("pulseread (V = %g, PW = %g ns)" % (vpulse, pulsewidth*1.0e9))
+        if self._arc is not None:
             self.__initialiseOperation()
             current = self._arc().pulseread_one(low, high, vpulse, int(pulsewidth*1.0e9),
                 vread)
@@ -364,7 +363,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
             self.readOpsWidget.setValue(w, b, np.abs(vread/current))
             signals.valueUpdate.emit(w, b, current, vpulse, pulsewidth, vread,\
                 OpType.PULSEREAD)
-        signals.dataDisplayUpdate.emit(w, b)
+            signals.dataDisplayUpdate.emit(w, b)
 
     def pulseReadSelectedSlices(self, cells, vpulse, pulsewidth, vread):
         slices = {}
@@ -397,7 +396,6 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
 
     def pulseReadAll(self, vpulse, pulsewidth, vread):
         if self._arc is None:
-            print("arc2 is not connected")
             return
 
         # if crossbar is masked this is not really a full crossbar operation
@@ -451,7 +449,6 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
 
     def __readSlice(self, low, highs):
         if self._arc is None:
-            print("arc2 is not connected")
             return
 
         voltage = self.readOpsWidget.readoutVoltage()
@@ -466,7 +463,6 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
 
     def __pulseReadSlice(self, low, highs, vpulse, pulsewidth):
         if self._arc is None:
-            print("arc2 is not connected")
             return
 
         voltage = self.readOpsWidget.readoutVoltage()
@@ -502,10 +498,8 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         cell = cells[0]
         (w, b) = (cell.w, cell.b)
         (high, low) = self.mapper.wb2ch[w][b]
-        print("read (word: %2d bit: %2d ←→ low: %2d high: %2d" % (w, b, low, high))
-        if self._arc is None:
-            print("arc2 is not connected")
-        else:
+        logger.debug("read (word: %2d bit: %2d ←→ low: %2d high: %2d" % (w, b, low, high))
+        if self._arc is not None:
             self.__initialiseOperation()
             voltage = self.readOpsWidget.readoutVoltage()
             current = self._arc().read_one(low, high, voltage)
@@ -517,7 +511,6 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
 
     def readAllClicked(self):
         if self._arc is None:
-            print("arc2 is not connected")
             return
 
         # if crossbar is masked this is not really a full crossbar read
@@ -544,15 +537,14 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
 
     def pulseSelectedCell(self, cells, voltage, pulsewidth):
         if self._arc is None:
-            print("arc2 is not connected")
             return
 
         cell = cells[0]
         (w, b) = (cell.w, cell.b)
         (high, low) = self.mapper.wb2ch[w][b]
 
-        print("Pulsing channel lowV: %d; highV: %d | V = %g; PW = %g ns" %
-            (high, low, voltage, pulsewidth*1.0e9))
+        logger.debug("pulse (word: %2d bit: %2d ←→ low: %2d high: %2d)" % (w, b, low, high))
+        logger.debug("pulse (V = %g V; PW = %g ns)" % (voltage, pulsewidth*1.0e9))
 
         self.__initialiseOperation()
         self._arc().pulse_one(low, high, voltage, int(pulsewidth*1.0e9))\
@@ -563,7 +555,6 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
 
     def pulseSelectedSlices(self, cells, voltage, pulsewidth):
         if self._arc is None:
-            print("arc2 is not connected")
             return
 
         slices = {}
@@ -578,7 +569,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         for (k, v) in slices.items():
             low = self.mapper.b2ch[k]
             highs = np.array([self.mapper.w2ch[x] for x in v], dtype=np.uint64)
-            print(("lowV channel: %d; highV channels:" % low), highs)
+            logger.info("pulse slice (low: %2d; highs %s)" % (low, highs))
             self._arc().pulse_slice_masked(low, voltage, int(pulsewidth*1.0e9), highs)\
                        .ground_all()\
                        .execute()
@@ -589,7 +580,6 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
 
     def pulseAll(self, voltage, pulsewidth):
         if self._arc is None:
-            print("arc2 is not connected")
             return
 
         # if crossbar is masked this is not really a full crossbar operation
