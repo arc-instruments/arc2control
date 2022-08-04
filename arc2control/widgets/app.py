@@ -24,7 +24,7 @@ from .plottingoptions_widget import PlottingOptionsWidget
 from .device_explorer_widget import DeviceExplorerWidget
 from .fwmanager_dialog import FirmwareManagementDialog
 from .about_dialog import AboutDialog
-from .crossbar_widget import PaintWidget
+from .crossbar_widget import PaintWidget, Cell
 from .. import graphics
 from ..h5utils import H5DataStore, OpType, H5Mode
 import weakref
@@ -137,6 +137,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
 
         self.deviceExplorerWidget.experimentSelected.connect(self.experimentSelected)
         self.deviceExplorerWidget.exportDeviceHistoryRequested.connect(self.__exportTimeSeries)
+        self.deviceExplorerWidget.crosspointSelected.connect(self.treeCrosspointSelected)
 
 
         signals.valueUpdate.connect(self.valueUpdate)
@@ -244,6 +245,12 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
 
         except KeyError as err:
             print('Could not retrieve dataset or associated module:', err)
+
+    def treeCrosspointSelected(self, w, b):
+        if w >= 0 and b >=0:
+            self.mainCrossbarWidget.secselect([Cell(w, b)])
+        else:
+            self.mainCrossbarWidget.secselect([])
 
     def selectionChanged(self, cells):
         # cells = self.mainCrossbarWidget.selectedCells

@@ -12,6 +12,8 @@ GRIDPEN = QtGui.QPen(QtGui.QBrush(QtCore.Qt.GlobalColor.lightGray), 1.0)
 TEXTPEN = QtGui.QPen(QtGui.QBrush(QtCore.Qt.GlobalColor.black), 1.0)
 SELPEN = QtGui.QPen(QtGui.QBrush(QtCore.Qt.GlobalColor.black), 2.0,
     cap=QtCore.Qt.PenCapStyle.FlatCap, join=QtCore.Qt.PenJoinStyle.MiterJoin)
+SECSELPEN = QtGui.QPen(QtGui.QBrush(QtCore.Qt.GlobalColor.blue), 3.0,
+    cap=QtCore.Qt.PenCapStyle.FlatCap, join=QtCore.Qt.PenJoinStyle.MiterJoin)
 RANPEN = QtGui.QPen(QtGui.QBrush(QtCore.Qt.GlobalColor.red), 3.0,
     cap=QtCore.Qt.PenCapStyle.FlatCap, join=QtCore.Qt.PenJoinStyle.MiterJoin)
 
@@ -193,6 +195,7 @@ class PaintWidget(QtWidgets.QWidget):
     def __init__(self, shape=(32, 32), mask=None, parent=None):
         super().__init__(parent)
         self.selection = set()
+        self.secselection = set()
         self.events = True
         if self.events:
             self.setMouseTracking(True)
@@ -264,6 +267,15 @@ class PaintWidget(QtWidgets.QWidget):
 
         painter.translate(QtCore.QPoint(CBPAD, CBPAD))
 
+        for cell in self.secselection:
+            if cell.b < 0 or cell.w < 0:
+                continue
+            if self._mask is not None and self._mask[cell.b][cell.w] == 0:
+                continue
+
+            painter.setPen(SECSELPEN)
+            painter.drawRect(QtCore.QRect(cell.w*DD, cell.b*DD, DD, DD))
+
         for cell in self.selection:
             if cell.b < 0 or cell.w < 0:
                 continue
@@ -324,6 +336,12 @@ class PaintWidget(QtWidgets.QWidget):
                 self.selection.add(Cell(w, b))
         self.selectionChanged.emit(self.selection)
         self.repaint()
+
+    def secselect(self, cells):
+        new = set(cells)
+        if new != self.secselection:
+            self.secselection = new
+            self.repaint()
 
     def mouseDoubleClickEvent(self, evt):
         if not self.events:

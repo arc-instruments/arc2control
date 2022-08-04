@@ -27,6 +27,8 @@ class DeviceExplorerWidget(QtWidgets.QWidget):
     experimentSelected = QtCore.pyqtSignal(str, str)
     #                                                w,   b,   complete
     exportDeviceHistoryRequested = QtCore.pyqtSignal(int, int, bool)
+    #                                      w,   b
+    crosspointSelected = QtCore.pyqtSignal(int, int)
 
     def __init__(self, parent=None):
         super().__init__(parent=parent)
@@ -42,11 +44,27 @@ class DeviceExplorerWidget(QtWidgets.QWidget):
         self._deviceNodes = {}
         self._tagMapper = None
         self.tree.setRootIndex(self.tree.indexFromItem(self._root))
-        self.tree.itemDoubleClicked.connect(self.__itemSelected)
+        self.tree.itemSelectionChanged.connect(self.__itemSelected)
+        self.tree.itemDoubleClicked.connect(self.__itemDoubleClicked)
 
         self.layout.addWidget(self.tree)
 
-    def __itemSelected(self, item, _):
+    def __itemSelected(self):
+        try:
+            item = self.tree.selectedItems()[0]
+        except IndexError:
+            self.crosspointSelected.emit(-1, -1)
+            return
+
+        toplevel = item
+
+        while toplevel.parent() != self._root:
+            toplevel = toplevel.parent()
+
+        if toplevel != self._root:
+            self.crosspointSelected.emit(toplevel.word, toplevel.bit)
+
+    def __itemDoubleClicked(self, item, _):
         if item.parent() == self._root:
             return
 
@@ -100,6 +118,8 @@ class DeviceExplorerWidget(QtWidgets.QWidget):
         deviceNode = QtWidgets.QTreeWidgetItem(self._root, ['W%02dB%02d' % (w+1, b+1)])
         deviceNode.setFont(0, self.__makeDeviceNodeFont(deviceNode))
         deviceNode.__setattr__('key', key)
+        deviceNode.__setattr__('word', w)
+        deviceNode.__setattr__('bit', b)
         self._deviceNodes[key] = deviceNode
 
         return deviceNode
