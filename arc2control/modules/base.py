@@ -28,7 +28,7 @@ class BaseOperation(QtCore.QThread):
             raise TypeError("Parent is not a subclass of `BaseModule`")
         super().__init__(parent=parent)
 
-        self._logger = logging.getLogger(tag)
+        self._logger = parent.logger
         self.parent = parent
 
     @property
