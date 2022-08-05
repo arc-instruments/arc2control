@@ -1,0 +1,43 @@
+name: Generate documentation
+on: [push]
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: Install python libraries
+        run: |
+          pip install poetry
+          python -m poetry install
+          python -m poetry update
+          python -m poetry check
+          python -m poetry run pip install ftputil tomli requests semver
+      - name: Release Check
+        if: ${{ startswith(github.ref, 'refs/tags') }}
+        id: releasecheck
+        run: python -m poetry run python releasecheck.py commitcheck
+      - name: Install sphinx
+        if: ${{ success() || steps.releasecheck.conclusion == 'skipped' }}
+        run: |
+          poetry run pip install -U sphinx
+          poetry run pip install -U sphinx-rtd-theme
+      - name: Build project
+        run: python -m poetry run python setup.py build
+      - name: Build docs
+        run: |
+          cd docs
+          python -m poetry run make clean
+          python -m poetry run make html
+          cd ..
+      - name: Upload
+        env:
+          UPLOAD_HOST: ${{ secrets.FILES_FTP_HOST }}
+          UPLOAD_USER: ${{ secrets.FILES_FTP_USER }}
+          UPLOAD_PASSWORD: ${{ secrets.FILES_FTP_PASSWORD }}
+        run:
+          python -m poetry run python docs/upload.py arc2control
+
