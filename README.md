@@ -8,35 +8,54 @@ experiments suitable for general and (P/R/FE)RAM devices characterisation.
 
 ## Instructions
 
-ArC2Control leverages the [pyarc2](https://github.com/arc-instruments/pyarc2)
-library to talk to ArC TWO. Since `pyarc2` is a native module and still under
-development it is not automatically installed with ArC2Control and must be
-installed separately.
+### Installation
 
+If you have a recent Python installer, stable ArC2Control versions are
+available from PyPI:
 
-### Building and running
+```
+pip install arc2control
+```
 
-As ArC2Control is still under development the recommended way to get started is
-by using a virtual environment. ArC2Control uses
-[poetry](https://python-poetry.org) to manage virtual environments.
+You can then run ArC2Control with:
 
-* You will need a functional [Rust toolchain](https://rustup.rs). This
-  requirement will be relaxed once prebuilt Python wheels for `pyarc2` are
-  made available.
-* You will also need a relatively new Python (≥ 3.8) and also have poetry
+```
+python -m arc2control
+```
+
+Additionally, installers for Windows and AppImages for Linux are
+made periodically available from our [releases
+page](https://github.com/arc-instruments/arc2control/releases).
+
+If you have git installed, you can also try out the latest development
+snapshot:
+
+```
+pip install git+https://github.com/arc-instruments/arc2control
+```
+
+### Development
+
+To develop on ArC2Control itself the recommended way to get started is by using
+a virtual environment. ArC2Control uses [poetry](https://python-poetry.org) to
+manage virtual environments. You might want to use a development version of
+[pyarc2](https://github.com/arc-instruments/pyarc2) as well although that's
+optional. We try to depend only on stable pre-built versions of `pyarc2` but
+that's not guaranteed.
+
+* [Optional] You will need a functional [Rust toolchain](https://rustup.rs).
+* You will need a relatively new Python (≥ 3.8) and also have poetry
   installed (`python -m pip install poetry`). Pip must also be updated to at
   least version 20.x.
-* Clone this repository.
+* Clone this repository and descend into it.
 * Initialise the virtual environment: `python -m poetry install`. This only needs
   to be done once.
-* Install `pyarc2` into the virtual environment. This can easily be done with the
-  included script
-  `python -m poetry run python venv-pyarc2-update.py git+https://github.com/arc-instruments/pyarc2`.
-  This will download `pyarc2` via git, build it and install it into the
-  virtualenv. You can alternatively place the `pyarc2` repository along
-  `arc2control` and run `venv-pyarc2-update.py` without additional arguments.
-* Run the setup script `python -m poetry run python setup.py build`.
-* Run ArC2Control `python -m poetry run python -m arc2control`.
+* [Optional] Update `pyarc2` to the latest development snapshot which can
+  easily be done with the included script `poetry run python venv-pyarc2-update.py
+  git+https://github.com/arc-instruments/pyarc2`.  This will download `pyarc2` via git,
+  build it and install it into the virtualenv.
+* Run the setup script `poetry run python setup.py build`.
+* Run ArC2Control `poetry run python -m arc2control`.
 
 ## Custom modules
 
@@ -56,3 +75,17 @@ ENTRY_POINT = MainModule
 
 The built-in experiment modules are also built with the same infrastructure so
 they can be used as a scaffold to build your own.
+
+## I have a question
+
+Feel free to make a new topic under
+[Discussions](https://github.com/arc-instruments/arc2control/discussions). This
+should be your first stop for support unless you are somewhat certain you run
+into a bug (which is very possible at this stage). In that case…
+
+## I found a bug!
+
+If ArC2Control does not behave as you would expect please [open an
+issue](https://github.com/arc-instruments/arc2control/issues/new) describing the
+problem and how to reproduce it. Don't forget to mention the operating system
+you are running on!
