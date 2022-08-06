@@ -59,6 +59,11 @@ Contents of this guide
    api_mapper
    api_signals
 
+.. toctree::
+   :maxdepth: 1
+
+   changelog
+
 .. _pyarc2: https://github.com/arc-instruments/pyarc2
 .. _beastlink: https://www.cesys.com/en/our-products/software-ip/beastlink.html
 .. _`CESYS download page`: https://www.cesys.com/en/service-support/download-center/fpga.html

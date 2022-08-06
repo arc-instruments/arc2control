@@ -56,21 +56,18 @@ jobs:
         id: download
         with:
           path: artifacts
-      - name: List artifacts dir contents
-        run: |
-          ls -l artifacts && 
-          ls -l artifacts/arc2control-dist
       - name: Twine check
         run: |
-          python -m twine check \
-            artifacts/arc2control-dist/*tar.gz \
-            artifacts/arc2control-dist/*whl
+          cd artifacts/arc2control-dist
+          ls *tar.gz *whl
+          python -m twine check *tar.gz *whl
+          cd -
       - name: Publish
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_UPLOAD_API_TOKEN }}
-        run:
-          python -m twine upload \
-            artifacts/arc2control-dist/*tar.gz \
-            artifacts/arc2control-dist/*whl
+        run: |
+          cd artifacts/arc2control-dist
+          python -m twine upload *tar.gz *whl
+          cd -
 
