@@ -46,7 +46,7 @@ def modver(module, basedir=None):
         for line in vfile.readlines():
             match = regexp.match(line)
             if match is not None:
-                return match.group(1).replace('-', '')
+                return match.group(1)
     return None
 
 

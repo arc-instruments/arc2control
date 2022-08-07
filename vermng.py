@@ -3,7 +3,7 @@ import sys
 import os.path
 import re
 import semver
-import date
+from datetime import date
 
 
 MODULE = 'arc2control'
