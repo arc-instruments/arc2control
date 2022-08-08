@@ -94,7 +94,7 @@ class CurveTracerOperation(BaseOperation):
             self._voltages.extend(v)
             self._currents.extend(i)
 
-        self.finished.emit()
+        self.operationFinished.emit()
 
 
     def do_ramp(self, w, b, vstart, vstep, vstop, pw, interpulse, pulses, readat, readafter):
@@ -272,7 +272,7 @@ class CurveTracer(BaseModule, Ui_CurveTracerWidget):
 
     def rampSelectedClicked(self):
         self._thread = CurveTracerOperation(self.__rampParams(), self)
-        self._thread.finished.connect(self.__threadFinished)
+        self._thread.operationFinished.connect(self.__threadFinished)
         self._thread.start()
 
     def readoutVoltageChanged(self):

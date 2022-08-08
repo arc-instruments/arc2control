@@ -263,8 +263,6 @@ method and start the operation as any other QThread. Let's add such a class to
 
    # signal emitted when a new value is received
    newValue = pyqtSignal(float)
-   # signal emitted when the process has been completed
-   finished = pyqtSignal()
 
    class TestModuleOperation(BaseOperation):
 
@@ -280,7 +278,7 @@ method and start the operation as any other QThread. Let's add such a class to
                (high, low) = self.mapper.wb2ch[cell.w][cell.b]
            except IndexError:
                # or exit if nothing is selected
-               self.finished.emit()
+               self.operationFinished.emit()
                return
 
            for _ in range(10):
@@ -292,18 +290,23 @@ method and start the operation as any other QThread. Let's add such a class to
                # artificial wait time
                time.sleep(1)
 
-           self.finished.emit()
+           self.operationFinished.emit()
 
-There are two particular points of note on the example above. First, the ``run``
-function which implements the logic of the long running operation. This essentially
-does 10 subsequent readings on the first selected device with an 1 sec delay between
-them. Second it's the introduction of custom signals as class attributes. Signals are
-used to communicate the status of the background operation to the main UI. This is
-similar to built-in signals such as ``clicked``, ``triggered``, etc. that are exposed
-by regular UI components but they carry custom values instead. In order to pick up
-a new value from the background thread one needs to connect the signal to a python
-function. Let's update our ``onRunClicked`` function of ``TestModule`` to launch a
-measurement thread.
+There are two particular points of note on the example above. First, the
+``run`` function which implements the logic of the long running operation. This
+essentially does 10 subsequent readings on the first selected device with an 1
+sec delay between them. Second it's the introduction of custom signals as class
+attributes. Signals are used to communicate the status of the background
+operation to the main UI. This is similar to built-in signals such as
+``clicked``, ``triggered``, etc. that are exposed by regular UI components but
+they carry custom values instead. In order to pick up a new value from the
+background thread one needs to connect the signal to a python function. Let's
+update our ``onRunClicked`` function of ``TestModule`` to launch a measurement
+thread. Operations deriving from
+:class:`arc2control.modules.base.BaseOperation` always have the
+``operationFinished`` signal pre-defined which is conventionally used to mark
+the end of the operation. You can see that we emitted ``operationFinished`` on
+the last line of the example above.
 
 .. code-block:: python
    :caption: Modified ``onRunClicked`` to launch and monitor a thread
@@ -328,7 +331,7 @@ measurement thread.
 
        self.operation = TestModuleOperation()
        self.operation.newValue.connect(onNewValue)
-       self.operation.finished.connect(onFinished)
+       self.operation.operationFinished.connect(onFinished)
        self.operation.start()
 
 The code above will launch ``TestModuleOperation`` in background. For
@@ -399,8 +402,6 @@ of the operation.
 
    # signal emitted when a new value is received
    newValue = pyqtSignal(float)
-   # signal emitted when the process has been completed
-   finished = pyqtSignal()
 
    # this a numpy dtype to store data
    _DTYPE = [('current', '<f4')]
@@ -419,7 +420,7 @@ of the operation.
                (high, low) = self.mapper.wb2ch[cell.w][cell.b]
            except IndexError:
                # or exit if nothing is selected
-               self.finished.emit()
+               self.operationFinished.emit()
                return
 
            data = np.empty(shape=(10, ), dtype=_DTYPE)
@@ -435,7 +436,7 @@ of the operation.
                time.sleep(1)
 
            self.storeData(cell.w, cell.b, data)
-           self.finished.emit()
+           self.operationFinished.emit()
 
        def storeData(self, word, bit, data):
            store = self.datastore
@@ -470,18 +471,17 @@ data. This happens because the main UI does not have any insight into the inner
 workings of each module. In order to communicate changes to the UI and also
 update the global history of a device a module would need to *emit some
 signals* that will be picked up by the UI and update the interface. Similar to
-the custom signals, ``finished`` and ``newValue``, that we defined in our
-``TestModuleOperation`` the main ArC2Control UI also defines some signals that
-are globally available to modules. :doc:`The full list </api_signals>` of the
-signals defined from ArC2Control is available although for emodule development
-the most useful ones are (i) :meth:`~arc2control.signals.valueUpdate` to update
-the current voltage and current status of a crosspoint with a single value;
-(ii) :meth:`~arc2control.signals.valueBulkUpdate` that does the same using
-numpy arrays for multiple data updates and (iii)
+the custom signal ``newValue``, that we defined in our ``TestModuleOperation``
+the main ArC2Control UI also defines some signals that are globally available
+to modules. :doc:`The full list </api_signals>` of the signals defined from
+ArC2Control is available although for emodule development the most useful ones
+are (i) :meth:`~arc2control.signals.valueUpdate` to update the current voltage
+and current status of a crosspoint with a single value; (ii)
+:meth:`~arc2control.signals.valueBulkUpdate` that does the same using numpy
+arrays for multiple data updates and (iii)
 :meth:`arc2control.signals.dataDisplayUpdate` to request a refresh of the
-plotting panels on the main UI. Let's update our ``run`` function to update
-the crosspoint status on every loop and request a data display refresh at
-the end.
+plotting panels on the main UI. Let's update our ``run`` function to update the
+crosspoint status on every loop and request a data display refresh at the end.
 
 .. code-block:: python
    :caption: Updated ``TestModuleOperation`` to communicate data changes
@@ -497,8 +497,6 @@ the end.
 
    # signal emitted when a new value is received
    newValue = pyqtSignal(float)
-   # signal emitted when the process has been completed
-   finished = pyqtSignal()
 
    # this a numpy dtype to store data
    _DTYPE = [('current', '<f4')]
@@ -517,7 +515,7 @@ the end.
                (high, low) = self.mapper.wb2ch[cell.w][cell.b]
            except IndexError:
                # or exit if nothing is selected
-               self.finished.emit()
+               self.operationFinished.emit()
                return
 
            data = np.empty(shape=(10, ), dtype=_DTYPE)
@@ -544,7 +542,7 @@ the end.
            dataDisplayUpdate.emit(cell.w, cell.b)
 
            self.storeData(cell.w, cell.b, data)
-           self.finished.emit()
+           self.operationFinished.emit()
 
        def storeData(self, word, bit, data):
            store = self.datastore

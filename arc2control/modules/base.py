@@ -18,10 +18,23 @@ class BaseOperation(QtCore.QThread):
     signals (configuration, mapper, cell selection, etc.) and expose their
     corresponding values via properties. When a thread based on this operation
     is started the ``run`` method will be called and *must* be implemented by all
-    subclasses of this class.
+    subclasses of this class. For convenience a standard Qt signal is also
+    provided which can be emitted to mark the end of the process.
     """
 
-    finished = QtCore.pyqtSignal()
+    operationFinished = QtCore.pyqtSignal()
+    """
+    Qt Signal conventionally emitted by any operation to mark that the process
+    has finished.
+
+    .. code-block:: python
+
+       def run(self):
+           # complex logic here
+           # ...
+
+           self.operationFinished.emit()
+    """
 
     def __init__(self, parent=None):
         if not isinstance(parent, BaseModule):
@@ -71,6 +84,9 @@ class BaseOperation(QtCore.QThread):
 
     @abc.abstractmethod
     def run(self):
+        """
+        Implement the logic of the operation by overriding this method
+        """
         pass
 
 
@@ -106,8 +122,8 @@ class BaseModule(QtWidgets.QWidget):
         self._selectedCells = cells
         self._mapper = mapper
         self._datastore = store
+        # key: object type; values: (getter fn name, setter fn name)
         self._serializableTypes = {
-            #    type:, getter, setter
             QtWidgets.QLineEdit: ('text', 'setText'), \
             QtWidgets.QSpinBox: ('value', 'setValue'), \
             QtWidgets.QComboBox: ('currentIndex', 'setCurrentIndex'), \

@@ -21,7 +21,7 @@ REGURL = urljoin(constants.ARC_FW_BASEURL, 'registry.json')
 
 class DownloadFirmware(QtCore.QThread):
 
-    finished = QtCore.pyqtSignal(str)
+    downloadFinished = QtCore.pyqtSignal(str)
     progressUpdate = QtCore.pyqtSignal(int)
 
     def __init__(self, url, target, parent=None):
@@ -33,7 +33,7 @@ class DownloadFirmware(QtCore.QThread):
 
     def _exit(self, msg):
         self.running = False
-        self.finished.emit(msg)
+        self.downloadFinished.emit(msg)
 
     def stop(self):
         self.running = False
@@ -119,7 +119,7 @@ class DownloadFirmware(QtCore.QThread):
 
 class DownloadFirmwareInfo(QtCore.QThread):
 
-    finished = QtCore.pyqtSignal(str)
+    downloadFinished = QtCore.pyqtSignal(str)
 
     def __init__(self, parent=None):
         super().__init__(parent=parent)
@@ -153,7 +153,7 @@ class DownloadFirmwareInfo(QtCore.QThread):
             msg = 'Unknown error while querying server: %s' % exc
             self.data = None
 
-        self.finished.emit(msg)
+        self.downloadFinished.emit(msg)
 
 
 class FirmwareManagementDialog(Ui_FirmwareManagementDialog, QtWidgets.QDialog):
@@ -283,7 +283,7 @@ class FirmwareManagementDialog(Ui_FirmwareManagementDialog, QtWidgets.QDialog):
         self.setStatus('Downloading firmware list…')
         self.operation = DownloadFirmwareInfo()
         self.lockUnlockUi()
-        self.operation.finished.connect(onFinished)
+        self.operation.downloadFinished.connect(onFinished)
         self.operation.start()
 
     def onDownloadClicked(self):
@@ -340,7 +340,7 @@ class FirmwareManagementDialog(Ui_FirmwareManagementDialog, QtWidgets.QDialog):
 
         self.setStatus('Downloading firmware…')
         self.operation = DownloadFirmware(url, target)
-        self.operation.finished.connect(onFinished)
+        self.operation.downloadFinished.connect(onFinished)
         self.operation.progressUpdate.connect(onProgress)
         self.progressBar.setValue(0)
         self.lockUnlockUi()

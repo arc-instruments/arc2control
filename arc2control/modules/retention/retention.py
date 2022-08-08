@@ -64,7 +64,7 @@ class RetentionOperation(BaseOperation):
                 self.cellData[cell][step] = (vread, current, *stamp)
                 self.conditionalRefresh(cell, step, (vread, current, *stamp))
 
-        self.finished.emit()
+        self.operationFinished.emit()
 
     def parseTimestamp(self, tstamp, offset=0):
         (decimals, seconds) = math.modf(tstamp - offset)
@@ -210,7 +210,7 @@ class Retention(BaseModule):
 
     def applyButtonClicked(self):
         self._thread = RetentionOperation(self.__retentionParams(), self)
-        self._thread.finished.connect(self.__threadFinished)
+        self._thread.operationFinished.connect(self.__threadFinished)
         self._thread.start()
 
     def __threadFinished(self):
