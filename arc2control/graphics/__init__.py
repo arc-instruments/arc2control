@@ -1,7 +1,9 @@
+import sys
 import os.path
-try:
+
+if sys.version_info >= (3, 7):
     import importlib.resources as importlib_resources
-except (ModuleNotFoundError, ImportError):
+else:
     import importlib_resources
 
 from PyQt6 import QtCore, QtGui, QtSvg
