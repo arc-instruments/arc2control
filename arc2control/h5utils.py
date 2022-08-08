@@ -170,13 +170,6 @@ class H5DataStore:
             pass
 
     @property
-    def fname(self):
-        """
-        The filename associated with this data store
-        """
-        return self._fname
-
-    @property
     def name(self):
         """
         The name associated with this data store
@@ -187,14 +180,24 @@ class H5DataStore:
             return None
 
     @name.setter
-    def set_name(self, name):
+    def name(self, name):
         """
         Change the name of this data store. This is _not_ the filename
         but the internal name of the dataset for identification purposes.
 
         :param str name: The new name of the dataset
         """
-        self._h5.attrs['TITLE'] = name
+        try:
+            self._h5.attrs['TITLE'] = name
+        except Exception as e:
+            print(e)
+
+    @property
+    def fname(self):
+        """
+        The filename associated with this data store
+        """
+        return self._fname
 
     def close(self):
         """
