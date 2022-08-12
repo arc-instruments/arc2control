@@ -78,11 +78,11 @@ def main(args=None):
               .SetCurrentProcessExplicitAppUserModelID('ArC2 Control Panel')
 
     warnings.filterwarnings('ignore', category=RuntimeWarning, \
-        message='.*invalid value encountered in true_divide.*', \
+        message='.*invalid value encountered in *divide.*', \
         module='arc2control\.widgets\..*')
 
     warnings.filterwarnings('ignore', category=RuntimeWarning, \
-        message='.*divide by zero encountered in true_divide.*', \
+        message='.*divide by zero encountered in *divide.*', \
         module='arc2control\.widgets\..*')
 
     app = QtWidgets.QApplication(args)
