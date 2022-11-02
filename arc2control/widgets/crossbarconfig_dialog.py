@@ -142,7 +142,7 @@ class CrossbarConfigDialog(Ui_CrossbarConfigDialog, QtWidgets.QDialog):
 
         # remove any datasets that don't exist and update local config file
         if len(removedIdxs) > 0:
-            for idx in removedIdxs:
+            for idx in reversed(sorted(removedIdxs)):
                 dsets.pop(idx)
             settings.setValue('crossbarconfig/datasets', dsets[:10])
 
