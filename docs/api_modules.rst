@@ -675,6 +675,9 @@ following sections.
 API Reference
 -------------
 
+.. automodule:: arc2control.modules
+   :members:
+
 .. automodule:: arc2control.modules.base
     :members:
 
