@@ -54,6 +54,7 @@ class CTDataDisplayWidget(QtWidgets.QWidget):
 
         layout.addLayout(buttonLayout)
 
+        self.data = self.__reformatData()
         self.__makeGraphPane()
         self.__makeDataPane()
         self.__makeAttrsPane()
@@ -67,7 +68,7 @@ class CTDataDisplayWidget(QtWidgets.QWidget):
 
         self.setProperty('recsize', (800, 500))
 
-        self.stackedWdg.addWidget(self.gv)
+        self.stackedWdg.addWidget(self.graphPane)
         self.stackedWdg.addWidget(self.dataTablePane)
         self.stackedWdg.addWidget(self.attrsPane)
 
@@ -84,49 +85,8 @@ class CTDataDisplayWidget(QtWidgets.QWidget):
         elif checked == self.attrsButton.isChecked():
             self.stackedWdg.setCurrentIndex(2)
 
-    def __makeGraphPane(self):
+    def __reformatData(self):
         dataset = self.dataset
-
-        cycles = dataset.attrs.get('cycles', 1)
-        current = dataset['current']
-        voltage = dataset['voltage']
-
-        self.gv = pg.GraphicsLayoutWidget()
-        self.plotI = self.gv.addPlot()
-        self.plotAbsI = self.gv.addPlot()
-        self.plotR = self.gv.addPlot()
-        self.plotI.getAxis('bottom').setLabel('Voltage', units='V')
-        self.plotI.getAxis('left').setLabel('Current', units='A')
-        self.plotI.showGrid(x=True, y=True)
-        self.plotI.getAxis('left').setGrid(50)
-        self.plotI.getAxis('bottom').setGrid(50)
-        self.plotAbsI.getAxis('bottom').setLabel('Voltage', units='V')
-        self.plotAbsI.getAxis('left').setLabel('Current', units='A')
-        self.plotAbsI.getAxis('left').enableAutoSIPrefix(False)
-        self.plotAbsI.setLogMode(False, True)
-        self.plotAbsI.showGrid(x=True, y=True)
-        self.plotAbsI.getAxis('left').setGrid(50)
-        self.plotAbsI.getAxis('bottom').setGrid(50)
-        self.plotR.getAxis('bottom').setLabel('Voltage', units='V')
-        self.plotR.getAxis('left').setLabel('Resistance', units='Ω')
-        self.plotR.showGrid(x=True, y=True)
-        self.plotR.getAxis('left').setGrid(50)
-        self.plotR.getAxis('bottom').setGrid(50)
-
-        for (idx, chunk) in enumerate(np.array_split(dataset, cycles)):
-            self.plotI.plot(chunk['voltage'], chunk['current'], pen=(idx, cycles), \
-                symbolBrush=(idx, cycles), symbolPen=None, symbol='s', symbolSize=6)
-            self.plotAbsI.plot(chunk['voltage'], np.abs(chunk['current']), \
-                pen=(idx, cycles), symbolBrush=(idx, cycles), symbolPen=None, \
-                symbol='s', symbolSize=6)
-            self.plotR.plot(chunk['voltage'], \
-                np.abs(chunk['voltage'])/np.abs(chunk['current']), \
-                pen=(idx, cycles), symbolBrush=(idx, cycles), symbolPen=None, \
-                symbol='s', symbolSize=6)
-
-    def __makeDataPane(self):
-        dataset = self.dataset
-
         cycles = dataset.attrs.get('cycles', 1)
 
         if dataset.shape[0] % cycles > 0:
@@ -137,10 +97,6 @@ class CTDataDisplayWidget(QtWidgets.QWidget):
         else:
             len_per_cycle = dataset.shape[0] // cycles
             needs_adjustment = False
-
-        self.dataTable = pg.TableWidget(sortable=False, editable=False)
-        self.dataTable.setFormat('%e')
-        self.dataTable.verticalHeader().setVisible(False)
 
         # if a test has more than one cycles the dataset it must be split
         # into multiple columns (3 per cycle) because at rest is a
@@ -183,10 +139,80 @@ class CTDataDisplayWidget(QtWidgets.QWidget):
                 for f in ['current', 'voltage', 'read_voltage']:
                     actual_data[f+str(cycles)][:] = dataset[to_idx:, f]
 
-            self.data = actual_data
+            return actual_data
         else:
-            self.data = dataset[:]
+            return dataset[:]
 
+    def __cycleData(self, idx=0):
+        cycles = self.dataset.attrs.get('cycles', 1)
+
+        if idx > cycles - 1:
+            raise IndexError('No such cycle: %d' % idx)
+
+        if idx == 0 and cycles == 1:
+            suffix = ''
+        else:
+            suffix = str(idx+1)
+
+        return { 'voltage': self.data['voltage'+suffix],
+            'current': self.data['current'+suffix],
+            'read_voltage': self.data['read_voltage'+suffix] }
+
+
+    def __makeGraphPane(self):
+        self.graphPane = QtWidgets.QWidget()
+        layout = QtWidgets.QVBoxLayout()
+
+        dataset = self.dataset
+
+        cycles = dataset.attrs.get('cycles', 1)
+        current = dataset['current']
+        voltage = dataset['voltage']
+
+        self.gv = pg.GraphicsLayoutWidget()
+        self.plotI = self.gv.addPlot()
+        self.plotAbsI = self.gv.addPlot()
+        self.plotR = self.gv.addPlot()
+        self.plotI.getAxis('bottom').setLabel('Voltage', units='V')
+        self.plotI.getAxis('left').setLabel('Current', units='A')
+        self.plotI.showGrid(x=True, y=True)
+        self.plotI.getAxis('left').setGrid(50)
+        self.plotI.getAxis('bottom').setGrid(50)
+        self.plotAbsI.getAxis('bottom').setLabel('Voltage', units='V')
+        self.plotAbsI.getAxis('left').setLabel('Current', units='A')
+        self.plotAbsI.getAxis('left').enableAutoSIPrefix(False)
+        self.plotAbsI.setLogMode(False, True)
+        self.plotAbsI.showGrid(x=True, y=True)
+        self.plotAbsI.getAxis('left').setGrid(50)
+        self.plotAbsI.getAxis('bottom').setGrid(50)
+        self.plotR.getAxis('bottom').setLabel('Voltage', units='V')
+        self.plotR.getAxis('left').setLabel('Resistance', units='Ω')
+        self.plotR.showGrid(x=True, y=True)
+        self.plotR.getAxis('left').setGrid(50)
+        self.plotR.getAxis('bottom').setGrid(50)
+
+        self.__replotTraces()
+
+        layout.addWidget(self.gv)
+        layout.setContentsMargins(0, 0, 0, 0)
+
+        bottomLayout = QtWidgets.QHBoxLayout()
+        self.averagingCheckBox = QtWidgets.QCheckBox('Average traces')
+        self.averagingCheckBox.stateChanged.connect(self.__replotTraces)
+        bottomLayout.addWidget(self.averagingCheckBox)
+
+        layout.addItem(bottomLayout)
+
+        self.graphPane.setLayout(layout)
+
+    def __makeDataPane(self):
+        dataset = self.dataset
+
+        cycles = dataset.attrs.get('cycles', 1)
+
+        self.dataTable = pg.TableWidget(sortable=False, editable=False)
+        self.dataTable.setFormat('%e')
+        self.dataTable.verticalHeader().setVisible(False)
         self.dataTable.setData(self.data)
 
         self.dataTablePane = QtWidgets.QWidget()
@@ -313,6 +339,63 @@ class CTDataDisplayWidget(QtWidgets.QWidget):
 
         attrsWdg.setLayout(layout)
         self.attrsPane.setWidget(attrsWdg)
+
+    def __replotTraces(self, showAverage=False):
+
+        self.plotI.clear()
+        self.plotAbsI.clear()
+        self.plotR.clear()
+
+        data = self.data
+        cycles = self.dataset.attrs.get('cycles', 1)
+
+        average = np.ndarray(shape=(data.shape[0], ), \
+            dtype=[('voltage', '<f4'), ('current', '<f4')])
+        average['voltage'][:] = self.__cycleData(0)['voltage']
+        average['current'][:] = 0.0
+
+        for idx in range(0, cycles):
+
+            if showAverage:
+                pen = 'grey'
+                symbolBrush = None
+                symbol = None
+                symbolSize = 0
+            else:
+                pen = (idx, cycles)
+                symbolBrush = (idx, cycles)
+                symbol = 's'
+                symbolSize = 6
+
+            suffix = str(idx+1) if cycles > 1 else ''
+            cycleData = self.__cycleData(idx)
+
+            voltage = cycleData['voltage']
+            current = cycleData['current']
+
+            self.plotI.plot(voltage, current, \
+                pen=pen, symbolBrush=symbolBrush, symbolPen=None,
+                symbol=symbol, symbolSize=symbolSize)
+            self.plotAbsI.plot(voltage, np.abs(current), \
+                pen=pen, symbolBrush=symbolBrush, symbolPen=None,
+                symbol=symbol, symbolSize=symbolSize)
+            self.plotR.plot(voltage, \
+                np.abs(voltage/current), \
+                pen=pen, symbolBrush=symbolBrush, symbolPen=None,
+                symbol=symbol, symbolSize=symbolSize)
+
+            average['current'][:] += data['current'+suffix]
+
+        average['current'][:] = average['current']/cycles
+        if showAverage:
+            pen = pg.mkPen(color='red', width=2.0)
+            self.plotI.plot(average['voltage'], average['current'], \
+                pen=pen, symbolBrush=None, symbol=None, clear=False)
+            self.plotAbsI.plot(average['voltage'], np.abs(average['current']), \
+                pen=pen, symbolBrush=None, symbol=None, clear=False)
+            self.plotR.plot(average['voltage'], \
+                np.abs(average['voltage']/average['current']), \
+                pen=pen, symbolBrush=None, symbol=None, clear=False)
 
     def exportDataClicked(self):
         (fname, fltr) = QtWidgets.QFileDialog.getSaveFileName(self, \
