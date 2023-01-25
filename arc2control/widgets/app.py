@@ -1,5 +1,5 @@
 import PyQt6
-from PyQt6 import QtCore, QtWidgets
+from PyQt6 import QtCore, QtGui, QtWidgets
 from .generated.mainwindow import Ui_ArC2MainWindow
 
 import sys
@@ -34,6 +34,7 @@ import os, tempfile
 from .. import signals
 from ..modules import moduleClassFromJson
 from .. import constants
+from .. import ArC2ControlSettings
 
 
 class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
@@ -68,8 +69,10 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
             {key: self._modules[key][0] for key in self._modules.keys()})
         self.deviceDockWidget.setWidget(self.deviceExplorerWidget)
 
+        self.recentDatasetsActions = []
         self.__setupPlottingWidgets()
         self.__populateModuleComboBox()
+        self.__populateRecentDatasets()
         self.__loadIcons()
 
         if dset is None:
@@ -87,6 +90,8 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
             self.deviceExplorerWidget.clear()
             self.deviceExplorerWidget.loadFromStore(self._datastore)
             self.reloadFromDataset()
+            self.saveDatasetAsAction.setEnabled(True)
+            self.saveDatasetAction.setEnabled(False)
 
         self.__connectSignals()
 
@@ -194,6 +199,59 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         self.removeModuleButton.clicked.connect(self.removeCurrentModuleTab)
         self.saveModuleButton.clicked.connect(self.saveModuleClicked)
         self.loadModuleButton.clicked.connect(self.loadModuleClicked)
+
+    def __populateRecentDatasets(self):
+        settings = ArC2ControlSettings
+        menu = self.menuOpenRecent
+
+        for action in self.recentDatasetsActions:
+            menu.removeAction(action)
+
+        self.recentDatasetsActions.clear()
+
+        datasets = settings.value('general/datasets')
+        menu.setEnabled(len(datasets) > 0)
+
+        for (dset, nwords, nbits) in datasets:
+            if not os.path.exists(dset):
+                continue
+            basename = os.path.basename(dset)
+            action = QtGui.QAction(basename)
+            action.setToolTip(dset)
+            action.triggered.connect(partial(self.openDataset, fnameToOpen=dset))
+            self.recentDatasetsActions.append(action)
+            menu.addAction(self.recentDatasetsActions[-1])
+
+        if len(datasets) > 0:
+            separator = QtGui.QAction()
+            separator.setSeparator(True)
+            self.recentDatasetsActions.append(separator)
+            menu.addAction(separator)
+
+            clearAction = QtGui.QAction('Reset recent datasets')
+            clearAction.triggered.connect(self.resetRecentDatasets)
+            self.recentDatasetsActions.append(clearAction)
+            menu.addAction(clearAction)
+
+    def __addToRecentDatasets(self, dset, nwords, nbits):
+        settings = ArC2ControlSettings
+
+        dsets = settings.value('general/datasets')
+
+        # remove existing copies
+        for idx in reversed(range(len(dsets))):
+            (d, _, _) = dsets[idx]
+            if dset == d:
+                dsets.pop(idx)
+
+        # and move it to the top
+        dsets.insert(0, (dset, nwords, nbits))
+
+        # update the setting
+        settings.setValue('general/datasets', dsets[:10])
+
+        # repopulate the recent items menu
+        self.__populateRecentDatasets()
 
     def __loadIcons(self):
         self.setWindowIcon(graphics.getIcon('arc2-logo'))
@@ -857,7 +915,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         self.deviceExplorerWidget.clear()
         self.deviceExplorerWidget.loadFromStore(self._datastore)
 
-    def openDataset(self):
+    def openDataset(self, *args, fnameToOpen=None):
         remove_old_temp_dataset = False
 
         if self._datastore is not None and self._datastore.is_temporary:
@@ -877,10 +935,13 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
                 # fact opened
                 remove_old_temp_dataset = True
 
-        fname = QtWidgets.QFileDialog.getOpenFileName(self, "Open dataset",\
-            '', constants.H5_FILE_FILTER)
+        if fnameToOpen is None:
+            fname = QtWidgets.QFileDialog.getOpenFileName(self, "Open dataset",\
+                '', constants.H5_FILE_FILTER)
+        else:
+            fname = [fnameToOpen]
 
-        if fname is not None and len(fname[0]) > 0:
+        if fname is not None and len(fname[0]) > 0 and os.path.exists(fname[0]):
 
             self._datastore.close()
             if remove_old_temp_dataset:
@@ -893,6 +954,9 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
             self.saveDatasetAsAction.setEnabled(True)
             self.deviceExplorerWidget.clear()
             self.deviceExplorerWidget.loadFromStore(self._datastore)
+
+            (nwords, nbits) = self._datastore.shape
+            self.__addToRecentDatasets(fname[0], nwords, nbits)
         else:
             return
 
@@ -915,6 +979,9 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
             self.saveDatasetAsAction.setEnabled(True)
             self.reloadFromDataset()
 
+            (w, b) = self._datastore.shape
+            self.__addToRecentDatasets(fname[0], w, b)
+
     def saveDatasetAs(self):
         fname = QtWidgets.QFileDialog.getSaveFileName(self, "Save dataset as",\
             '', constants.H5_FILE_FILTER)
@@ -933,6 +1000,9 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
             self.saveDatasetAction.setToolTip('Dataset is saved automatically')
             self.reloadFromDataset()
 
+            (w, b) = self._datastore.shape
+            self.__addToRecentDatasets(fname[0], w, b)
+
     def reloadFromDataset(self):
         self.refreshCurrentPlot()
         vdset = self._datastore.dataset('crossbar/voltage')
@@ -944,6 +1014,17 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         signals.datastoreReplaced.emit(weakref.ref(self._datastore))
         self.setWindowTitle('%s [%s]' % \
             (constants.APP_TITLE, os.path.basename(self._datastore.fname)))
+
+    def resetRecentDatasets(self):
+
+        res = QtWidgets.QMessageBox.question(self, "Reset recent datasets", \
+            "This will remove all datasets from your recently accessed list. Continue?")
+        if res != QtWidgets.QMessageBox.StandardButton.Yes:
+            return
+
+        settings = ArC2ControlSettings
+        settings.setValue('general/datasets', [])
+        self.__populateRecentDatasets()
 
     def showAboutDialog(self):
         dlg = AboutDialog(parent=self)

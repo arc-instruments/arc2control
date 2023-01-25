@@ -86,7 +86,7 @@ class CrossbarConfigDialog(Ui_CrossbarConfigDialog, QtWidgets.QDialog):
                     dsets.append(self.datasetSelectionComboBox.itemData(i))
 
             # updated the recent dataset config on disk
-            settings.setValue('crossbarconfig/datasets', dsets[:10])
+            settings.setValue('general/datasets', dsets[:10])
 
         QtWidgets.QDialog.accept(self, *args)
 
@@ -123,28 +123,19 @@ class CrossbarConfigDialog(Ui_CrossbarConfigDialog, QtWidgets.QDialog):
 
         settings = ArC2ControlSettings
 
-        dsets = settings.value('crossbarconfig/datasets')
+        dsets = settings.value('general/datasets')
 
         if dsets is None:
             return
 
-        removedIdxs = []
-
         for (idx, (dset, nwords, nbits)) in enumerate(dsets):
+            if not os.path.exists(dset):
+                continue
             lbl = "%s (%d×%d)" % (os.path.basename(dset), nwords, nbits)
-            if os.path.exists(dset):
-                self.datasetSelectionComboBox.addItem(lbl, (dset, nwords, nbits))
-                # add the full name to the tooltip
-                self.datasetSelectionComboBox.setItemData(idx, dset, \
-                    QtCore.Qt.ItemDataRole.ToolTipRole)
-            else:
-                removedIdxs.append(idx)
-
-        # remove any datasets that don't exist and update local config file
-        if len(removedIdxs) > 0:
-            for idx in reversed(sorted(removedIdxs)):
-                dsets.pop(idx)
-            settings.setValue('crossbarconfig/datasets', dsets[:10])
+            self.datasetSelectionComboBox.addItem(lbl, (dset, nwords, nbits))
+            # add the full name to the tooltip
+            self.datasetSelectionComboBox.setItemData(idx, dset, \
+                QtCore.Qt.ItemDataRole.ToolTipRole)
 
     def __sizeSpecificationChanged(self, wdg, status):
         for (k, v) in self.wdgGroup.items():
@@ -170,6 +161,13 @@ class CrossbarConfigDialog(Ui_CrossbarConfigDialog, QtWidgets.QDialog):
         with H5DataStore(fname, mode=H5Mode.READ) as dset:
             nwords = dset['crossbar'].attrs['words']
             nbits = dset['crossbar'].attrs['bits']
+
+            # first check if the entry exists already and remove it
+            for idx in reversed(range(self.datasetSelectionComboBox.count())):
+                (dset, nwords, nbits) = self.datasetSelectionComboBox.itemData(idx)
+                if fname == dset:
+                    self.datasetSelectionComboBox.removeItem(idx)
+
             self.datasetSelectionComboBox.insertItem(0, \
                 "%s (%d×%d)" % (os.path.basename(fname), nwords, nbits), \
                     (fname, nwords, nbits))
@@ -178,13 +176,13 @@ class CrossbarConfigDialog(Ui_CrossbarConfigDialog, QtWidgets.QDialog):
             self.nwords = nwords
             self.nbits = nbits
 
-        dsetList = ArC2ControlSettings.value('crossbarconfig/datasets')
+        dsetList = ArC2ControlSettings.value('general/datasets')
         if dsetList is None:
             dsetList = [(fname, int(self.nwords), int(self.nbits))]
         else:
             dsetList.insert(0, (fname, int(self.nwords), int(self.nbits)))
 
-        ArC2ControlSettings.setValue('crossbarconfig/datasets', dsetList[:10])
+        ArC2ControlSettings.setValue('general/datasets', dsetList[:10])
 
     def __mapperSelectionChanged(self, _):
         mapper = self.mapperSelectionComboBox.currentData()[1]

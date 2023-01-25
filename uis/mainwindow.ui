@@ -323,8 +323,14 @@
     <property name="title">
      <string>&amp;File</string>
     </property>
+    <widget class="QMenu" name="menuOpenRecent">
+     <property name="title">
+      <string>Open recent dataset</string>
+     </property>
+    </widget>
     <addaction name="newDatasetAction"/>
     <addaction name="openDatasetAction"/>
+    <addaction name="menuOpenRecent"/>
     <addaction name="saveDatasetAction"/>
     <addaction name="saveDatasetAsAction"/>
     <addaction name="separator"/>

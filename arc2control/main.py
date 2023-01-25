@@ -61,6 +61,28 @@ def _envToLogLevel():
         return logging.WARNING
 
 
+def _validateRecentDatasetList():
+
+    from . import ArC2ControlSettings as settings
+
+    dsets = settings.value('general/datasets')
+
+    if dsets is None:
+        return
+
+    removedIdxs = []
+
+    for (idx, (dset, _, _)) in enumerate(dsets):
+        if not os.path.exists(dset):
+            removedIdxs.append(idx)
+
+    # remove any datasets that don't exist and update local config file
+    if len(removedIdxs) > 0:
+        for idx in reversed(sorted(removedIdxs)):
+            dsets.pop(idx)
+        settings.setValue('general/datasets', dsets[:10])
+
+
 def main(args=None):
 
     logging.basicConfig(level=_envToLogLevel(), \
@@ -147,6 +169,7 @@ def main(args=None):
                     os.path.basename(ff), exc)
                 continue
 
+    _validateRecentDatasetList()
     cnfdlg = CrossbarConfigDialog(mappers=mappers, parent=None)
     cnfdlg.show()
     if not cnfdlg.exec():
