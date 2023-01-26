@@ -209,7 +209,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
 
         self.recentDatasetsActions.clear()
 
-        datasets = settings.value('general/datasets')
+        datasets = settings.value('main/datasets')
         menu.setEnabled(len(datasets) > 0)
 
         for (dset, nwords, nbits) in datasets:
@@ -236,7 +236,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
     def __addToRecentDatasets(self, dset, nwords, nbits):
         settings = ArC2ControlSettings
 
-        dsets = settings.value('general/datasets')
+        dsets = settings.value('main/datasets')
 
         # remove existing copies
         for idx in reversed(range(len(dsets))):
@@ -248,7 +248,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         dsets.insert(0, (dset, nwords, nbits))
 
         # update the setting
-        settings.setValue('general/datasets', dsets[:10])
+        settings.setValue('main/datasets', dsets[:10])
 
         # repopulate the recent items menu
         self.__populateRecentDatasets()
@@ -1023,7 +1023,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
             return
 
         settings = ArC2ControlSettings
-        settings.setValue('general/datasets', [])
+        settings.setValue('main/datasets', [])
         self.__populateRecentDatasets()
 
     def showAboutDialog(self):

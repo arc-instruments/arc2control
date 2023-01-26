@@ -86,7 +86,7 @@ class CrossbarConfigDialog(Ui_CrossbarConfigDialog, QtWidgets.QDialog):
                     dsets.append(self.datasetSelectionComboBox.itemData(i))
 
             # updated the recent dataset config on disk
-            settings.setValue('general/datasets', dsets[:10])
+            settings.setValue('main/datasets', dsets[:10])
 
         QtWidgets.QDialog.accept(self, *args)
 
@@ -123,7 +123,7 @@ class CrossbarConfigDialog(Ui_CrossbarConfigDialog, QtWidgets.QDialog):
 
         settings = ArC2ControlSettings
 
-        dsets = settings.value('general/datasets')
+        dsets = settings.value('main/datasets')
 
         if dsets is None:
             return
@@ -176,13 +176,13 @@ class CrossbarConfigDialog(Ui_CrossbarConfigDialog, QtWidgets.QDialog):
             self.nwords = nwords
             self.nbits = nbits
 
-        dsetList = ArC2ControlSettings.value('general/datasets')
+        dsetList = ArC2ControlSettings.value('main/datasets')
         if dsetList is None:
             dsetList = [(fname, int(self.nwords), int(self.nbits))]
         else:
             dsetList.insert(0, (fname, int(self.nwords), int(self.nbits)))
 
-        ArC2ControlSettings.setValue('general/datasets', dsetList[:10])
+        ArC2ControlSettings.setValue('main/datasets', dsetList[:10])
 
     def __mapperSelectionChanged(self, _):
         mapper = self.mapperSelectionComboBox.currentData()[1]

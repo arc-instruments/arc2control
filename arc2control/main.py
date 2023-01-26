@@ -65,7 +65,7 @@ def _validateRecentDatasetList():
 
     from . import ArC2ControlSettings as settings
 
-    dsets = settings.value('general/datasets')
+    dsets = settings.value('main/datasets')
 
     if dsets is None:
         return
@@ -80,7 +80,7 @@ def _validateRecentDatasetList():
     if len(removedIdxs) > 0:
         for idx in reversed(sorted(removedIdxs)):
             dsets.pop(idx)
-        settings.setValue('general/datasets', dsets[:10])
+        settings.setValue('main/datasets', dsets[:10])
 
 
 def main(args=None):
