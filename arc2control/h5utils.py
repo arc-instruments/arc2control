@@ -64,7 +64,12 @@ def _dataset_append(dset, row):
     # no provision on removing rows as this is mostly needed for write-once
     # datasets
     idx = dset.attrs['NROWS']
-    dset[idx] = row
+    try:
+        dset[idx] = row
+    except IndexError:
+        dset.resize((2*dset.shape[0], ))
+        dset[idx] = row
+
     dset.attrs['NROWS'] = idx + 1
 
 
