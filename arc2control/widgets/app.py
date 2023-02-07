@@ -210,6 +210,11 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         self.recentDatasetsActions.clear()
 
         datasets = settings.value('main/datasets')
+
+        if datasets is None:
+            menu.setEnabled(False)
+            return
+
         menu.setEnabled(len(datasets) > 0)
 
         for (dset, nwords, nbits) in datasets:
@@ -237,6 +242,9 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         settings = ArC2ControlSettings
 
         dsets = settings.value('main/datasets')
+
+        if dsets is None:
+            dsets = []
 
         # remove existing copies
         for idx in reversed(range(len(dsets))):
