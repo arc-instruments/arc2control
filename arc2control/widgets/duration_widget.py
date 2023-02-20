@@ -10,7 +10,7 @@ class DurationWidget(QtWidgets.QWidget):
         super().__init__(parent)
         self.baseValueSpinBox = QtWidgets.QSpinBox()
         self.baseValueSpinBox.setMaximum(1000)
-        self.baseValueSpinBox.setMinimum(0)
+        self.baseValueSpinBox.setMinimum(1)
         self.baseValueSpinBox.setValue(100)
         self.baseValueSpinBox.setMinimumWidth(40)
 
