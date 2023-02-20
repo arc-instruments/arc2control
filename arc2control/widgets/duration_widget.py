@@ -3,6 +3,9 @@ from PyQt6 import QtCore, QtWidgets, QtGui
 
 class DurationWidget(QtWidgets.QWidget):
 
+    #                                   new duration
+    durationChanged = QtCore.pyqtSignal(float)
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.baseValueSpinBox = QtWidgets.QSpinBox()
@@ -25,6 +28,7 @@ class DurationWidget(QtWidgets.QWidget):
         layout.setStretch(1, 0)
         layout.addWidget(self.baseValueSpinBox)
         layout.addWidget(self.multiplierCombo)
+        self.__connectSignals()
 
     def setObjectName(self, what):
         super().setObjectName(what)
@@ -32,6 +36,8 @@ class DurationWidget(QtWidgets.QWidget):
         self.multiplierCombo.setObjectName('%s_multiplier' % what)
 
     def setDurations(self, durations):
+        blockerBase = QtCore.QSignalBlocker(self.baseValueSpinBox)
+        blockerMulti = QtCore.QSignalBlocker(self.multiplierCombo)
         self.baseValueSpinBox.clear()
         self.multiplierCombo.clear()
 
@@ -64,6 +70,12 @@ class DurationWidget(QtWidgets.QWidget):
 
         raise ValueError("Multiplier doesn't exist in widget")
 
+    def getMultiplier(self):
+        return self.multiplierCombo.currentData()
+
+    def getBaseValue(self):
+        return self.baseValueSpinBox.value()
+
     def getDuration(self):
         base = self.baseValueSpinBox.value()
         multiplier = self.multiplierCombo.currentData()
@@ -73,3 +85,10 @@ class DurationWidget(QtWidgets.QWidget):
     def setDuration(self, value, mult):
         self.baseValueSpinBox.setValue(value)
         self.setCurrentMultiplier(mult)
+
+    def __connectSignals(self):
+        self.baseValueSpinBox.valueChanged.connect(self.__onDurationChanged)
+        self.multiplierCombo.currentIndexChanged.connect(self.__onDurationChanged)
+
+    def __onDurationChanged(self, *args):
+        self.durationChanged.emit(self.getDuration())

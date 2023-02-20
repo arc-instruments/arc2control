@@ -24,6 +24,9 @@ class PulseOpsWidget(Ui_PulseOpsWidget, QtWidgets.QWidget):
         self.posPulseReadButton.clicked.connect(self.__positivePulseReadClickedFn)
         self.negPulseReadButton.clicked.connect(self.__negativePulseReadClickedFn)
 
+        self.positivePulseSpinBox.valueChanged.connect(self.__onPositivePulseChanged)
+        self.positiveDurationWidget.durationChanged.connect(self.__onPositivePulseChanged)
+
     def positiveParams(self):
         return self.__pulseParams(Polarity.POSITIVE)
 
@@ -67,6 +70,15 @@ class PulseOpsWidget(Ui_PulseOpsWidget, QtWidgets.QWidget):
             self.negPulseReadButton.setEnabled(enabled)
         else:
             raise Exception("Unknown polarity?")
+
+    def __onPositivePulseChanged(self, *args):
+        if not self.pulsesLocked():
+            return
+
+        self.negativePulseSpinBox.setValue(self.positivePulseSpinBox.value())
+        base = self.positiveDurationWidget.getBaseValue()
+        mult = self.positiveDurationWidget.getMultiplier()
+        self.negativeDurationWidget.setDuration(base, mult)
 
     def __positivePulseClickedFn(self):
         (v, pw) = self.__pulseParams(Polarity.POSITIVE)
