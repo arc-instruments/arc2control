@@ -192,7 +192,7 @@ setup(
 
     ],
     packages = packages,
-    python_requires = '>=3.8,<3.11',
+    python_requires = '>=3.8,<3.12',
     install_requires = requirements,
     entry_points = {
         'console_scripts': ['arc2control = arc2control.main:main']
