@@ -1,11 +1,11 @@
 import abc
 import json
 import importlib
-import logging
 from collections.abc import Iterable
 
 from PyQt6 import QtCore, QtWidgets
 from .. import signals
+from .. import createLogger
 
 
 class BaseOperation(QtCore.QThread):
@@ -130,7 +130,7 @@ class BaseModule(QtWidgets.QWidget):
             QtWidgets.QStackedWidget: ('currentIndex', 'setCurrentIndex'), \
             QtWidgets.QTabWidget: ('currentIndex', 'setCurrentIndex')
         }
-        self._logger = logging.getLogger(tag)
+        self._logger = createLogger(tag)
 
         signals.arc2ConnectionChanged.connect(self.__arc2ConnectionChanged)
         signals.crossbarSelectionChanged.connect(self.__crossbarSelectionChanged)
@@ -213,7 +213,7 @@ class BaseModule(QtWidgets.QWidget):
     @property
     def logger(self):
         """
-        Returns the appropriately format logger for this module. See `the
+        Returns the appropriately formatted logger for this module. See `the
         python logging documentation for more
         <https://docs.python.org/3/library/logging.html#logging.Logger>`_.
         """

@@ -6,8 +6,8 @@ import sys
 import time
 import os.path
 import shutil
-import logging
-logger = logging.getLogger('MAIN')
+from .. import createLogger
+logger = createLogger('MAIN')
 import numpy as np
 from functools import partial
 import pyqtgraph as pg

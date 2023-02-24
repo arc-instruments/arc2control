@@ -4,9 +4,10 @@ from arc2control.widgets.crossbarconfig_dialog import CrossbarConfigDialog
 import os.path
 import glob
 import logging
-logger = logging.getLogger('LOAD')
 from . import graphics
 from . import constants
+from . import createLogger
+logger = createLogger('LOAD')
 from .mapper import ChannelMapper
 
 
@@ -44,23 +45,6 @@ def _standardQtDirectories(name):
         QtCore.QStandardPaths.LocateOption.LocateDirectory)
 
 
-def _envToLogLevel():
-    level = os.environ.get('ARC2CTRL_LOGLEVEL', 'warn').strip().lower()
-
-    if level == 'debug':
-        return logging.DEBUG
-    elif level == 'info':
-        return logging.INFO
-    elif level == 'warning' or level == 'warn':
-        return logging.WARNING
-    elif level == 'error':
-        return logging.ERROR
-    elif level == 'critical':
-        return logging.CRITICAL
-    else:
-        return logging.WARNING
-
-
 def _validateRecentDatasetList():
 
     from . import ArC2ControlSettings as settings
@@ -84,9 +68,6 @@ def _validateRecentDatasetList():
 
 
 def main(args=None):
-
-    logging.basicConfig(level=_envToLogLevel(), \
-        format='[%(levelname)s] [%(name)s] %(message)s')
 
     import sys
     import warnings
