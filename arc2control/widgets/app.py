@@ -48,13 +48,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
 
         self.setupUi(self)
 
-        # replace the placeholder crossbar widget with the actual paint
-        # widget. This is necessary to initialise it to its proper size
-        # instead of the default 32×32
-        newCrossbarWidget = PaintWidget(shape=shape)
-        self.crossbarGridLayout.replaceWidget(self.mainCrossbarWidget, newCrossbarWidget)
-        self.mainCrossbarWidget = newCrossbarWidget
-
+        self.__setupCrossbarView()
         self.__setupControlWidgets()
         default_mapper = 'resarray32.toml' if mapper is None else mapper
         actual_mappers = {}
@@ -104,6 +98,25 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
     @property
     def mapper(self):
         return self.arc2ConnectionWidget.currentMapper()
+
+    def __setupCrossbarView(self):
+
+        shape = (self._nbits, self._nwords)
+
+        # replace the placeholder crossbar widget with the actual paint
+        # widget. This is necessary to initialise it to its proper size
+        # instead of the default 32×32
+        newCrossbarWidget = PaintWidget(shape=shape)
+        self.crossbarGridLayout.replaceWidget(self.mainCrossbarWidget, newCrossbarWidget)
+        self.mainCrossbarWidget = newCrossbarWidget
+
+        # replace the horizontal Bitline label with a VerticalLabel
+        newBitLineLabel = pg.VerticalLabel('Bitline')
+        self.crossbarGridLayout.replaceWidget(self.bitlineLabel, newBitLineLabel)
+        self.bitlineLabel = newBitLineLabel
+        self.bitlineLabel.setStyleSheet('font-weight: bold')
+        self.bitlineLabel.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+
 
     def __connectSignals(self):
 
