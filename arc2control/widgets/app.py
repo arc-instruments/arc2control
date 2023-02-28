@@ -113,6 +113,8 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         # replace the horizontal Bitline label with a VerticalLabel
         newBitLineLabel = pg.VerticalLabel('Bitline')
         self.crossbarGridLayout.replaceWidget(self.bitlineLabel, newBitLineLabel)
+        self.bitlineLabel.setParent(None)
+        del self.bitlineLabel
         self.bitlineLabel = newBitLineLabel
         self.bitlineLabel.setStyleSheet('font-weight: bold')
         self.bitlineLabel.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
