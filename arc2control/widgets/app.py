@@ -108,6 +108,8 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         # instead of the default 32×32
         newCrossbarWidget = PaintWidget(shape=shape)
         self.crossbarGridLayout.replaceWidget(self.mainCrossbarWidget, newCrossbarWidget)
+        self.mainCrossbarWidget.setParent(None)
+        del self.mainCrossbarWidget
         self.mainCrossbarWidget = newCrossbarWidget
 
         # replace the horizontal Bitline label with a VerticalLabel
