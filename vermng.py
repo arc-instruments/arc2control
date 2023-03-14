@@ -46,10 +46,10 @@ def update_version_file(module, version, basedir=None):
 
     with open(versionfile, 'w') as verfile:
         thisyear = date.today().year
-        if thisyear == 2022:
-            copytext = "2022"
+        if thisyear == 2021:
+            copytext = "2021"
         else:
-            copytext = "2022–%d" % thisyear
+            copytext = "2021–%d" % thisyear
         verfile.write(VERFILETMPL % (version, copytext))
 
 

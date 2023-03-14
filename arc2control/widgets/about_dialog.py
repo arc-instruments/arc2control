@@ -13,7 +13,7 @@ class AboutDialog(Ui_AboutDialog, QtWidgets.QDialog):
         QtWidgets.QDialog.__init__(self, parent=parent)
         self.setupUi(self)
 
-        self.copyrightYearLabel.setText('©%s' % COPYRIGHT)
+        self.copyrightYearLabel.setText('© %s' % COPYRIGHT)
         self.logoLabel.setPixmap(getPixmap('splash'))
         self.pythonVersionLabel.setText('%s on %s %s' % \
             (python_version(), system(), machine()))

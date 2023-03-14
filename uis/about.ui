@@ -73,7 +73,7 @@
         <item>
          <widget class="QLabel" name="label_4">
           <property name="text">
-           <string> – ArC Instruments Ltd.</string>
+           <string>  ArC Instruments Ltd.</string>
           </property>
          </widget>
         </item>
