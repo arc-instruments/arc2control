@@ -306,6 +306,24 @@ class BaseModule(QtWidgets.QWidget):
             setter = getattr(wdg, setterName)
             setter(*args)
 
+    def actions(self):
+        """
+        Specify actions performed by this module. This function *must* be overriden
+        if you want ArC TWO Control to automatically generate action buttons for
+        the module. This can be as simple as
+
+        >>>  def actions(self):
+        >>>      #           key              title                callback        show?
+        >>>      return { 'selection': ('Apply to Selection', self.actionCallback, True) }
+
+        The above example registers an action called ``selection`` that connects to
+        ``self.actionCallback``. ArC TWO Control will generate a button below the
+        module panel with the text "Apply to Selection" that triggers the callback
+        when clicked. If you want to register an action with no corresponding button
+        set the last argument as ``False``.
+        """
+        return { }
+
     def arc2Present(self, title, error='No ArC TWO connected'):
         """
         Checks if an ArC TWO is present. If an ArC TWO cannot be

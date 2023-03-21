@@ -700,6 +700,28 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         layout.addWidget(titleLabel)
         layout.addWidget(QtWidgets.QLabel(obj.description))
         layout.addWidget(scrollArea)
+        try:
+            modes = obj.actions()
+            if len(modes.items()) > 0:
+                buttons = 0
+                modeLayout = QtWidgets.QHBoxLayout()
+                modeLayout.addItem(QtWidgets.QSpacerItem(20, 20,
+                    QtWidgets.QSizePolicy.Policy.Expanding,
+                    QtWidgets.QSizePolicy.Policy.Fixed))
+                for (_, (title, callback, show)) in modes.items():
+                    if not show:
+                        continue
+                    button = QtWidgets.QPushButton(title)
+                    button.clicked.connect(callback)
+                    modeLayout.addWidget(button)
+                    buttons += 1
+                modeLayout.addItem(QtWidgets.QSpacerItem(20, 20,
+                    QtWidgets.QSizePolicy.Policy.Expanding,
+                    QtWidgets.QSizePolicy.Policy.Fixed))
+                if buttons > 0:
+                    layout.addLayout(modeLayout)
+        except AttributeError:
+            pass
         wdg.setLayout(layout)
         # add an attribute to quickly get to the actual module widget
         setattr(wdg, 'module', obj)

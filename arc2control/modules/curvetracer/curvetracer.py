@@ -144,11 +144,7 @@ class CurveTracer(BaseModule, Ui_CurveTracerWidget):
         self.__populateBiasTypeComboBox()
         self.__populateReadAtComboBox()
 
-        self.rampSelectedButton.clicked.connect(self.rampSelectedClicked)
-        self.rampSelectedButton.setEnabled((len(self.cells) == 1) and (self.arc is not None))
         self.biasTypeComboBox.currentIndexChanged.connect(self.biasTypeChanged)
-        signals.crossbarSelectionChanged.connect(self.crossbarSelectionChanged)
-        signals.arc2ConnectionChanged.connect(self.crossbarSelectionChanged)
         signals.readoutVoltageChanged.connect(self.readoutVoltageChanged)
 
     def __populateIVTypeComboBox(self, setFont=True):
@@ -267,10 +263,17 @@ class CurveTracer(BaseModule, Ui_CurveTracerWidget):
         else:
             return stops * cycles
 
-    def crossbarSelectionChanged(self, cells):
-        self.rampSelectedButton.setEnabled((len(self.cells) == 1) and (self.arc is not None))
+    def actions(self):
+        return {
+            'selection': ('Apply to Selection', self.rampSelected, True)
+        }
 
-    def rampSelectedClicked(self):
+    def rampSelected(self):
+
+        if not self.arc2Present(MOD_NAME) or \
+            not self.minSelection(MOD_NAME, 1):
+            return
+
         self._thread = CurveTracerOperation(self.__rampParams(), self)
         self._thread.operationFinished.connect(self.__threadFinished)
         self._thread.start()

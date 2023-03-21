@@ -177,20 +177,12 @@ class Retention(BaseModule):
         layout.setColumnStretch(2, 2)
         layout.setContentsMargins(0, 0, 0, 0)
 
-        buttonLayout = QtWidgets.QHBoxLayout()
-        self.applyButton = QtWidgets.QPushButton("Apply to Selected")
-        self.applyButton.setEnabled((len(self.cells) > 0) and \
-            (self.arc is not None))
-        self.applyButton.clicked.connect(self.applyButtonClicked)
-        buttonLayout.addItem(QtWidgets.QSpacerItem(20, 20, \
-            QtWidgets.QSizePolicy.Policy.Expanding))
-        buttonLayout.addWidget(self.applyButton)
-        buttonLayout.addItem(QtWidgets.QSpacerItem(20, 20, \
-            QtWidgets.QSizePolicy.Policy.Expanding))
-
-        layout.addLayout(buttonLayout, 5, 0, 1, 3)
-
         self.setLayout(layout)
+
+    def actions(self):
+        return {
+            'selection': ('Apply to Selection', self.applyToSelected, True)
+        }
 
     @property
     def description(self):
@@ -208,7 +200,12 @@ class Retention(BaseModule):
         self.applyButton.setEnabled((len(self.cells) > 0) and \
             (self.arc is not None))
 
-    def applyButtonClicked(self):
+    def applyToSelected(self):
+
+        if not self.arc2Present(MOD_NAME) or \
+            not self.minSelection(MOD_NAME, 1):
+            return
+
         self._thread = RetentionOperation(self.__retentionParams(), self)
         self._thread.operationFinished.connect(self.__threadFinished)
         self._thread.start()
