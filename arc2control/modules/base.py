@@ -306,6 +306,40 @@ class BaseModule(QtWidgets.QWidget):
             setter = getattr(wdg, setterName)
             setter(*args)
 
+    def arc2Present(self, title, error='No ArC TWO connected'):
+        """
+        Checks if an ArC TWO is present. If an ArC TWO cannot be
+        found an additional error can be displayed.
+
+        :param str title: Title of the error dialog. Set to ``None``
+                          to suppress
+        :param str error: Custom error to display; ignored if dialog
+                          is suppressed
+        """
+        if self.arc is None:
+            if title is not None:
+                QtWidgets.QMessageBox.critical(self, title, error)
+            return False
+        return True
+
+    def minSelection(self, title, cells=1, error='Need at least %d device(s) selected'):
+        """
+        Checks if at least ``cells`` are selected and displays an error
+        otherwise. If selected cells are below the threshold an additional
+        error can be displayed.
+
+        :param str title: Title of the error dialog. Set to ``None``
+                          to suppress
+        :param int cells: Minimum number of selected cells to check for
+        :param str error: Custom error to display; ignored if dialog
+                          is suppressed
+        """
+        if len(self.cells) < cells:
+            if title is not None:
+                QtWidgets.QMessageBox.critical(self, title, error % cells)
+            return False
+        return True
+
     def __crossbarSelectionChanged(self, cb):
         self._selectedCells = cb
 
