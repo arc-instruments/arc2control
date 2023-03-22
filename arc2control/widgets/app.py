@@ -681,7 +681,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         mod = self.moduleListComboBox.currentData()
         self.addModuleTab(mod)
 
-    def addModuleTab(self, kls):
+    def createModuleWidget(self, kls, withActions=True):
         obj = kls(self._arc, self.arc2ConnectionWidget.arc2Config, \
             self.readOpsWidget.readoutVoltage(), weakref.ref(self._datastore), \
             self.mainCrossbarWidget.selection, self.mapper)
@@ -700,32 +700,38 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         layout.addWidget(titleLabel)
         layout.addWidget(QtWidgets.QLabel(obj.description))
         layout.addWidget(scrollArea)
-        try:
-            modes = obj.actions()
-            if len(modes.items()) > 0:
-                buttons = 0
-                modeLayout = QtWidgets.QHBoxLayout()
-                modeLayout.addItem(QtWidgets.QSpacerItem(20, 20,
-                    QtWidgets.QSizePolicy.Policy.Expanding,
-                    QtWidgets.QSizePolicy.Policy.Fixed))
-                for (_, (title, callback, show)) in modes.items():
-                    if not show:
-                        continue
-                    button = QtWidgets.QPushButton(title)
-                    button.clicked.connect(callback)
-                    modeLayout.addWidget(button)
-                    buttons += 1
-                modeLayout.addItem(QtWidgets.QSpacerItem(20, 20,
-                    QtWidgets.QSizePolicy.Policy.Expanding,
-                    QtWidgets.QSizePolicy.Policy.Fixed))
-                if buttons > 0:
-                    layout.addLayout(modeLayout)
-        except AttributeError:
-            pass
+        if withActions:
+            try:
+                modes = obj.actions()
+                if len(modes.items()) > 0:
+                    buttons = 0
+                    modeLayout = QtWidgets.QHBoxLayout()
+                    modeLayout.addItem(QtWidgets.QSpacerItem(20, 20,
+                        QtWidgets.QSizePolicy.Policy.Expanding,
+                        QtWidgets.QSizePolicy.Policy.Fixed))
+                    for (_, (title, callback, show)) in modes.items():
+                        if not show:
+                            continue
+                        button = QtWidgets.QPushButton(title)
+                        button.clicked.connect(callback)
+                        modeLayout.addWidget(button)
+                        buttons += 1
+                    modeLayout.addItem(QtWidgets.QSpacerItem(20, 20,
+                        QtWidgets.QSizePolicy.Policy.Expanding,
+                        QtWidgets.QSizePolicy.Policy.Fixed))
+                    if buttons > 0:
+                        layout.addLayout(modeLayout)
+            except AttributeError:
+                pass
         wdg.setLayout(layout)
         # add an attribute to quickly get to the actual module widget
         setattr(wdg, 'module', obj)
-        self.experimentTabWidget.addTab(wdg, obj.name)
+
+        return wdg
+
+    def addModuleTab(self, kls):
+        wdg = self.createModuleWidget(kls)
+        self.experimentTabWidget.addTab(wdg, wdg.module.name)
         # switch to the new tab
         self.experimentTabWidget.setCurrentIndex(self.experimentTabWidget.count()-1)
 
@@ -735,8 +741,6 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
             self.moduleWrapStackedWidget.setCurrentIndex(1)
 
         self.saveModuleButton.setEnabled(True)
-
-        return obj
 
     def removeCurrentModuleTab(self):
         wdg = self.experimentTabWidget.currentWidget()
