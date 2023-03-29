@@ -4,7 +4,7 @@ import numpy as np
 import pyqtgraph as pg
 from enum import Enum
 from pyarc2 import ReadAt, ReadAfter, DataMode
-from arc2control.modules.base import BaseModule, BaseOperation
+from arc2control.modules.base import BaseModule, BaseOperation, modaction
 from . import MOD_NAME, MOD_TAG, MOD_DESCRIPTION
 from .ret_display_widget import RETDataDisplayWidget
 from arc2control import signals
@@ -179,11 +179,6 @@ class Retention(BaseModule):
 
         self.setLayout(layout)
 
-    def actions(self):
-        return {
-            'selection': ('Apply to Selection', self.applyToSelected, True)
-        }
-
     @property
     def description(self):
         return MOD_DESCRIPTION
@@ -200,6 +195,7 @@ class Retention(BaseModule):
         self.applyButton.setEnabled((len(self.cells) > 0) and \
             (self.arc is not None))
 
+    @modaction('selection', desc='Apply to Selection')
     def applyToSelected(self):
 
         if not self.arc2Present(MOD_NAME) or \

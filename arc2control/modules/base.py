@@ -1,11 +1,73 @@
 import abc
 import json
 import importlib
+import functools
 from collections.abc import Iterable
 
 from PyQt6 import QtCore, QtWidgets
 from .. import signals
 from .. import createLogger
+
+
+def modaction(key, show=True, desc=None):
+    """
+    This function is typically used as a decorator for actions related to
+    experiment modules. The actions will typically be used to populate the
+    action buttons. All module methods decorated with ``modaction`` will
+    be automatically registered as actions and a button with the ``desc``
+    text will be shown below their panel in the experiment tabbed widget
+    (unless ``show`` is ``False``).
+
+    :param str key: A unique identifier for this actions.
+    :param bool show: Whether to show a related button in the experiment
+                      panel
+    :param str desc: A description for this action; this will also be used
+                     as the text on the button displayed in the experiment
+                     panel area.
+
+    :raise KeyError: If a key is used twice
+
+    .. code-block:: python
+
+       class Experiment(BaseModule):
+           # complex logic here
+           # ...
+
+           @modaction('selection', desc='Apply to Selection')
+           def apply(self):
+               # more complex logic here
+    """
+
+    def decorator_modaction(fn):
+        @functools.wraps(fn)
+        def wrapper(*args, **kwargs):
+            fn(*args, **kwargs)
+        wrapper._is_action = True
+        wrapper._action_name = key
+        wrapper._action_show = show
+        wrapper._action_desc = desc
+        wrapper._action_target = fn
+        return wrapper
+    return decorator_modaction
+
+
+class ActionRegister(type(QtCore.QObject)):
+
+    def __new__(klass, name, base, dct):
+        x = super(ActionRegister, klass).__new__(klass, name, base, dct)
+        x._actions = {}
+        for a in dir(x):
+            try:
+                what = getattr(x, a)
+                if getattr(what, '_is_action', False):
+                    if not what._action_name in x._actions:
+                        x._actions[what._action_name] = \
+                            (what._action_desc, what._action_target, what._action_show)
+                    else:
+                        raise KeyError('Key "%s" already exists' % what._action_name)
+            except AttributeError as ae:
+                continue
+        return x
 
 
 class BaseOperation(QtCore.QThread):
@@ -87,7 +149,7 @@ class BaseOperation(QtCore.QThread):
         pass
 
 
-class BaseModule(QtWidgets.QWidget):
+class BaseModule(QtWidgets.QWidget, metaclass=ActionRegister):
     """
     Base Module for all ArC2Control plugins. A valid ArC2 plugin _MUST_ derive
     from this class to be properly loaded on startup. The base class will track
@@ -308,21 +370,22 @@ class BaseModule(QtWidgets.QWidget):
 
     def actions(self):
         """
-        Specify actions performed by this module. This function *must* be overriden
-        if you want ArC TWO Control to automatically generate action buttons for
-        the module. This can be as simple as
+        Returns actions performed by this module. The actions are discovered
+        automatically if they are decorated with the decorator
+        :meth:`~arc2control.modules.base.modaction`, otherwise this
+        method needs to be overriden.
 
-        >>>  def actions(self):
-        >>>      #           key              title                callback        show?
-        >>>      return { 'selection': ('Apply to Selection', self.actionCallback, True) }
+        Returns a dict containing all of the registered actions, eg.
 
-        The above example registers an action called ``selection`` that connects to
-        ``self.actionCallback``. ArC TWO Control will generate a button below the
-        module panel with the text "Apply to Selection" that triggers the callback
-        when clicked. If you want to register an action with no corresponding button
-        set the last argument as ``False``.
+        >>> module.actions()
+        >>> # { 'selection': ('Apply to Selection', moduleClass.actionCallback, True) }
+
+        Please note that if the :meth:`~arc2control.modules.base.modaction`
+        decorator is used the callbacks are not bound to an object so in order
+        to be called properly an instance of the object must be passed as their
+        first argument.
         """
-        return { }
+        return self._actions
 
     def arc2Present(self, title, error='No ArC TWO connected'):
         """

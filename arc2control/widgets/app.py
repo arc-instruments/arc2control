@@ -713,7 +713,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
                         if not show:
                             continue
                         button = QtWidgets.QPushButton(title)
-                        button.clicked.connect(callback)
+                        button.clicked.connect(partial(callback, obj))
                         modeLayout.addWidget(button)
                         buttons += 1
                     modeLayout.addItem(QtWidgets.QSpacerItem(20, 20,

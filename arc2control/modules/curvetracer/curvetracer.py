@@ -2,7 +2,7 @@ import numpy as np
 import pyqtgraph as pg
 from enum import Enum
 from pyarc2 import ReadAt, ReadAfter, DataMode
-from arc2control.modules.base import BaseModule, BaseOperation
+from arc2control.modules.base import BaseModule, BaseOperation, modaction
 from .generated.curvetracer import Ui_CurveTracerWidget
 from . import MOD_NAME, MOD_TAG, MOD_DESCRIPTION
 from .ct_display_widget import CTDataDisplayWidget
@@ -263,11 +263,7 @@ class CurveTracer(BaseModule, Ui_CurveTracerWidget):
         else:
             return stops * cycles
 
-    def actions(self):
-        return {
-            'selection': ('Apply to Selection', self.rampSelected, True)
-        }
-
+    @modaction('selection', desc='Apply to Selection')
     def rampSelected(self):
 
         if not self.arc2Present(MOD_NAME) or \
