@@ -681,13 +681,21 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         mod = self.moduleListComboBox.currentData()
         self.addModuleTab(mod)
 
-    def createModuleWidget(self, kls, withActions=True):
+    def createBareModuleObject(self, kls, withEvents=True):
         obj = kls(self._arc, self.arc2ConnectionWidget.arc2Config, \
             self.readOpsWidget.readoutVoltage(), weakref.ref(self._datastore), \
             self.mainCrossbarWidget.selection, self.mapper)
-        # update tree when experiment is finished
-        obj.experimentFinished.connect(lambda w, b, path: \
-            self.deviceExplorerWidget.addExperiment(w, b, path))
+
+        if withEvents:
+            # update tree when experiment is finished
+            obj.experimentFinished.connect(lambda w, b, path: \
+                self.deviceExplorerWidget.addExperiment(w, b, path))
+        return obj
+
+    def createModuleWidget(self, kls, withActions=True):
+
+        obj = self.createBareModuleObject(kls, True)
+
         wdg = QtWidgets.QWidget()
         scrollArea = QtWidgets.QScrollArea()
         layout = QtWidgets.QVBoxLayout()
