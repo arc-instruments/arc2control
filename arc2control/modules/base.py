@@ -281,6 +281,24 @@ class BaseModule(QtWidgets.QWidget, metaclass=ActionRegister):
         """
         return self._logger
 
+    @property
+    def modargs(self):
+        """
+        Returns a tuple containing all the necessary arguments to pass
+        to a new ``BaseModule``. This is useful when trying to instantiate
+        modules from within other modules. These are
+
+        * A weak reference to the current ArC2 object, if connected
+        * The current ArC2 configuration
+        * The current read-out voltage
+        * A weak reference to the currently opened dataset
+        * The current crosbbar cell selection
+        * The currently selected Channel Mapper
+        """
+        return ( \
+            self._arc, self._arcconf, self._readoutVoltage, \
+            self._datastore, self.cells, self._mapper )
+
     def addSerializableType(self, typ, getter, setter):
         """
         Register the setters and getters of a non standard
