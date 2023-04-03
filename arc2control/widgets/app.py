@@ -750,6 +750,8 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
 
         self.saveModuleButton.setEnabled(True)
 
+        return wdg
+
     def removeCurrentModuleTab(self):
         wdg = self.experimentTabWidget.currentWidget()
         idx = self.experimentTabWidget.currentIndex()
@@ -776,7 +778,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         if fname is None or len(fname[0]) == 0:
             return
 
-        wdg.module.exportToJson(fname[0])
+        wdg.module.toJsonFile(fname[0])
 
     def loadModuleClicked(self):
         fname = QtWidgets.QFileDialog.getOpenFileName(self, "Open Widget Data",\
@@ -788,7 +790,7 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         klass = moduleClassFromJson(fname[0])
 
         wdg = self.addModuleTab(klass)
-        wdg.loadFromJson(fname[0])
+        wdg.module.fromJsonFile(fname[0])
 
 
     def clearPlots(self):

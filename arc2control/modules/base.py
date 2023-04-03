@@ -302,7 +302,7 @@ class BaseModule(QtWidgets.QWidget, metaclass=ActionRegister):
     def addSerializableType(self, typ, getter, setter):
         """
         Register the setters and getters of a non standard
-        widgets that should be serialized with ``exportToJson``.
+        widgets that should be serialized with ``toJson``.
         Typically ``typ`` would be a custom widget and ``setter`` and
         ``getter`` are functions of that custom widget that load and
         set its state. Custom widgets must be registered with this
@@ -315,9 +315,9 @@ class BaseModule(QtWidgets.QWidget, metaclass=ActionRegister):
         """
         self._serializableTypes.append((typ, getter, setter))
 
-    def exportToJson(self, fname):
+    def toJson(self):
         """
-        Export all the adjustable children of this module to a JSON file. All
+        Export all the adjustable children of this module to a JSON fragment. All
         individual widgets must set a unique name using ``setObjectName`` for
         this to work properly. Standard Qt Widgets and custom widgets that are
         made up from standard widgets are dealed with automatically. For
@@ -352,20 +352,30 @@ class BaseModule(QtWidgets.QWidget, metaclass=ActionRegister):
                 'setter': self._serializableTypes[klass][1],\
                 'args': [*actualValues]}
 
-        with open(fname, 'w') as f:
-            f.write(json.dumps({'modname': self.fullModuleName, \
-                'widgets': widgets }, indent=2))
+        return json.dumps({'modname': self.fullModuleName, \
+            'widgets': widgets }, indent=2)
 
-    def loadFromJson(self, fname):
+    def toJsonFile(self, fname):
         """
-        Load panel settings from a JSON file. Most common widget values are
+        Same as :meth:`~arc2control.modules.base.BaseModule.toJson` but
+        save to a file instead.
+
+        :param str fname: The filename of the JSON file to export current
+                          module's values.
+        """
+        with open(fname, 'w') as f:
+            f.write(self.toJson())
+
+    def fromJson(self, frag):
+        """
+        Load panel settings from a JSON fragment. Most common widget values are
         stored automatically but if custom widgets are present the subclass
         *must* register a setter and a getter method for the class using
         :meth:`~ar2control.modules.base.BaseModule.addSerializableType`.
 
-        :param str fname: The filename to load values from
+        :param str frag: The JSON fragment to load from
         """
-        raw = json.loads(open(fname, 'r').read())['widgets']
+        raw = json.loads(frag)['widgets']
 
         for (name, attrs) in raw.items():
             klsname = attrs['type']
@@ -385,6 +395,16 @@ class BaseModule(QtWidgets.QWidget, metaclass=ActionRegister):
 
             setter = getattr(wdg, setterName)
             setter(*args)
+
+    def fromJsonFile(self, fname):
+        """
+        Same as :meth:`~arc2control.modules.base.BaseModule.fromJson`
+        but read from a file instead.
+
+        :param str fname: The JSON file to load from
+        """
+        frag = open(fname, 'r').read()
+        self.fromJson(frag)
 
     def actions(self):
         """

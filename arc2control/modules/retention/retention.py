@@ -183,13 +183,11 @@ class Retention(BaseModule):
     def description(self):
         return MOD_DESCRIPTION
 
-    def loadFromJson(self, fname):
+    def fromJson(self, frag):
         # we override the default loading function to do extra validation
-        super().loadFromJson(fname)
+        super().fromJson(frag)
         self.readVoltageSpinBox.setEnabled(\
             not self.lockReadoutVoltageCheckBox.isChecked())
-        self.applyButton.setEnabled((len(self.cells) > 0) and \
-            (self.arc is not None))
 
     def crossbarSelectionChanged(self, cells):
         self.applyButton.setEnabled((len(self.cells) > 0) and \
