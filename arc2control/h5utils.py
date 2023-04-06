@@ -155,7 +155,7 @@ class H5DataStore:
         self._h5.attrs['words'] = shape[0]
         self._h5.attrs['bits'] = shape[1]
 
-        for grp in ['crossbar', 'crosspoints', 'synthetics']:
+        for grp in ['crossbar', 'crosspoints', 'synthetics', 'sequences']:
             self.__create_top_level_group(grp)
 
         for dset in ['voltage', 'current']:
@@ -277,6 +277,14 @@ class H5DataStore:
             dset.attrs['TITLE'] = 'W%02dB%02d' % (word, bit)
             dset.attrs['CLASS'] = 'TABLE'
             dset.attrs['BASE_SIZE'] = H5DataStore._BASE_SIZE
+
+    def sequence(self, name):
+        try:
+            grp = self._h5['sequences']
+        except KeyError:
+            return None
+
+        return self._h5['sequences'][name]
 
     def timeseries(self, word, bit):
         """
@@ -632,6 +640,23 @@ class H5DataStore:
             dset.attrs['TSTAMP'] = ts
 
         return dset
+
+    def make_sequence_group(self, name, datasets=[]):
+        try:
+            sequences = self._h5['sequences']
+        except KeyError:
+            sequences = self._h5.create_group('/sequences')
+
+        grp = sequences.create_group(name)
+
+        for (_, _, dset) in datasets:
+            p = PurePosixPath(dset)
+            basename = p.name
+            dsetobj = self.dataset(dset)
+            dsetobj.attrs['sequence'] = name
+            grp[basename] = h5py.SoftLink(dset)
+
+        return grp
 
     def __make_table(self, name, shape, dtype, maxshape):
         if maxshape is None:
