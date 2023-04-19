@@ -99,6 +99,18 @@ class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
     def mapper(self):
         return self.arc2ConnectionWidget.currentMapper()
 
+    @property
+    def state(self):
+        return { \
+            'arc': self._arc, \
+            'arcconf': self.arc2ConnectionWidget.arc2Config, \
+            'readoutVoltage': self.readOpsWidget.readoutVoltage(), \
+            'store': weakref.ref(self._datastore), \
+            'selection': self.mainCrossbarWidget.selection, \
+            'mapper': self.mapper, \
+            'modules': self._modules, \
+            'app': weakref.ref(self)}
+
     def __setupCrossbarView(self):
 
         shape = (self._nbits, self._nwords)
