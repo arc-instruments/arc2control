@@ -378,7 +378,10 @@ class BaseModule(QtWidgets.QWidget, metaclass=ActionRegister):
         raw = json.loads(frag)['widgets']
 
         for (name, attrs) in raw.items():
-            klsname = attrs['type']
+            try:
+                klsname = attrs['type']
+            except KeyError:
+                continue
             setterName = attrs['setter']
             args = attrs['args']
 
