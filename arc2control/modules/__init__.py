@@ -5,6 +5,10 @@ import importlib
 
 def moduleClassFromJson(fname):
     modname = json.loads(open(fname, 'r').read())['modname']
+    return moduleClassFromModName(modname)
+
+
+def moduleClassFromModName(modname):
     klsparts = modname.split('.')
     pkgname = '.'.join(klsparts[:-1])
 
