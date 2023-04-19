@@ -641,19 +641,40 @@ class H5DataStore:
 
         return dset
 
-    def make_sequence_group(self, name, datasets=[]):
+    def make_sequence_group(self, name, datasets=[], tstamp=True):
+        """
+        Create a new sequence pseudo-group used to organise many existing
+        experiments into a logical sequence. Argument ``datasets`` is a list
+        of existing dataset. HDF5 soft links to the dataset will be
+        appended to the members of this group and the additional attributes
+        ``sequence`` (the name of the sequence they are member to) and
+        ``seqno`` (position in the sequence) will be added.
+
+        :param str name: Identifier for this sequence
+        :param datasets: List of strings to existing datasets
+        :param bool tstamp: Whether the current timestamp should be appended
+                            to the dataset name
+
+        :return: The HDF5 group corresponding to the newly created sequence
+        """
         try:
             sequences = self._h5['sequences']
         except KeyError:
             sequences = self._h5.create_group('/sequences')
 
-        grp = sequences.create_group(name)
+        if tstamp:
+            actual_name = '%s_%d' % (name, time.time_ns())
+        else:
+            actual_name = name
 
-        for (_, _, dset) in datasets:
+        grp = sequences.create_group(actual_name, track_order=True)
+
+        for (idx, (_, _, dset)) in enumerate(datasets):
             p = PurePosixPath(dset)
             basename = p.name
             dsetobj = self.dataset(dset)
             dsetobj.attrs['sequence'] = name
+            dsetobj.attrs['seqno'] = idx
             grp[basename] = h5py.SoftLink(dset)
 
         return grp
