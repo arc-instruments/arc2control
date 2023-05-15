@@ -21,9 +21,6 @@ def uiToModule(src, name):
     Compile a Qt Designer UI file into a Python module using pyuic6. This
     function allows for on-the-fly parsing and importing of a UI file into a
     Python module so that an external compilation step is not necessary.
-    Although built-in modules will always have their UIs precompiled (as pyuic
-    migh not always be available) UI auto-compilation expediates the turnaround
-    for UI changes when developing a 3rd party module.
 
     .. code-block:: python
 
@@ -62,3 +59,62 @@ def uiToModule(src, name):
     exec(code, mod.__dict__)
 
     return mod
+
+
+def allUisToModules(uis, prefix='Ui_'):
+    """
+    Compile all Qt Designer UI files listed in ``uis`` into Python modules
+    using pyuic6. This function is similar to
+    `:meth:~arc2control.modules.uiToModule` but will create a single object
+    that holds the types for all compiled UIs.  This function will only look
+    for classes that start with ``prefix`` and attach them as attributes to the
+    returned object. However, the returned object has a flat namespace so if
+    there are two identical class names in the list of the provided UIs an
+    exception will be raised.
+
+    .. code-block:: python
+
+        from arc2control.modules import compileUisToModules
+        from arc2control.modules.base import BaseModule, BaseOperation
+        from . import MOD_NAME, MOD_TAG, MOD_DESCRIPTION
+
+        uis = ['/path/to/iface01.ui', 'path/to/iface02.ui']
+        generated = compileUisToModules(uis)
+
+        # now this can be used as base class as usual
+        class Iface(BaseModule, generated.Ui_IfaceWidget):
+            def __init__(self, parent):
+                generated.Ui_IfaceWidget.__init__(self)
+                BaseModule.__init__(self, arc, arcconf, vread, store,
+                    MOD_NAME, MOD_TAG, cells, mapper, parent=parent)
+                # proceed as normal
+
+        :param list uis: A list of paths with Qt UI files
+        :param str prefix: Prefix of classes to look for, default is ``Ui_``
+
+        :returns: An object holding all the compiled UI classes as attributes
+
+        :raises ValueError: If two identical UI classes are found in the list
+                            of provided files
+
+    """
+
+    # Create a placeholder type to hold the generated Ui classes
+    # as atributes
+    generated = type('GeneratedElements', (), {})()
+
+    for ui in uis:
+        # compiled the UI
+        compiled = uiToModule(ui, 'compiled')
+        for item in dir(compiled):
+            # find Ui elements
+            if not item.startswith(prefix):
+                continue
+            obj = getattr(compiled, item)
+            # check if it's indeed a type
+            if isinstance(obj, type):
+                if hasattr(generated, item):
+                    raise ValueError('UI class ' + item + ' exists')
+                setattr(generated, item, obj)
+
+    return generated
