@@ -85,6 +85,7 @@ added_files = [
     (os.path.join(PATHEX, 'arc2control/graphics/*.png'),'arc2control/graphics'),
     (os.path.join(PATHEX, 'arc2control/graphics/*.svg'),'arc2control/graphics'),
     (os.path.join(PATHEX, 'arc2control/mappings/*.toml'),'arc2control/mappings'),
+    (os.path.join(PATHEX, 'arc2control/widgets/uis/*.ui'),'arc2control/widgets/uis'),
 ]
 
 # MODULES
@@ -92,17 +93,34 @@ added_files = [
 modimports = [
     'pyqtgraph',
     'pyarc2',
-    'arc2control']
+    'arc2control',
+    'arc2control.widgets',
+    'arc2control.modules']
 
 # BUILT-IN MODULES
 
 for m in glob(os.path.join(PATHEX, 'arc2control', 'modules/*')):
     if isemodule(m):
         modname = os.path.basename(m)
-        print('Adding built-in module hidden import', modname)
+        uispath = os.path.join(PATHEX, 'arc2control', 'modules', modname, 'uis')
+        uisentry = os.path.join(uispath, '*.ui')
+        uistarget = os.path.join('arc2control', 'modules', modname, 'uis')
         modimports.append('arc2control.modules.%s' % modname)
-        if os.path.exists(os.path.join('arc2control', 'modules', modname, 'generated')):
-            modimports.append('arc2control.modules.%s.generated' % modname)
+        print('Adding built-in module:', modname)
+
+        if not os.path.exists(uispath):
+            continue
+
+        added_files.append((uisentry, uistarget))
+
+for m in glob(os.path.join(PATHEX, 'arc2control', 'widgets/*')):
+    if m.endswith('.py'):
+        basename = os.path.basename(m)
+        if basename.lower() in ["__init__.py", "__main__.py"]:
+            continue
+        widgetmod = 'arc2control.widgets.'+os.path.splitext(basename)[0]
+        print('Adding internal widget:', widgetmod)
+        modimports.append(widgetmod)
 
 # PYQTGRAPH DYNAMIC IMPORTS
 
