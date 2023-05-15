@@ -1,6 +1,8 @@
 # arc2control.modules
+import re
 import json
 import importlib
+import importlib.resources as resources
 
 
 def moduleClassFromJson(fname):
@@ -104,17 +106,40 @@ def allUisToModules(uis, prefix='Ui_'):
     generated = type('GeneratedElements', (), {})()
 
     for ui in uis:
-        # compiled the UI
-        compiled = uiToModule(ui, 'compiled')
-        for item in dir(compiled):
-            # find Ui elements
-            if not item.startswith(prefix):
-                continue
-            obj = getattr(compiled, item)
-            # check if it's indeed a type
-            if isinstance(obj, type):
-                if hasattr(generated, item):
-                    raise ValueError('UI class ' + item + ' exists')
-                setattr(generated, item, obj)
+        _compileAndAttach(ui, generated, prefix)
 
     return generated
+
+
+def _uisFromModuleResources(m, match='.*.ui', prefix='Ui_'):
+    # Internal function to compile uis from package resources
+
+    generated = type('GeneratedElements', (), {})()
+    for res in resources.contents(m):
+        if not re.match(match, res):
+            continue
+        with resources.path(m, res) as ui:
+            _compileAndAttach(ui, generated, prefix)
+
+    return generated
+
+
+def _compileAndAttach(ui, parent, prefix):
+    # Internal function to compile and attach a UI class
+    # to a holder object (``parent``)
+
+    # compile the UI file with uic
+    compiled = uiToModule(ui, 'compiled')
+
+    # traverse its members
+    for item in dir(compiled):
+        # check if the member name matches the prefix
+        if not item.startswith(prefix):
+            continue
+        # we found a "<prefix>_XXXX" thing; check if it's actually a type
+        obj = getattr(compiled, item)
+        if isinstance(obj, type):
+            # check if a type with the same name already exists in parent
+            if hasattr(parent, item):
+                raise ValueError('UI class ' + item + ' exists')
+            setattr(parent, item, obj)

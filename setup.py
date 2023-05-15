@@ -98,42 +98,6 @@ class BuildUIs(Command):
             self.compile_ui(ui, target)
             generated.append(target)
 
-    def compile_module_uis(self):
-        basedir = os.path.join(__HERE__, 'arc2control', 'modules')
-
-        for moddir in glob.glob(os.path.join(basedir, '*')):
-            # skip non dirs or __pycache__ directories
-            if not os.path.isdir(moddir) or \
-                os.path.basename(moddir) == '__pycache__':
-                continue
-
-            uidir = os.path.join(moddir, 'uis')
-
-            if not os.path.isdir(uidir):
-                print("[UIC] Module %s does not specify any uis, skipping" % \
-                    os.path.basename(moddir), file=sys.stderr)
-                continue
-
-            outdir = os.path.join(moddir, 'generated')
-            if not os.path.isdir(outdir):
-                os.mkdir(outdir)
-
-            initfile = os.path.join(outdir, '__init__.py')
-            if os.path.exists(initfile) and (not os.path.isfile(initfile)):
-                print("[UIC] Module %s initfile exists but it's not a file? Skipping" % \
-                    initfile)
-                continue
-            if not os.path.exists(initfile):
-                with open(initfile, mode='w') as f:
-                    f.write('# arc2control.modules.%s' % os.path.basename(moddir))
-
-            for ui in glob.glob(os.path.join(uidir, '*.ui')):
-                fname = os.path.splitext(os.path.basename(ui))[0]
-                target = os.path.join(outdir, "%s.py" % fname)
-                print("[UIC] Generating %s" % target, file=sys.stderr)
-                self.compile_ui(ui, target)
-
-
     def initialize_options(self):
         self.cwd = None
 
@@ -142,7 +106,6 @@ class BuildUIs(Command):
 
     def run(self):
         self.compile_base_uis()
-        self.compile_module_uis()
 
 
 class Build(build):
@@ -199,7 +162,7 @@ setup(
     },
     package_data = {
         'arc2control': ['graphics/*png', 'graphics/*svg', 'version.txt',
-            'mappings/*']
+            'mappings/*', 'modules/*/uis/*.ui']
     },
     cmdclass = cmdclass
 )

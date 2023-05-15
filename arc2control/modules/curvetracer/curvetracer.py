@@ -2,14 +2,17 @@ import numpy as np
 import pyqtgraph as pg
 from enum import Enum
 from pyarc2 import ReadAt, ReadAfter, DataMode
+from arc2control.modules import allUisToModules, _uisFromModuleResources
 from arc2control.modules.base import BaseModule, BaseOperation, modaction
-from .generated.curvetracer import Ui_CurveTracerWidget
 from . import MOD_NAME, MOD_TAG, MOD_DESCRIPTION
 from .ct_display_widget import CTDataDisplayWidget
 from arc2control import signals
 from arc2control.h5utils import OpType
 
 from PyQt6 import QtCore, QtWidgets, QtGui
+
+
+GeneratedElements = _uisFromModuleResources(__name__.rpartition('.')[0]+".uis")
 
 
 _CT_DTYPE = [('voltage', '<f4'), ('current', '<f4'), ('read_voltage', '<f4')]
@@ -129,11 +132,11 @@ class CurveTracerOperation(BaseOperation):
         return (np.array(self._voltages), -np.array(self._currents), readat, cycles)
 
 
-class CurveTracer(BaseModule, Ui_CurveTracerWidget):
+class CurveTracer(BaseModule, GeneratedElements.Ui_CurveTracerWidget):
 
     def __init__(self, arc, arcconf, vread, store, cells, mapper, parent=None):
 
-        Ui_CurveTracerWidget.__init__(self)
+        GeneratedElements.Ui_CurveTracerWidget.__init__(self)
         BaseModule.__init__(self, arc, arcconf, vread, store, \
             MOD_NAME, MOD_TAG, cells, mapper, parent=parent)
         self._thread = None
