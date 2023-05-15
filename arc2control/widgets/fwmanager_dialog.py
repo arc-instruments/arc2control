@@ -8,7 +8,7 @@ from urllib.parse import urlparse, urljoin, unquote
 from urllib3 import exceptions as urlexc
 
 from PyQt6 import QtCore, QtWidgets
-from .generated.fwmanager import Ui_FirmwareManagementDialog
+from . import GeneratedElements
 from .. import constants
 from ..fwutils import discoverFirmwares
 from ..graphics import getIcon
@@ -156,10 +156,10 @@ class DownloadFirmwareInfo(QtCore.QThread):
         self.downloadFinished.emit(msg)
 
 
-class FirmwareManagementDialog(Ui_FirmwareManagementDialog, QtWidgets.QDialog):
+class FirmwareManagementDialog(GeneratedElements.Ui_FirmwareManagementDialog, QtWidgets.QDialog):
 
     def __init__(self, parent=None):
-        Ui_FirmwareManagementDialog.__init__(self)
+        GeneratedElements.Ui_FirmwareManagementDialog.__init__(self)
         QtWidgets.QDialog.__init__(self, parent=parent)
 
         self.operation = None

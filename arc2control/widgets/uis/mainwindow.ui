@@ -369,6 +369,7 @@
    <addaction name="saveDatasetAction"/>
    <addaction name="saveDatasetAsAction"/>
    <addaction name="separator"/>
+   <addaction name="openSequencerAction"/>
    <addaction name="firmwareManagerAction"/>
   </widget>
   <action name="openDatasetAction">
@@ -424,6 +425,14 @@
     <string>Manage ArC2 firmware</string>
    </property>
   </action>
+  <action name="openSequencerAction">
+   <property name="text">
+    <string>Seq&amp;uencer</string>
+   </property>
+   <property name="toolTip">
+    <string>Open Sequencer</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
@@ -435,7 +444,7 @@
   <customwidget>
    <class>CollapsibleTreeWidget</class>
    <extends>QWidget</extends>
-   <header>..collapsibletree_widget</header>
+   <header>arc2control.widgets.collapsibletree_widget</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

@@ -1,7 +1,7 @@
 import os.path
 from PyQt6 import QtCore, QtWidgets
 from functools import partial
-from .generated.crossbarconf import Ui_CrossbarConfigDialog
+from . import GeneratedElements
 from ..graphics import getPixmap, getIcon
 from ..h5utils import H5DataStore, H5Mode
 
@@ -9,10 +9,10 @@ from .. import ArC2ControlSettings
 from .. import constants
 
 
-class CrossbarConfigDialog(Ui_CrossbarConfigDialog, QtWidgets.QDialog):
+class CrossbarConfigDialog(GeneratedElements.Ui_CrossbarConfigDialog, QtWidgets.QDialog):
 
     def __init__(self, mappers, parent=None):
-        Ui_CrossbarConfigDialog.__init__(self)
+        GeneratedElements.Ui_CrossbarConfigDialog.__init__(self)
         QtWidgets.QDialog.__init__(self, parent=parent)
         self.mappers = mappers
 

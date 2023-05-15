@@ -1,9 +1,9 @@
 from PyQt6 import QtCore, QtWidgets
-from .generated.pulseops import Ui_PulseOpsWidget
+from . import GeneratedElements
 from .common import Polarity
 
 
-class PulseOpsWidget(Ui_PulseOpsWidget, QtWidgets.QWidget):
+class PulseOpsWidget(GeneratedElements.Ui_PulseOpsWidget, QtWidgets.QWidget):
 
     #                                      voltage, pulse width
     positivePulseClicked = QtCore.pyqtSignal(float, float)
@@ -12,7 +12,7 @@ class PulseOpsWidget(Ui_PulseOpsWidget, QtWidgets.QWidget):
     negativePulseReadClicked = QtCore.pyqtSignal(float, float)
 
     def __init__(self, parent=None):
-        Ui_PulseOpsWidget.__init__(self)
+        GeneratedElements.Ui_PulseOpsWidget.__init__(self)
         QtWidgets.QWidget.__init__(self, parent=parent)
 
         self.setupUi(self)

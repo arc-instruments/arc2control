@@ -141,7 +141,7 @@
   <customwidget>
    <class>DurationWidget</class>
    <extends>QWidget</extends>
-   <header>..duration_widget</header>
+   <header>arc2control.widgets.duration_widget</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

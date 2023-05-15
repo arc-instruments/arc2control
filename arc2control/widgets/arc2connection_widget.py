@@ -3,7 +3,7 @@ import sys
 import time
 import numpy as np
 from PyQt6 import QtCore, QtWidgets
-from .generated.arc2connection import Ui_ArC2ConnectionWidget
+from . import GeneratedElements
 from .. import constants
 from ..fwutils import discoverFirmwares
 from ..mapper import ChannelMapper
@@ -17,7 +17,7 @@ _CONNECTED_LABEL_STYLE = "QLabel { color: white; background-color: green; font-w
 _DISCONNECTED_LABEL_STYLE = "QLabel { color: white; background-color: #D11A1A; font-weight: bold }"
 
 
-class ArC2ConnectionWidget(Ui_ArC2ConnectionWidget, QtWidgets.QWidget):
+class ArC2ConnectionWidget(GeneratedElements.Ui_ArC2ConnectionWidget, QtWidgets.QWidget):
 
     arc2ConfigChanged = QtCore.pyqtSignal(ArC2Config)
     connectionChanged = QtCore.pyqtSignal(bool)
@@ -26,7 +26,7 @@ class ArC2ConnectionWidget(Ui_ArC2ConnectionWidget, QtWidgets.QWidget):
     firmwareRequest = QtCore.pyqtSignal()
 
     def __init__(self, parent=None):
-        Ui_ArC2ConnectionWidget.__init__(self)
+        GeneratedElements.Ui_ArC2ConnectionWidget.__init__(self)
         QtWidgets.QWidget.__init__(self, parent=parent)
 
         self.setupUi(self)

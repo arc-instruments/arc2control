@@ -1,6 +1,5 @@
 from setuptools import find_packages
-from distutils.core import setup, Command
-from distutils.command.build import build
+from distutils.core import setup
 import re, os, sys
 import os.path
 import glob
@@ -50,77 +49,6 @@ requirements = [
 ]
 
 
-class BuildUIs(Command):
-
-    description = "Generate python files from Qt UI files"
-    user_options = []
-
-    def compile_ui(self, src, dst):
-        """
-        Compile UI file `src` into the python file `dst`. This is similar to
-        what the pyuic script is doing but with some predefined values.
-        """
-
-        import PyQt6.uic as uic
-
-        out = open(dst, 'w', encoding='utf-8')
-
-        # see the docstring of PyQt6.uic.compileUi for more!
-        uic.compileUi(src, out, execute=False, indent=4)
-        out.close()
-
-    def compile_base_uis(self):
-
-        # Find the current working directory (ie. the folder this script resides
-        # in). Then find out where the UI files are stored and setup the output
-        # directory.
-        uidir = os.path.join(__HERE__, 'uis')
-        outdir = os.path.join(__HERE__, 'arc2control', 'widgets', 'generated')
-
-        # Check if outdir exists but is not a directory; in that case
-        # bail out!
-        if not os.path.isdir(outdir) and os.path.exists(outdir):
-            print("%s exists but is not a directory; aborting" % outdir)
-            sys.exit(1)
-
-        # Load up all UI files from `uidir`...
-        uis = glob.glob(os.path.join(uidir, "*.ui"))
-        generated = []
-
-        # ... and convert them into python classes in `outdir`.
-        for ui in uis:
-            # target filename is the same as source with the .py suffix instead
-            # of .ui.
-            fname = os.path.splitext(os.path.basename(ui))[0]
-            target = os.path.join(outdir, "%s.py" % fname)
-
-            print("[UIC] Generating %s " % target, file=sys.stderr)
-            self.compile_ui(ui, target)
-            generated.append(target)
-
-    def initialize_options(self):
-        self.cwd = None
-
-    def finalize_options(self):
-        self.cwd = os.getcwd()
-
-    def run(self):
-        self.compile_base_uis()
-
-
-class Build(build):
-
-    user_options = build.user_options + []
-
-    def run(self):
-        self.run_command("build_uis")
-        super().run()
-
-
-cmdclass = {}
-cmdclass['build_uis'] = BuildUIs
-cmdclass['build'] = Build
-
 # make sure we are not bundling local dev versions of pyqtgraph
 packages = find_packages(exclude=['pyqtgraph', 'pyqtgraph.*'],
     include=['arc2control', 'arc2control.*'])
@@ -152,6 +80,7 @@ setup(
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
 
     ],
     packages = packages,
@@ -162,7 +91,6 @@ setup(
     },
     package_data = {
         'arc2control': ['graphics/*png', 'graphics/*svg', 'version.txt',
-            'mappings/*', 'modules/*/uis/*.ui']
+            'mappings/*', 'modules/*/uis/*.ui', 'widgets/uis/*.ui']
     },
-    cmdclass = cmdclass
 )

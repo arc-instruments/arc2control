@@ -1,17 +1,17 @@
 from PyQt6 import QtCore, QtWidgets
-from .generated.readops import Ui_ReadOpsWidget
+from . import GeneratedElements
 import numpy as np
 from pyqtgraph import siFormat
 
 
-class ReadOpsWidget(Ui_ReadOpsWidget, QtWidgets.QWidget):
+class ReadOpsWidget(GeneratedElements.Ui_ReadOpsWidget, QtWidgets.QWidget):
 
     readoutVoltageChanged = QtCore.pyqtSignal(float)
     readSelectedClicked = QtCore.pyqtSignal()
     readAllClicked = QtCore.pyqtSignal()
 
     def __init__(self, parent=None):
-        Ui_ReadOpsWidget.__init__(self)
+        GeneratedElements.Ui_ReadOpsWidget.__init__(self)
         QtWidgets.QWidget.__init__(self, parent=parent)
 
         self.setupUi(self)

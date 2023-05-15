@@ -1,6 +1,6 @@
 import PyQt6
 from PyQt6 import QtCore, QtGui, QtWidgets
-from .generated.mainwindow import Ui_ArC2MainWindow
+from . import GeneratedElements
 
 import sys
 import time
@@ -37,13 +37,13 @@ from .. import constants
 from .. import ArC2ControlSettings
 
 
-class App(Ui_ArC2MainWindow, QtWidgets.QMainWindow):
+class App(GeneratedElements.Ui_ArC2MainWindow, QtWidgets.QMainWindow):
 
     def __init__(self, mappers, shape=(32,32), modules={}, mapper=None, dset=None, parent=None):
         self._arc = None
         self._modules = modules
         (self._nbits, self._nwords) = shape
-        Ui_ArC2MainWindow.__init__(self)
+        GeneratedElements.Ui_ArC2MainWindow.__init__(self)
         QtWidgets.QWidget.__init__(self, parent=parent)
 
         self.setupUi(self)

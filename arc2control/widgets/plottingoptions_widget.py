@@ -1,5 +1,5 @@
 from PyQt6 import QtCore, QtWidgets
-from .generated.plottingoptions import Ui_PlottingOptionsWidget
+from . import GeneratedElements
 
 from enum import Enum
 
@@ -28,14 +28,14 @@ class YScale(Enum):
     Log = 0b10
 
 
-class PlottingOptionsWidget(Ui_PlottingOptionsWidget, QtWidgets.QWidget):
+class PlottingOptionsWidget(GeneratedElements.Ui_PlottingOptionsWidget, QtWidgets.QWidget):
 
     displayTypeChanged = QtCore.pyqtSignal(DisplayType)
     xRangeChanged = QtCore.pyqtSignal(int)
     yScaleChanged = QtCore.pyqtSignal(YScale)
 
     def __init__(self, parent=None):
-        Ui_PlottingOptionsWidget.__init__(self)
+        GeneratedElements.Ui_PlottingOptionsWidget.__init__(self)
         QtWidgets.QWidget.__init__(self, parent=parent)
         self.setupUi(self)
 
