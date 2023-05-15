@@ -24,7 +24,6 @@ def _discover_modules(path, base='arc2control.modules'):
             # we don't care about the abstract base module
             continue
 
-        loader = finder.find_module(name)
         try:
             mod = importlib.import_module('%s.%s' % (base, name))
             mods[mod.MOD_TAG] = (mod.MOD_NAME, mod.ENTRY_POINT)
