@@ -1,8 +1,4 @@
-include uis/*.ui
-exclude */widgets/generated/*.py
-include */widgets/generated/__init__.py
-exclude */modules/*/generated/*.py
-include */modules/*/generated/__init__.py
+recursive-include */widgets *.ui
 recursive-include */modules *.ui
 exclude venv-pyarc2-update.py
 exclude vermng.py
