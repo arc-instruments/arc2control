@@ -101,6 +101,11 @@ def pypi_versions():
 
 if __name__ == "__main__":
 
+    if sys.argv[1] == 'version':
+        print('Internal version:', internal_version())
+        print('Maximum version', latest_tag())
+        print('PyPI', pypi_versions())
+
     if sys.argv[1] == 'commitcheck':
         try:
             iver = internal_version()
