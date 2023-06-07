@@ -126,8 +126,6 @@ class Retention(BaseModule):
 
         self.setupUi()
 
-        signals.crossbarSelectionChanged.connect(self.crossbarSelectionChanged)
-
     def setupUi(self):
         layout = QtWidgets.QGridLayout(self)
 
@@ -188,10 +186,6 @@ class Retention(BaseModule):
         super().fromJson(frag)
         self.readVoltageSpinBox.setEnabled(\
             not self.lockReadoutVoltageCheckBox.isChecked())
-
-    def crossbarSelectionChanged(self, cells):
-        self.applyButton.setEnabled((len(self.cells) > 0) and \
-            (self.arc is not None))
 
     @modaction('selection', desc='Apply to Selection')
     def applyToSelected(self):
