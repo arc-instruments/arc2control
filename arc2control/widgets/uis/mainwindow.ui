@@ -369,6 +369,7 @@
    <addaction name="saveDatasetAction"/>
    <addaction name="saveDatasetAsAction"/>
    <addaction name="separator"/>
+   <addaction name="openSequencerAction"/>
    <addaction name="firmwareManagerAction"/>
   </widget>
   <action name="openDatasetAction">

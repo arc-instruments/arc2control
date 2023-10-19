@@ -19,7 +19,10 @@ _pixmap_files = [
     'action-delete.png',
     'action-download.png',
     'action-refresh.png',
-    'action-cancel.png'
+    'action-cancel.png',
+    'macro-conditions.png',
+    'action-generic-delete.png',
+    'random.png'
 ]
 
 _svg_files = [

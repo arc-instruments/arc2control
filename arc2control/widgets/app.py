@@ -24,6 +24,7 @@ from .plottingoptions_widget import DisplayType as PlotDisplayType
 from .plottingoptions_widget import YScale as PlotYScale
 from .plottingoptions_widget import PlottingOptionsWidget
 from .device_explorer_widget import DeviceExplorerWidget
+from .sequencer_widget import SequencerWidget
 from .fwmanager_dialog import FirmwareManagementDialog
 from .about_dialog import AboutDialog
 from .crossbar_widget import PaintWidget, Cell
@@ -166,6 +167,7 @@ class App(GeneratedElements.Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         self.saveDatasetAsAction.triggered.connect(self.saveDatasetAs)
         self.quitAction.triggered.connect(self.close)
         self.aboutAction.triggered.connect(self.showAboutDialog)
+        self.openSequencerAction.triggered.connect(self.showSequencer)
         self.firmwareManagerAction.triggered.connect(self.showFirmwareManagerDialog)
         self.arc2ConnectionWidget.firmwareRequest.connect(self.showFirmwareManagerDialog)
 
@@ -297,6 +299,7 @@ class App(GeneratedElements.Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         self.saveDatasetAsAction.setIcon(graphics.getIcon('action-save-as'))
         self.newDatasetAction.setIcon(graphics.getIcon('action-new-dataset'))
         self.quitAction.setIcon(graphics.getIcon('action-exit'))
+        self.openSequencerAction.setIcon(graphics.getIcon('macro-conditions'))
         self.firmwareManagerAction.setIcon(graphics.getIcon('action-fw-manager'))
 
     def connectionChanged(self, connected):
@@ -1102,6 +1105,16 @@ class App(GeneratedElements.Ui_ArC2MainWindow, QtWidgets.QMainWindow):
     def showAboutDialog(self):
         dlg = AboutDialog(parent=self)
         dlg.exec()
+
+    def showSequencer(self):
+        dlg = QtWidgets.QDialog(parent=self)
+        layout = QtWidgets.QHBoxLayout()
+        layout.addWidget(SequencerWidget(self.state))
+        dlg.setLayout(layout)
+        dlg.setWindowTitle('ArC2Control Sequencer')
+        dlg.setWindowIcon(graphics.getIcon('macro-conditions'))
+        dlg.layout().setSizeConstraint(QtWidgets.QLayout.SizeConstraint.SetFixedSize)
+        dlg.show()
 
     def showFirmwareManagerDialog(self):
         dlg = FirmwareManagementDialog(parent=self)
