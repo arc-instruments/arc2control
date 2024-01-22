@@ -49,6 +49,7 @@ Contents of this guide
    overview
    built_in_modules
    specs
+   daughterboard_pinout
 
 .. toctree::
    :maxdepth: 2
