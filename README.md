@@ -1,5 +1,7 @@
 # ArC TWO™ Control Panel
 
+[![](https://img.shields.io/badge/-docs-default?logo=gitbook&logoColor=white)](https://files.arc-instruments.co.uk/documents/arc2control/latest/)
+
 This is the frontend application for ArC TWO. It exposes functionality mostly
 related to crossbar configurations and provides a set of predefined
 experiments suitable for general and (P/R/FE)RAM devices characterisation.
