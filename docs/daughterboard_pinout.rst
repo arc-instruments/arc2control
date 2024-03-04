@@ -11,18 +11,16 @@ cables should be facing outside.
 32NNA68
 -------
 
-.. figure:: ./images/32NNA68-CQFJ.png
+The standard 32NNA68 daughterboard is an *active* daughterboard meaning
+there is additional logic on-board to manage switching between the pins
+and the socket. When IO0 is HIGH the ArC TWO is wired to the header banks,
+when LOW to the PLCC68 socket.
+
+.. figure:: ./images/32NNA68.png
    :class: with-shadow
-   :alt: Word-/Bitline and channel association for the CQFJ
-         package of the 32NNA68 daughterboard
+   :alt: Associated channels for the PLCC68 package and the headers
+         pins of the 32NNA68 daughterboard
 
-   Word-/Bitline and channel association for the CQFJ package of
-   the 32NNA68 daughterboard
-
-.. figure:: ./images/32NNA68-header.png
-   :class: with-shadow
-   :alt: Word-/Bitline and channel association for the onboard
-         headers of the 32NNA68 daughterboard
-
-   Word-/Bitline and channel association for the onboard headers
+   Associated channels for the PLCC68 package and the headers pins
    of the 32NNA68 daughterboard
+
