@@ -5,11 +5,14 @@ ArC TWO is our next generation electronic characterisation tool which enables
 massive parallel testing of devices with arbitrary interconnections. It can
 achieve sub-100 ns pulsing across 20 V of voltage.
 
-You are reading this document because you recently acquired an ArC TWO. This
-guide will cover installation, firmware management and basic usage. It is
-mainly intended for end-users but there's separate :doc:`developer's guide
-</api_modules>` if you want to start building upon the ArC TWO platform.
+This guide will cover installation, firmware management and basic usage of the
+ArC TWO graphical interface. It is mainly intended for end-users but there's
+separate :doc:`developer's guide </api_modules>` if you want to start building
+upon the ArC TWO GUI platform.
 
+This guide *does not* cover general information, hardware or protocol
+documentation on the ArC TWO itself. Please see our introductory `User's
+Guide`_ for that.
 
 Minimum system requirements
 ---------------------------
@@ -21,60 +24,6 @@ ArC TWO is 2.14. This essentially means every distribution newer than CentOS 7.
 Additionally libusb-1.0 is required which should be available on most
 distributions released after 2015.  Linux systems based on musl libc (for
 instance Alpine Linux) are not supported.
-
-High-level description of ArC TWO
----------------------------------
-
-ArC TWO is essentially a 64-channel, fully parallel SMU array and 2× banks of
-32 digital pins. The instrument also features a shared current source.   The
-entire system is coordinated by an FPGA EFM-03 development board with Xilinx
-XC7A200T-2FBG676I chip. ArC TWO has been engineered to provide high-throughput,
-parallel testing at high levels of accuracy.
-
-.. figure:: images/topology.png
-   :alt: ArC TWO high level schematic
-   :align: center
-
-   (left) Schematic of channel architecture: Significant wires in blue,
-   analogue switches in red; (right) Schematic of the structure of the
-   channel cluster
-
-The main subsystem of the board is the SMU channel. It consists of: (a) a
-*programmable gain trans-impedance amplifier* (TIA); (b) an independent *pulse
-generator* used for high-speed pulsing and (c) *a switch* which allows the
-channel to access the current source. Data converter terminals are connected as
-shown in the figure above to provide biasing with digital to analogue
-converters (DACs). This allows the channel to act as a tuneable source, or to
-read voltages with differential analogue to digital converters (ADCs) at
-selected nodes for measurement. ArC TWO features 8 channel clusters for a
-total of 64 independent SMU channels.
-
-The digital interface bridges the gap between the PC and the analogue circuitry
-of ArC TWO. The basic structure contains a *USB 3.0 IP core*, a *FIFO buffer*,
-*block memory*, a *transmission layer* and a *control layer*. All IPs are
-linked through and Advanced eXtensible Interface (AXI) which is a universal
-high-performance interface.
-
-.. figure:: images/digital-iface.png
-   :alt: ArC TWO's digital interface
-   :align: center
-   :width: 75%
-
-   Hierarchy of the digital interface implemented by ArC TWO
-
-The instruction set has been designed for translating a relatively small set of
-high-level operations into *board language*. These are: *select channels*,
-*emit pulse*, *read from channel(s)* as well as *set current* (for the shared
-current source) and a few more specialised commands. In hardware, this
-translates to configuring the high-speed pulse drives, DACs, ADCs, switches and
-digital pins.  All advanced functions can be performed through a combination of
-the basic set of commands. The transmission layer performs the translation from
-PC-level instructions to PCB-level and the control layer executes the latter.
-A native library, `libarc2`_, has been developed to aid in the assembly of
-high level operations (*read*, *pulse*, *ramp*, etc) into board level commands.
-Python bindings for libarc2, `pyarc2`_ (`documentation`_), are also available as
-an easier-to-use interface to develop user-level applications. ArC TWO Control
-is also built on pyarc2.
 
 Getting started
 ---------------
@@ -89,36 +38,6 @@ the udk3usb drivers from the `CESYS beastlink distribution`_
 (beastlink-1.0-windows-free → driver → udk3usb-drivers-windows-1.3.exe). On Linux
 scripts that generate packages for your distribution are available from `our
 github <https://github.com/arc-instruments/beastlink-rs/tree/master/contrib>`_.
-
-Out of the box
-^^^^^^^^^^^^^^
-
-The standard ArC TWO package comes with the following components: (a) The ArC
-TWO board; (b) a 18 V power adaptor with its corresponding power module; (c) a
-power module for external power supplies; (d) a PLCC32 daughterboard with
-headers for probe-card support and (e) a USB-3.0 cable. Depending on your
-configuration some components might be pre-assembled on ArC TWO.
-
-.. figure:: images/out-of-the-box.jpg
-   :alt: ArC TWO and standard accessories
-   :align: center
-
-   ArC TWO and standard accessories
-
-To power up the board, plug in the provided AC power adaptor and flick the
-power switch. If you intend to use a laboratory power supply instead remove the
-retaining screws of the standard power module and replace it with the external
-power supply module. Then tighten the retaining screws again and plug in an
-external supply to the corresponding banana sockets. Please note that you need
-**both 16.2 V and -16.2 V sources** and a minimum of 1 A on both to properly
-power the board.
-
-ArC TWO supports many different *daughterboards* for maximum connection
-flexibility.  By default the 32NNA68 daughterboard is installed which exposes
-all 64 channels of ArC TWO as header pins and also features a PLCC socket for
-packaged samples.  Typical cavity sizes for these packages are (in inches)
-0.265×0.265, 0.3×0.3, 0.4×0.4 and 0.46×0.46. Additional daughterboards are
-available with SMA (32 channels) or BNC connectors (12 channels).
 
 Installing the ArC TWO Control Panel
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -389,3 +308,4 @@ intensive operations.
 .. _`libarc2`: https://github.com/arc-instruments/libarc2
 .. _`pyarc2`: https://github.com/arc-instruments/pyarc2
 .. _`documentation`: http://files.arc-instruments.co.uk/documents/pyarc2/latest/index.html
+.. _`User's Guide`: https://files.arc-instruments.co.uk/documents/arc2-general

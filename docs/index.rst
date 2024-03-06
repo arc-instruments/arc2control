@@ -1,18 +1,19 @@
-.. pyarc2 documentation master file, created by
-   sphinx-quickstart on Thu Jun  9 20:51:30 2022.
-
 ArC TWO Control Panel
 =====================
 
+.. important::
+   If you recently acquired an ArC TWO it is recommended that you go through
+   board's `📖 general documentation`_ first as it provides useful introductory
+   information to get started with your instrument.
+
 This is the reference application to interact with your ArC TWO multi-channel
-characterisation platform. It is based on the pyarc2_ library which exposes
-a Python interface to all the underlying functionality of ArC TWO. It is
-our recommended way to familiarise yourself with ArC TWO and can serve as
-a platform to further develop your own routines.
+characterisation platform. It is based on the pyarc2_ library which exposes a
+Python interface to all the underlying functionality of ArC TWO. It is an
+accessible way to familiarise yourself with ArC TWO and can serve as a platform
+to further develop your own routines.
 
 .. image:: ../data/screenshots/arc2control-01-main.png
    :alt: Main ArC TWO UI
-
 
 Installation
 ------------
@@ -48,8 +49,6 @@ Contents of this guide
 
    overview
    built_in_modules
-   specs
-   daughterboard_pinout
 
 .. toctree::
    :maxdepth: 2
@@ -70,3 +69,4 @@ Contents of this guide
 .. _`CESYS download page`: https://www.cesys.com/en/service-support/download-center/fpga.html
 .. _`our repository`: https://github.com/arc-instruments/beastlink-rs/tree/master/contrib
 .. _`release page`: https://github.com/arc-instruments/arc2control/releases
+.. _`📖 general documentation`: https://files.arc-instruments.co.uk/documents/arc2-general
