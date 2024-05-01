@@ -81,11 +81,11 @@ def main(args=None):
 
     warnings.filterwarnings('ignore', category=RuntimeWarning, \
         message='.*invalid value encountered in *divide.*', \
-        module='arc2control\.widgets\..*')
+        module=r'arc2control\.widgets\..*')
 
     warnings.filterwarnings('ignore', category=RuntimeWarning, \
         message='.*divide by zero encountered in *divide.*', \
-        module='arc2control\.widgets\..*')
+        module=r'arc2control\.widgets\..*')
 
     app = QtWidgets.QApplication(args)
     app.setApplicationName(constants.APP_NAME)

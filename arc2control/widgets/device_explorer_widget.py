@@ -4,7 +4,7 @@ from functools import partial
 import re
 
 
-_keyMatcher = re.compile('W(\d+)B(\d+)')
+_keyMatcher = re.compile(r'W(\d+)B(\d+)')
 
 
 def _experimentSorter(item):
