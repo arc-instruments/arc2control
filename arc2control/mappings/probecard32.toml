@@ -1,8 +1,15 @@
 [config]
 # number of total word- and bitlines
-name = "64-pin probecard"
+name = "[32NNA68] 64-pin probecard (CB)"
 words = 32
 bits = 32
+
+[ioconfs]
+
+[ioconfs.header]
+name = "Header"
+ios = 0b1
+dir = ["out", "out", "out", "out"]
 
 [mapping]
 # corresponding channels for wordlines

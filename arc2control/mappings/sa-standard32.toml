@@ -1,6 +1,6 @@
 [config]
 # number of total word- and bitlines
-name = "SA PLCC 32×32"
+name = "[32NNA68] PLCC 32×32 (SA)"
 words = 32
 bits = 32
 mask = [
@@ -13,6 +13,18 @@ mask = [
     [24,  7], [25, 25], [26,  5], [27, 27],
     [28,  3], [29, 29], [30,  1], [31, 31]
 ]
+
+[ioconfs]
+
+[ioconfs.internal]
+name = "Socket"
+ios = 0b0
+dir = ["out", "out", "out", "out"]
+
+[ioconfs.header]
+name = "Header"
+ios = 0b1
+dir = ["out", "out", "out", "out"]
 
 
 [mapping]

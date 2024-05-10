@@ -1,6 +1,6 @@
 [config]
 # number of total word- and bitlines
-name = "BNC breakout"
+name = "[32BNC12] BNC Standard (CB)"
 words = 6
 bits = 6
 

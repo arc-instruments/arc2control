@@ -25,7 +25,7 @@ class ChannelMapper:
     :return: A new :class:`~arc2control.mapper.ChannelMapper`.
     """
 
-    def __init__(self, nwords, nbits, wordarr, bitarr, mask, name):
+    def __init__(self, nwords, nbits, wordarr, bitarr, ioconfs, mask, name):
 
         self._wb2ch = []
         self._ch2w = {}
@@ -36,6 +36,7 @@ class ChannelMapper:
         self._nbits = nbits
         self._name = name
         self._mask = mask
+        self._ioconfs = ioconfs
 
         for word in range(0, nwords):
             wordline = []
@@ -162,6 +163,13 @@ class ChannelMapper:
         """
         return not np.all(self._mask == 1)
 
+    @property
+    def ioconfs(self):
+        """
+        Return the available IO configurations for this mapper
+        """
+        return self._ioconfs
+
     @staticmethod
     def from_toml(fname):
         """
@@ -195,4 +203,9 @@ class ChannelMapper:
         except KeyError:
             (name, _) = os.path.splitext(os.path.basename(fname))
 
-        return ChannelMapper(words, bits, wordarr, bitarr, mask=mask, name=name)
+        try:
+            ioconfs = mapraw['ioconfs']
+        except KeyError:
+            ioconfs = None
+
+        return ChannelMapper(words, bits, wordarr, bitarr, ioconfs, mask=mask, name=name)

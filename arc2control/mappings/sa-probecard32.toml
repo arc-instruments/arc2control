@@ -1,6 +1,6 @@
 [config]
 # number of total word- and bitlines
-name = "SA 64-pin probecard"
+name = "[32NNA68] 64-pin probecard (SA)"
 words = 32
 bits = 32
 mask = [
@@ -13,6 +13,13 @@ mask = [
     [24,  7], [25, 25], [26,  5], [27, 27],
     [28,  3], [29, 29], [30,  1], [31, 31]
 ]
+
+[ioconfs]
+
+[ioconfs.header]
+name = "Header"
+ios = 0b1
+dir = ["out", "out", "out", "out"]
 
 
 [mapping]

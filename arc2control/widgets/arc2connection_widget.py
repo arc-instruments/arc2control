@@ -5,13 +5,14 @@ import numpy as np
 from PyQt6 import QtCore, QtWidgets
 from . import GeneratedElements
 from .. import constants
+from ..arc2config import ArC2Config
 from ..fwutils import discoverFirmwares
 from ..mapper import ChannelMapper
 
 from enum import Enum
 
 from pyarc2 import Instrument, BiasOrder, ControlMode, ReadAt, \
-    ReadAfter, DataMode, IdleMode, ArC2Config, find_ids
+    ReadAfter, DataMode, IdleMode, IODir, find_ids
 
 _CONNECTED_LABEL_STYLE = "QLabel { color: white; background-color: green; font-weight: bold }"
 _DISCONNECTED_LABEL_STYLE = "QLabel { color: white; background-color: #D11A1A; font-weight: bold }"
@@ -31,14 +32,13 @@ class ArC2ConnectionWidget(GeneratedElements.Ui_ArC2ConnectionWidget, QtWidgets.
 
         self.setupUi(self)
 
-        self.internalControlRadio.toggled.connect(self.__controlModeChanged)
-        self.headerControlRadio.toggled.connect(self.__controlModeChanged)
         self.floatDevsRadio.toggled.connect(self.__idleModeChanged)
         self.softGndDevsRadio.toggled.connect(self.__idleModeChanged)
         self.hardGndDevsRadio.toggled.connect(self.__idleModeChanged)
         self.connectArC2Button.clicked.connect(self.__arc2Connect)
         self.refreshIDsButton.clicked.connect(self.__find_efm_ids)
         self.channelMapperComboBox.currentIndexChanged.connect(self.__mapperChanged)
+        self.ioconfigComboBox.currentIndexChanged.connect(self.__ioconfigChanged)
         self.__find_efm_ids()
         self.refreshFirmwares()
 
@@ -56,18 +56,6 @@ class ArC2ConnectionWidget(GeneratedElements.Ui_ArC2ConnectionWidget, QtWidgets.
             if v['verified']:
                 self.firmwareComboBox.addItem(k, v['path'])
 
-    def __controlModeChanged(self, *args):
-
-        if self._arc is None:
-            return
-
-        if self.internalControlRadio.isChecked():
-            self._arc.set_control_mode(ControlMode.Internal).execute()
-            self.arc2ConfigChanged.emit(self.arc2Config)
-        if self.headerControlRadio.isChecked():
-            self._arc.set_control_mode(ControlMode.Header).execute()
-            self.arc2ConfigChanged.emit(self.arc2Config)
-
     def __idleModeChanged(self, *args):
 
         if self._arc is None:
@@ -78,14 +66,50 @@ class ArC2ConnectionWidget(GeneratedElements.Ui_ArC2ConnectionWidget, QtWidgets.
 
     def __mapperChanged(self, idx):
         mapper = self.channelMapperComboBox.itemData(idx)
+        self.ioconfigComboBox.clear()
+        if mapper.ioconfs:
+            for (_, v) in mapper.ioconfs.items():
+                self.ioconfigComboBox.addItem(v['name'], v)
+            self.ioconfigComboBox.setEnabled(True)
+        else:
+            self.ioconfigComboBox.setEnabled(False)
         self.mapperChanged.emit(mapper)
+        self.__ioconfigChanged(self.ioconfigComboBox.currentIndex())
 
-    @property
-    def controlMode(self):
-        if self.internalControlRadio.isChecked():
-            return ControlMode.Internal
-        if self.headerControlRadio.isChecked():
-            return ControlMode.Header
+    def __ioconfigChanged(self, idx):
+
+        data = self.ioconfigComboBox.itemData(idx)
+        if data is None:
+            return
+
+        ios = data['ios']
+        clusters = []
+        # determine the IO directions from mapper
+        # or default to outputs if the key is missing
+        try:
+            for d in data['dir']:
+                val = d.lower().strip()
+                if val == 'out':
+                    clusters.append(IODir.OUT)
+                elif val == 'in':
+                    clusters.append(IODir.IN)
+                else:
+                    raise ValueError('Unknown IO Direction: %s' % val)
+        except KeyError:
+            clusters = [IODir.OUT, IODir.OUT, IODir.OUT, IODir.OUT]
+
+        if len(clusters) < 4:
+            raise ValueError('Incorrect IO cluster length; need 4, have %d' % len(clusters))
+
+        if not np.issubdtype(type(ios), np.integer):
+            raise ValueError('IO bitmask must be an integer')
+        if ios < 0 or ios > 2**16 - 1:
+            raise ValueError('IO bitmask out of bounds: min: 0; max 65535')
+
+        if self._arc is None:
+            return
+
+        self._arc.set_logic(ios, *clusters)
 
     @property
     def idleMode(self):
@@ -98,7 +122,7 @@ class ArC2ConnectionWidget(GeneratedElements.Ui_ArC2ConnectionWidget, QtWidgets.
 
     @property
     def arc2Config(self):
-        return ArC2Config(self.idleMode, self.controlMode)
+        return ArC2Config(self.idleMode)
 
     def setMappers(self, mappers, default=None):
 
@@ -157,8 +181,8 @@ class ArC2ConnectionWidget(GeneratedElements.Ui_ArC2ConnectionWidget, QtWidgets.
             self.connectionArC2StatusLabel.setStyleSheet(_CONNECTED_LABEL_STYLE)
             self.connectArC2Button.setText("Disconnect ArC2")
             self.connectionChanged.emit(True)
-            self.__controlModeChanged()
             self.__idleModeChanged()
+            self.__ioconfigChanged(self.ioconfigComboBox.currentIndex())
             self.efmIDsComboBox.setEnabled(False)
             self.firmwareComboBox.setEnabled(False)
             self.refreshIDsButton.setEnabled(False)

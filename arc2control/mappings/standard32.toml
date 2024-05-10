@@ -1,8 +1,20 @@
 [config]
 # number of total word- and bitlines
-name = "PLCC 32×32"
+name = "[32NNA68] PLCC 32×32 (CB)"
 words = 32
 bits = 32
+
+[ioconfs]
+
+[ioconfs.internal]
+name = "Socket"
+ios = 0b0
+dir = ["out", "out", "out", "out"]
+
+[ioconfs.header]
+name = "Header"
+ios = 0b1
+dir = ["out", "out", "out", "out"]
 
 [mapping]
 # corresponding channels for wordlines
