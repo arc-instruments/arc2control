@@ -99,3 +99,5 @@ class PulseOpsWidget(GeneratedElements.Ui_PulseOpsWidget, QtWidgets.QWidget):
     def __lockPulseCheckBoxChecked(self, locked):
         self.negativeDurationWidget.setEnabled(not locked)
         self.negativePulseSpinBox.setEnabled(not locked)
+        if locked:
+            self.__onPositivePulseChanged()
