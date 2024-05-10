@@ -113,7 +113,7 @@ class CrossbarConfigDialog(GeneratedElements.Ui_CrossbarConfigDialog, QtWidgets.
 
         lbl = "%s (%d×%d)"
 
-        for (key, mapper) in self.mappers.items():
+        for (key, mapper) in sorted(self.mappers.items(), key=lambda v: v[1].name):
             label = lbl % (mapper.name, mapper.nwords, mapper.nbits)
             self.mapperSelectionComboBox.addItem(label, (key, mapper))
 

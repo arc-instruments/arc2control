@@ -104,7 +104,7 @@ class ArC2ConnectionWidget(GeneratedElements.Ui_ArC2ConnectionWidget, QtWidgets.
 
         defaultIndex = 0
 
-        for (key, mapper) in mappers.items():
+        for (key, mapper) in sorted(mappers.items(), key=lambda v: v[1].name):
             self.channelMapperComboBox.addItem(mapper.name, mapper)
             # if a default value is selected check if this is the one
             if default is not None and key == default:
