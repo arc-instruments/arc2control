@@ -32,8 +32,10 @@ jobs:
           python -m poetry update
           python -m poetry check
       - name: Build wheel
+        #run: |
+        #  python -m poetry run python setup.py build
+        #  python -m poetry run python -m build
         run: |
-          python -m poetry run python setup.py build
           python -m poetry run python -m build
       - name: Determine version
         run: |
@@ -71,8 +73,10 @@ jobs:
       - name: Install PyInstaller
         run: python -m poetry run pip install PyInstaller
       - name: Build wheel
+        #run: |
+        #  python -m poetry run python setup.py build
+        #  python -m poetry run python -m build
         run: |
-          python -m poetry run python setup.py build
           python -m poetry run python -m build
       - name: Determine version
         run: |

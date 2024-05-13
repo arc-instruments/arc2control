@@ -5,7 +5,22 @@ description = "ArC TWO Control Panel"
 readme = "README.md"
 authors = ["Spyros Stathopoulos <devel@arc-instruments.co.uk>"]
 repository = "https://github.com/arc-instruments/arc2control"
-exclude = ["venv-pyarc2-update.py"]
+exclude = ["venv-pyarc2-update.py", "vermng.py"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Operating System :: Microsoft :: Windows :: Windows 8",
+    "Operating System :: Microsoft :: Windows :: Windows 8.1",
+    "Operating System :: Microsoft :: Windows :: Windows 10",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
 
 [tool.poetry.dependencies]
 python = ">=3.9"
@@ -16,13 +31,13 @@ semver = "^2.0"
 requests = '^2.20'
 tomli = "^1.0"
 h5py = "^3.0"
-pyarc2 = ">=0.1"
+pyarc2 = ">0.4.1"
 cryptography = ">=3.3.0"
 
 [tool.poetry.dev-dependencies]
 build = "^0.7.0"
 
 [build-system]
-requires = ["setuptools>=40.8.0", "wheel", "PyQt6"]
-build-backend = "setuptools.build_meta"
+requires = ["setuptools>=40.8.0", "wheel", "poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
 

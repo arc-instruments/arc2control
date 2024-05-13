@@ -56,7 +56,7 @@ that's not guaranteed.
   easily be done with the included script `poetry run python venv-pyarc2-update.py
   git+https://github.com/arc-instruments/pyarc2`.  This will download `pyarc2` via git,
   build it and install it into the virtualenv.
-* Run the setup script `poetry run python setup.py build`.
+* Run the setup script `poetry run python -m build`.
 * Run ArC2Control `poetry run python -m arc2control`.
 
 ## Custom modules
