@@ -473,14 +473,23 @@ class H5DataStore:
         :param int word: The wordline of the crosspoint
         :param int bit: The bitline of the crosspoint
         :param str name: The identifier of this group
-        :param bool tstamp: Whether the current timestamp should be appended to the
-                            group name
+        :param bool|int tstamp: Whether the current timestamp should be appended to the
+                                group name. If ``True`` a timestamp will be generated at
+                                creation. If an integer is provided it will be used as
+                                the timestamp instead.
 
         :return: A reference to the newly created HDF5 group
         """
 
         if tstamp:
-            ts = time.time_ns()
+            # check for boolean first
+            if isinstance(tstamp, bool):
+                ts = time.time_ns()
+            elif isinstance(tstamp, int) and tstamp > 0:
+                ts = tstamp
+            else:
+                raise ValueError('Invalid timestamp data: must be '
+                    'bool or a positive int')
             grpname = 'crosspoints/W%02dB%02d/experiments/%s_%d' % \
                 (word, bit, name, ts)
         else:
@@ -513,8 +522,10 @@ class H5DataStore:
                     ``h5py.Group``.
         :param maxshape: A maximum numpy shape for this dataset; if ``None`` an
                          expandable chunked dataset will be created instead
-        :param bool tstamp: Whether the current timestamp should be appended to the
-                            dataset name
+        :param bool|int tstamp: Whether the current timestamp should be appended to the
+                                dataset name. If ``True`` one will be generated at
+                                creation. If an integer is provided it will be used
+                                as a timestamp instead.
 
         :return: A newly created HDF5 dataset
         """
@@ -537,7 +548,14 @@ class H5DataStore:
             basepath = anchor
 
         if tstamp:
-            ts = time.time_ns()
+            # check for boolean first
+            if isinstance(tstamp, bool):
+                ts = time.time_ns()
+            elif isinstance(tstamp, int) and tstamp > 0:
+                ts = tstamp
+            else:
+                raise ValueError('Invalid timestamp data: must be '
+                    'bool or a positive int')
             dsetname = '%s/%s_%d' % \
                 (basepath, name, ts)
         else:
@@ -564,14 +582,23 @@ class H5DataStore:
         :param crosspoints: An array of (wordline, bitline) tuples with all the
                             crosspoints involved
         :param str name: The identifier of this group
-        :param bool tstamp: Whether the current timestamp should be appended to the
-                            group name
+        :param bool|int tstamp: Whether the current timestamp should be appended to the
+                                group name. If ``True`` a timestamp will be generated
+                                at creation. An integer can be provided and it will
+                                be used as the timestamp instead.
 
         :return: A reference to the newly created HDF5 group
         """
 
         if tstamp:
-            ts = time.time_ns()
+            # check for boolean first
+            if isinstance(tstamp, bool):
+                ts = time.time_ns()
+            elif isinstance(tstamp, int) and tstamp > 0:
+                ts = tstamp
+            else:
+                raise ValueError('Invalid timestamp data: must be '
+                    'bool or a positive int')
             grpname = 'synthetics/%s_%d' % (name, ts)
         else:
             ts = None
@@ -602,8 +629,10 @@ class H5DataStore:
                     ``h5py.Group``.
         :param maxshape: A maximum numpy shape for this dataset; if ``None`` an
                          expandable chunked dataset will be created instead
-        :param bool tstamp: Whether the current timestamp should be appended to the
-                            dataset name
+        :param bool|int tstamp: Whether the current timestamp should be appended to the
+                                dataset name. If ``True`` a timestamp will be generated
+                                at creation. An integer can be provided to use as a
+                                timestamp instead.
 
         :return: A newly created HDF5 dataset
         """
@@ -626,7 +655,14 @@ class H5DataStore:
             basepath = anchor
 
         if tstamp:
-            ts = time.time_ns()
+            # check for boolean first
+            if isinstance(tstamp, bool):
+                ts = time.time_ns()
+            elif isinstance(tstamp, int) and tstamp > 0:
+                ts = tstamp
+            else:
+                raise ValueError('Invalid timestamp data: must be '
+                    'bool or a positive int')
             dsetname = '%s/%s_%d' % (basepath, name, ts)
         else:
             dsetname = '%s/%s' % (basepath, name)
