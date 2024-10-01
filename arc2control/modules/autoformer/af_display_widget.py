@@ -3,12 +3,12 @@ from PyQt6 import QtCore, QtWidgets
 import pyqtgraph as pg
 import numpy as np
 
+from arc2control.widgets.datasettable_widget import StructuredTableModel
+
 from . import MOD_NAME
 
 
 _AF_EXPORT_FILE_FILTER = 'Comma separated file (*.csv);;Tab separated file (*.tsv)'
-
-_AF_DISPLAY_DTYPE = [('voltage', '<f4'), ('current', '<f4'), ('read_voltage', '<f4'), ('pulse_width', '<f4')]
 
 
 class AFDataDisplayWidget(QtWidgets.QWidget):
@@ -190,7 +190,7 @@ class AFDataDisplayWidget(QtWidgets.QWidget):
         buttonLayout.addSpacerItem(\
             QtWidgets.QSpacerItem(20, 20, \
                 QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Expanding))
-        buttonLayout.addWidget(QtWidgets.QLabel("Dataset has more than 10000 rows"))
+        buttonLayout.addWidget(QtWidgets.QLabel("Dataset has more than 500000 rows"))
         buttonLayout.addWidget(self.forceLoadDatasetButton)
         self.forceLoadDatasetButton.clicked.connect(self.__forceReloadDataTable)
         buttonLayout.addSpacerItem(
@@ -212,17 +212,9 @@ class AFDataDisplayWidget(QtWidgets.QWidget):
         return widget
 
     def __makeActualDataPane(self):
-        dataset = self.dataset
-        self.dataTable = pg.TableWidget(sortable=False, editable=False)
-        self.dataTable.setFormat('%e')
+        self.dataTable = QtWidgets.QTableView()
         self.dataTable.verticalHeader().setVisible(False)
-        tabledata = np.empty(shape=(dataset.shape[0],), dtype=_AF_DISPLAY_DTYPE)
-        tabledata['voltage'][:] = dataset['voltage']
-        tabledata['pulse_width'][:] = dataset['pulse_width']
-        tabledata['read_voltage'][:] = dataset['read_voltage']
-        tabledata['current'][:] = dataset['current']
-        self.data = tabledata
-        self.dataTable.setData(tabledata)
+        self.dataTable.setModel(StructuredTableModel(self.dataset))
         return self.dataTable
 
     def __makeDataPane(self, force=False):
@@ -232,7 +224,7 @@ class AFDataDisplayWidget(QtWidgets.QWidget):
         layout = QtWidgets.QVBoxLayout(self.dataTablePane)
         layout.setContentsMargins(0, 0, 0, 0)
 
-        if dataset.shape[0] < 10000 or force:
+        if dataset.shape[0] < 500000 or force:
             layout.addWidget(self.__makeActualDataPane())
         else:
             layout.addWidget(self.__makePlaceholderWidget())

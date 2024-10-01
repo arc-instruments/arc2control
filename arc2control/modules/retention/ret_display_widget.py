@@ -3,6 +3,8 @@ from PyQt6 import QtWidgets
 import pyqtgraph as pg
 import numpy as np
 
+from arc2control.widgets.datasettable_widget import StructuredTableModel
+
 from . import MOD_TAG, MOD_NAME
 
 
@@ -99,12 +101,6 @@ class RETDataDisplayWidget(QtWidgets.QWidget):
         dataDisplayDType = [('time', '<f8'), \
             ('voltage', '<f4'), ('current', '<f4'), ('resistance', '<f4')]
 
-        self.dataTable = pg.TableWidget(sortable=False, editable=False)
-        self.dataTable.setFormat('%.3f', 0)
-        self.dataTable.setFormat('%f', 1)
-        self.dataTable.setFormat('%e', 2)
-        self.dataTable.setFormat('%g', 3)
-        self.dataTable.verticalHeader().setVisible(False)
         resistance = np.abs(dataset['read_voltage']/dataset['current'])
         t0 = dataset['tstamp_s'][0]*1.0 + dataset['tstamp_us'][0]/1.0e6
         timestamps = (dataset['tstamp_s']*1.0 + dataset['tstamp_us']/1.0e6) - t0
@@ -116,8 +112,12 @@ class RETDataDisplayWidget(QtWidgets.QWidget):
         actual_data['current'][:] = dataset['current'][:]
         actual_data['resistance'][:] = resistance[:]
 
-        self.dataTable.setData(actual_data)
         self.data = actual_data
+
+        self.dataTable = QtWidgets.QTableView()
+        self.dataTable.verticalHeader().setVisible(False)
+        model = StructuredTableModel(self.data, ["%.3f", "%f", "%e", "%g"])
+        self.dataTable.setModel(model)
 
         self.dataTablePane = QtWidgets.QWidget()
         layout = QtWidgets.QVBoxLayout(self.dataTablePane)
