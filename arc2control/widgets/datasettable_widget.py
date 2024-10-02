@@ -2,18 +2,30 @@ from collections.abc import Iterable
 from PyQt6.QtCore import Qt, QAbstractTableModel, QVariant, QModelIndex
 
 
-class StructuredTableModel(QAbstractTableModel):
+class DatasetTableModel(QAbstractTableModel):
 
     def __init__(self, dataset, formatter=None, parent=None):
-        super(StructuredTableModel, self).__init__(parent=parent)
+        super(DatasetTableModel, self).__init__(parent=parent)
         self.setDataset(dataset, formatter)
+
+    @property
+    def _structured(self):
+        d = self._dataset
+        return (d.dtype.names is not None) and (d.dtype.fields is not None)
 
     def setDataset(self, dataset, formatter=None):
         self._dataset = dataset
-        self._heads = []
-        nCols = len(self._dataset.dtype.fields)
-        for item in self._dataset.dtype.fields.keys():
-            self._heads.append(item)
+        if self._structured:
+            nCols = len(self._dataset.dtype.fields)
+            self._heads = list(self._dataset.dtype.names)
+        else:
+            if len(self._dataset.shape) > 2:
+                raise ValueError("Only 2D arrays are supported")
+            try:
+                nCols = self._dataset.shape[1]
+            except IndexError: # shape is probably "(X, )" or "(X)"
+                nCols = 1
+            self._heads = ["%d" % c for c in range(nCols)]
 
         if formatter is None:
             self._formatter = ["%e"] * nCols
@@ -33,14 +45,18 @@ class StructuredTableModel(QAbstractTableModel):
         return self._dataset.shape[0]
 
     def columnCount(self, parent=QModelIndex()):
-        return len(self._dataset.dtype.fields)
+        return len(self._heads)
 
     def data(self, index, role=Qt.ItemDataRole.DisplayRole):
         if role == Qt.ItemDataRole.DisplayRole:
             row = index.row()
             col = index.column()
 
-            return self._formatter[col] % self._dataset[row][col]
+            # either structured or shape is "(X, Y)"
+            if self._structured or len(self._dataset.shape) > 1:
+                return self._formatter[col] % self._dataset[row][col]
+            else: # just a vector; shape is "(X, )" or "(X)"
+                return self._formatter[col] % self._dataset[row]
 
         if role == Qt.ItemDataRole.TextAlignmentRole:
             return Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
