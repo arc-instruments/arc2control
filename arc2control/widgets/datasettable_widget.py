@@ -4,17 +4,18 @@ from PyQt6.QtCore import Qt, QAbstractTableModel, QVariant, QModelIndex
 
 class DatasetTableModel(QAbstractTableModel):
 
-    def __init__(self, dataset, formatter=None, parent=None):
+    def __init__(self, dataset, formatter=None, heads=None, parent=None):
         super(DatasetTableModel, self).__init__(parent=parent)
-        self.setDataset(dataset, formatter)
+        self.setDataset(dataset, formatter, heads)
 
     @property
     def _structured(self):
         d = self._dataset
         return (d.dtype.names is not None) and (d.dtype.fields is not None)
 
-    def setDataset(self, dataset, formatter=None):
+    def setDataset(self, dataset, formatter=None, heads=None):
         self._dataset = dataset
+
         if self._structured:
             nCols = len(self._dataset.dtype.fields)
             self._heads = list(self._dataset.dtype.names)
@@ -26,6 +27,13 @@ class DatasetTableModel(QAbstractTableModel):
             except IndexError: # shape is probably "(X, )" or "(X)"
                 nCols = 1
             self._heads = ["%d" % c for c in range(nCols)]
+
+        # override headings if required
+        if heads is not None:
+            if len(heads) != nCols:
+                raise ValueError("Length of headings does not match columns")
+            else:
+                self._heads = heads
 
         if formatter is None:
             self._formatter = ["%e"] * nCols
