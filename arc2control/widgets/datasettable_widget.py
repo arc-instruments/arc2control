@@ -1,5 +1,21 @@
 from collections.abc import Iterable
 from PyQt6.QtCore import Qt, QAbstractTableModel, QVariant, QModelIndex
+from PyQt6.QtWidgets import QTableView, QAbstractItemView
+
+
+class DatasetTableView(QTableView):
+
+    def __init__(self, dataset, formatter=None, heads=None, parent=None):
+        super(DatasetTableView, self).__init__(parent=parent)
+        self.setSelectionBehavior(\
+            QAbstractItemView.SelectionBehavior.SelectRows)
+        self.verticalHeader().setVisible(False)
+        self.verticalHeader().setDefaultSectionSize(18)
+        self._model = DatasetTableModel(dataset, formatter, heads)
+        self.setModel(self._model)
+
+    def setDataset(self, dataset, formatter=None, heads=None):
+        self._model.setDataset(dataset, formatter, heads)
 
 
 class DatasetTableModel(QAbstractTableModel):

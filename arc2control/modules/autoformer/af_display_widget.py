@@ -3,7 +3,7 @@ from PyQt6 import QtCore, QtWidgets
 import pyqtgraph as pg
 import numpy as np
 
-from arc2control.widgets.datasettable_widget import DatasetTableModel
+from arc2control.widgets.datasettable_widget import DatasetTableView
 
 from . import MOD_NAME
 
@@ -212,9 +212,7 @@ class AFDataDisplayWidget(QtWidgets.QWidget):
         return widget
 
     def __makeActualDataPane(self):
-        self.dataTable = QtWidgets.QTableView()
-        self.dataTable.verticalHeader().setVisible(False)
-        self.dataTable.setModel(DatasetTableModel(self.dataset))
+        self.dataTable = DatasetTableView(self.dataset)
         return self.dataTable
 
     def __makeDataPane(self, force=False):

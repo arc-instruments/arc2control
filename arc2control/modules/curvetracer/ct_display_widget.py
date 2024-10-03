@@ -5,7 +5,7 @@ from pyarc2 import ReadAfter
 import pyqtgraph as pg
 import numpy as np
 
-from arc2control.widgets.datasettable_widget import DatasetTableModel
+from arc2control.widgets.datasettable_widget import DatasetTableView
 
 from . import MOD_TAG, MOD_NAME
 
@@ -212,9 +212,7 @@ class CTDataDisplayWidget(QtWidgets.QWidget):
 
         cycles = dataset.attrs.get('cycles', 1)
 
-        self.dataTable = QtWidgets.QTableView()
-        self.dataTable.verticalHeader().setVisible(False)
-        self.dataTable.setModel(DatasetTableModel(self.data))
+        self.dataTable = DatasetTableView(self.data)
 
         self.dataTablePane = QtWidgets.QWidget()
         layout = QtWidgets.QVBoxLayout(self.dataTablePane)

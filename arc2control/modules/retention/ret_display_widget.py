@@ -3,7 +3,7 @@ from PyQt6 import QtWidgets
 import pyqtgraph as pg
 import numpy as np
 
-from arc2control.widgets.datasettable_widget import DatasetTableModel
+from arc2control.widgets.datasettable_widget import DatasetTableView
 
 from . import MOD_TAG, MOD_NAME
 
@@ -114,10 +114,7 @@ class RETDataDisplayWidget(QtWidgets.QWidget):
 
         self.data = actual_data
 
-        self.dataTable = QtWidgets.QTableView()
-        self.dataTable.verticalHeader().setVisible(False)
-        model = DatasetTableModel(self.data, ["%.3f", "%f", "%e", "%g"])
-        self.dataTable.setModel(model)
+        self.dataTable = DatasetTableView(self.data, ["%.3f", "%f", "%e", "%g"])
 
         self.dataTablePane = QtWidgets.QWidget()
         layout = QtWidgets.QVBoxLayout(self.dataTablePane)
