@@ -24,6 +24,7 @@ from .plottingoptions_widget import DisplayType as PlotDisplayType
 from .plottingoptions_widget import YScale as PlotYScale
 from .plottingoptions_widget import PlottingOptionsWidget
 from .device_explorer_widget import DeviceExplorerWidget
+from .statustray_widget import StatusTrayWidget
 from .fwmanager_dialog import FirmwareManagementDialog
 from .about_dialog import AboutDialog
 from .crossbar_widget import PaintWidget, Cell
@@ -47,6 +48,8 @@ class App(GeneratedElements.Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         QtWidgets.QWidget.__init__(self, parent=parent)
 
         self.setupUi(self)
+        self.statusTray = StatusTrayWidget()
+        self.appStatusBar.addPermanentWidget(self.statusTray)
 
         self.__setupCrossbarView()
         self.__setupControlWidgets()
@@ -68,6 +71,7 @@ class App(GeneratedElements.Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         self.__populateModuleComboBox()
         self.__populateRecentDatasets()
         self.__loadIcons()
+        self.__connectSignals()
 
         if dset is None:
             self._datastore = H5DataStore(tempfile.NamedTemporaryFile(\
@@ -86,8 +90,6 @@ class App(GeneratedElements.Ui_ArC2MainWindow, QtWidgets.QMainWindow):
             self.reloadFromDataset()
             self.saveDatasetAsAction.setEnabled(True)
             self.saveDatasetAction.setEnabled(False)
-
-        self.__connectSignals()
 
         self.setWindowTitle('%s [%s]' % \
             (constants.APP_TITLE, os.path.basename(self._datastore.fname)))
