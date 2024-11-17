@@ -325,11 +325,12 @@
     </property>
     <widget class="QMenu" name="menuOpenRecent">
      <property name="title">
-      <string>Open recent dataset</string>
+      <string>Open re&amp;cent dataset</string>
      </property>
     </widget>
     <addaction name="newDatasetAction"/>
     <addaction name="openDatasetAction"/>
+    <addaction name="openReadonlyDatasetAction"/>
     <addaction name="menuOpenRecent"/>
     <addaction name="saveDatasetAction"/>
     <addaction name="saveDatasetAsAction"/>
@@ -430,6 +431,11 @@
    </property>
    <property name="toolTip">
     <string>Open Sequencer</string>
+   </property>
+  </action>
+  <action name="openReadonlyDatasetAction">
+   <property name="text">
+    <string>Open &amp;read-only dataset</string>
    </property>
   </action>
  </widget>

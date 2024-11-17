@@ -78,12 +78,18 @@ class App(GeneratedElements.Ui_ArC2MainWindow, QtWidgets.QMainWindow):
                 suffix='.h5', delete=False).name,\
                 mode=H5Mode.WRITE, shape=shape)
             self._datastore.__setattr__('is_temporary', True)
+            self._datastore.__setattr__('is_readonly', False)
 
             # initialise an empty crossbar (all zeros)
             self.crossbarRefresh(np.zeros(self._datastore.shape),\
                 np.zeros(self._datastore.shape))
         else:
-            self._datastore = H5DataStore(dset, mode=H5Mode.APPEND, shape=shape)
+            try:
+                self._datastore = H5DataStore(dset, mode=H5Mode.APPEND, shape=shape)
+                self._datastore.__setattr__('is_readonly', False)
+            except PermissionError:
+                self._datastore = H5DataStore(dset, mode=H5Mode.READ, shape=shape)
+                self._datastore.__setattr__('is_readonly', True)
             self._datastore.__setattr__('is_temporary', False)
             self.deviceExplorerWidget.clear()
             self.deviceExplorerWidget.loadFromStore(self._datastore)
@@ -164,8 +170,10 @@ class App(GeneratedElements.Ui_ArC2MainWindow, QtWidgets.QMainWindow):
 
         self.newDatasetAction.triggered.connect(self.newDataset)
         self.openDatasetAction.triggered.connect(self.openDataset)
+        self.openReadonlyDatasetAction.triggered.connect(partial(self.openDataset, forceRO=True))
         self.saveDatasetAction.triggered.connect(self.saveDataset)
         self.saveDatasetAsAction.triggered.connect(self.saveDatasetAs)
+        signals.datastoreReplaced.connect(self.datastoreReplaced)
         self.quitAction.triggered.connect(self.close)
         self.aboutAction.triggered.connect(self.showAboutDialog)
         self.firmwareManagerAction.triggered.connect(self.showFirmwareManagerDialog)
@@ -176,7 +184,6 @@ class App(GeneratedElements.Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         self.deviceExplorerWidget.experimentSelected.connect(self.experimentSelected)
         self.deviceExplorerWidget.exportDeviceHistoryRequested.connect(self.__exportTimeSeries)
         self.deviceExplorerWidget.crosspointSelected.connect(self.treeCrosspointSelected)
-
 
         signals.valueUpdate.connect(self.valueUpdate)
         signals.valueBulkUpdate.connect(self.valueUpdateBulk)
@@ -990,7 +997,7 @@ class App(GeneratedElements.Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         self.deviceExplorerWidget.clear()
         self.deviceExplorerWidget.loadFromStore(self._datastore)
 
-    def openDataset(self, *args, fnameToOpen=None):
+    def openDataset(self, *args, fnameToOpen=None, forceRO=False):
         remove_old_temp_dataset = False
 
         if self._datastore is not None and self._datastore.is_temporary:
@@ -1022,7 +1029,17 @@ class App(GeneratedElements.Ui_ArC2MainWindow, QtWidgets.QMainWindow):
             if remove_old_temp_dataset:
                 os.remove(self._datastore.fname)
             self._datastore = None
-            self._datastore = H5DataStore(fname[0], mode=H5Mode.APPEND)
+            try:
+                # check if read-only is forced, otherwise try to
+                # open the file normally (normal operation)
+                mode = H5Mode.READ if forceRO else H5Mode.APPEND
+                self._datastore = H5DataStore(fname[0], mode=mode)
+                self._datastore.__setattr__('is_readonly', forceRO)
+            except PermissionError:
+                # if, for some reason, no write permission exists always
+                # open the dataset as read-only
+                self._datastore = H5DataStore(fname[0], mode=H5Mode.READ)
+                self._datastore.__setattr__('is_readonly', True)
             self._datastore.__setattr__('is_temporary', False)
             self.saveDatasetAction.setEnabled(False)
             self.saveDatasetAction.setToolTip('Dataset is saved automatically')
@@ -1049,6 +1066,7 @@ class App(GeneratedElements.Ui_ArC2MainWindow, QtWidgets.QMainWindow):
             self._datastore = None
             self._datastore = H5DataStore(fname[0], mode=H5Mode.APPEND)
             self._datastore.__setattr__('is_temporary', False)
+            self._datastore.__setattr__('is_readonly', False)
             self.saveDatasetAction.setEnabled(False)
             self.saveDatasetAction.setToolTip('Dataset is saved automatically')
             self.saveDatasetAsAction.setEnabled(True)
@@ -1071,6 +1089,7 @@ class App(GeneratedElements.Ui_ArC2MainWindow, QtWidgets.QMainWindow):
 
             self._datastore = H5DataStore(fname[0], mode=H5Mode.APPEND)
             self._datastore.__setattr__('is_temporary', False)
+            self._datastore.__setattr__('is_readonly', False)
             self.saveDatasetAction.setEnabled(False)
             self.saveDatasetAction.setToolTip('Dataset is saved automatically')
             self.reloadFromDataset()
@@ -1089,6 +1108,14 @@ class App(GeneratedElements.Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         signals.datastoreReplaced.emit(weakref.ref(self._datastore))
         self.setWindowTitle('%s [%s]' % \
             (constants.APP_TITLE, os.path.basename(self._datastore.fname)))
+
+    def datastoreReplaced(self, store):
+        if store:
+            if store().is_readonly:
+                pixmap = graphics.getPixmap('drive-error-small')
+                self.statusTray.addStatusIcon('readonly', pixmap, "Dataset is read-only")
+            else:
+                self.statusTray.removeStatusIcon('readonly')
 
     def resetRecentDatasets(self):
 
