@@ -9,7 +9,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
+          python-version: '3.12'
       - name: Install python libraries
         run: python -m pip install tomli requests semver
       - name: Check release
@@ -23,7 +23,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
+          python-version: '3.12'
       - name: Install python libraries
         run: pip install poetry build
       - name: Initialise venv
@@ -72,6 +72,9 @@ jobs:
           python -m poetry check
       - name: Install PyInstaller
         run: python -m poetry run pip install PyInstaller
+      # this is needed for pyqtgraph opengl deps
+      - name: Install additional build dependencies
+        run: python -m poetry run pip install PyOpenGL jupyter_rfb
       - name: Build wheel
         #run: |
         #  python -m poetry run python setup.py build

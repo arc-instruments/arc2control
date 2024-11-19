@@ -1,6 +1,6 @@
 numpy>=1.18.0
 PyQt6>=6.1.0
-pyqtgraph>=0.12.3
+pyqtgraph>=0.13.0
 requests>=2.20.0
 semver>=2.0.0
 tomli>=1.0.0

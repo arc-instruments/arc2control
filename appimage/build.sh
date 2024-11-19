@@ -9,7 +9,7 @@ cp requirements.txt appimage/requirements.txt
 echo "${DIR}" >> appimage/requirements.txt
 
 # build it with python-appimage
-python-appimage build app -l manylinux2014_x86_64 -p 3.11 -n arc2control appimage
+python-appimage build app -l manylinux_2_28_x86_64 -p 3.12 -n arc2control appimage
 
 if [ -f appimage/requirements.txt ]; then
   rm appimage/requirements.txt

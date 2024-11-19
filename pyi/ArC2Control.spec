@@ -19,6 +19,7 @@ from pkgutil import iter_modules
 PATHEX = os.environ.get('ARC2_PYI_PATHEX', os.path.dirname(SPECPATH))
 CONSOLE = bool(int(os.environ.get('ARC2_PYI_CONSOLE', 1)))
 
+sys.path.append(PATHEX)
 
 def find_submodules(path, name=None):
     modules = set()
