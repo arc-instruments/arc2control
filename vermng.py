@@ -32,7 +32,7 @@ def pyproject_file(basedir=None):
 
 def find_version_from_file(module, basedir=None):
 
-    regexp = re.compile('^__version__\s*=\s*"(.*)"')
+    regexp = re.compile(r'^__version__\s*=\s*"(.*)"')
     with open(os.path.join(version_file(module, basedir)), 'r') as vfile:
         for line in vfile.readlines():
             match = regexp.match(line)
@@ -44,7 +44,7 @@ def find_version_from_file(module, basedir=None):
 def update_version_file(module, version, basedir=None):
     versionfile = version_file(module, basedir)
 
-    with open(versionfile, 'w') as verfile:
+    with open(versionfile, 'w', encoding='utf-8') as verfile:
         thisyear = date.today().year
         if thisyear == 2021:
             copytext = "2021"
@@ -62,22 +62,23 @@ def update_pyproject(finalversion, basedir=None):
     in_section = False
 
     for line in orig.splitlines():
-        line = line.strip()
+        line = line.rstrip()
+        stripped = line.strip()
 
 
-        if re.match('\[tool.poetry\]', line):
+        if re.match(r'\[tool.poetry\]', stripped):
             in_section = True
 
-        if in_section and re.match('^version\s*=\s*".*"$', line):
+        if in_section and re.match(r'^version\s*=\s*".*"$', stripped):
             lines.append('version = "%s"' % finalversion)
         else:
             lines.append(line)
 
-    with open(pyproject_file(basedir), 'w') as outfile:
+    with open(pyproject_file(basedir), 'w', newline='') as outfile:
         outfile.write("\n".join(lines))
         # add the final empty line if any
         if orig[-1] in ['\n', '\r\n']:
-            outfile.write(orig[-1])
+            outfile.write('\n')
 
 
 if __name__ == "__main__":
@@ -107,12 +108,16 @@ if __name__ == "__main__":
         parsed = semver.parse(cur_version)
         parsed['prerelease'] = None
         finalversion = str(semver.VersionInfo(**parsed))
+    elif action == 'status':
+        print('Version file:', ver_file)
+        print('Current version:', cur_version)
+        sys.exit(0)
+    elif action == 'update':
+        # just update the files
+        finalversion = cur_version
     else:
         print('Unknown action:', action, file=sys.stderr)
         sys.exit(1)
-
-    # remove dashes from prereleases
-    finalversion = finalversion.replace('-', '')
 
     update_version_file(MODULE, finalversion)
     update_pyproject(finalversion)

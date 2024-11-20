@@ -16,7 +16,7 @@ def current_tag():
         out = subprocess.check_output([\
             'git', 'name-rev', '--name-only', '--no-undefined', '--tags', 'HEAD'],
             stderr=subprocess.DEVNULL)
-        out = re.split('[\^\,\+]', out.decode().strip())
+        out = re.split(r'[\^\,\+]', out.decode().strip())
         semver.parse(out[0])
         return out[0]
     except (subprocess.CalledProcessError, ValueError):
@@ -41,7 +41,7 @@ def modver(module, basedir=None):
     if basedir is None:
         basedir = os.path.abspath(os.path.dirname(__file__))
 
-    regexp = re.compile('^__version__\s*=\s*"(.*)"')
+    regexp = re.compile(r'^__version__\s*=\s*"(.*)"')
     with open(os.path.join(basedir, module, 'version.py'), 'r') as vfile:
         for line in vfile.readlines():
             match = regexp.match(line)
@@ -52,7 +52,7 @@ def modver(module, basedir=None):
 
 def docs_version():
 
-    regexp = re.compile('^release\s?=\s?(.*)$')
+    regexp = re.compile(r'^release\s?=\s?(.*)$')
     lines = open(os.path.join(os.path.dirname(__file__), 'docs', 'conf.py')).readlines()
 
     for line in lines:

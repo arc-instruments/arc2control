@@ -18,7 +18,7 @@
 # -- Project information -----------------------------------------------------
 
 project = 'ArC TWO Control Panel'
-copyright = '2021–2023 ArC Instruments Ltd'
+copyright = '2021–2024 ArC Instruments Ltd'
 author = 'Spyros Stathopoulos'
 
 # The full version, including alpha/beta/rc tags
