@@ -24,7 +24,7 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = ">=3.10"
-numpy = "^1.18"
+numpy = ">=1.18"
 PyQt6 = "^6.1"
 pyqtgraph = ">=0.13.0"
 semver = "^2.0"
