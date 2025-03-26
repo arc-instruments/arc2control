@@ -66,7 +66,7 @@ def docs_version():
 
 def internal_version():
 
-    pyproject_tool = tomli.loads(open('pyproject.toml').read())['tool']['poetry']['version']
+    pyproject_tool = tomli.loads(open('pyproject.toml').read())['project']['version']
     versions = [pyproject_tool, docs_version(), modver('arc2control', os.path.dirname(__file__))]
 
     # Check if the same version is used throughout
