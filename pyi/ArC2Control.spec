@@ -95,6 +95,7 @@ modimports = [
     'pyqtgraph',
     'pyarc2',
     'arc2control',
+    'tomli',
     'arc2control.widgets',
     'arc2control.modules']
 
