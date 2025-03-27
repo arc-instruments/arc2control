@@ -86,6 +86,10 @@ def main(args=None):
         message='.*divide by zero encountered in *divide.*', \
         module=r'arc2control\.widgets\..*')
 
+    if sys.platform == 'win32':
+        import platform
+        if platform.release() == '11':
+            QtWidgets.QApplication.setStyle('fusion')
     app = QtWidgets.QApplication(args)
     app.setApplicationName(constants.APP_NAME)
     graphics.initialise()
