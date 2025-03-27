@@ -4,8 +4,6 @@ version = "0.1.1-a0"
 description = "ArC TWO Control Panel"
 readme = "README.md"
 authors = [ { name = "Spyros Stathopoulos", email = "devel@arc-instruments.co.uk" }]
-repository = "https://github.com/arc-instruments/arc2control"
-exclude = ["venv-pyarc2-update.py", "vermng.py"]
 requires-python = ">=3.10"
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -34,6 +32,13 @@ dependencies = [
   "pyarc2>=0.4.1",
   "cryptography>=3.3.0",
 ]
+
+[project.urls]
+Homepage = "https://arc-instruments.co.uk"
+Repository = "https://github.com/arc-instruments/arc2control"
+
+[tool.poetry]
+exclude = ["venv-pyarc2-update.py", "vermng.py"]
 
 [tool.poetry.group.dev.dependencies]
 build = "^0.7.0"
