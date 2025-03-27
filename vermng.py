@@ -2,6 +2,7 @@
 import sys
 import os.path
 import re
+import tomli
 import semver
 from datetime import date
 
@@ -40,6 +41,13 @@ def find_version_from_file(module, basedir=None):
                 return match.group(1)
     return None
 
+def find_version_from_pyproject(basedir=None):
+    data = None
+    with open(pyproject_file(basedir), 'rb') as f:
+        data = tomli.load(f)
+    if data is None:
+        return None
+    return data['project']['version']
 
 def update_version_file(module, version, basedir=None):
     versionfile = version_file(module, basedir)
@@ -66,7 +74,7 @@ def update_pyproject(finalversion, basedir=None):
         stripped = line.strip()
 
 
-        if re.match(r'\[tool.poetry\]', stripped):
+        if re.match(r'\[project\]', stripped):
             in_section = True
 
         if in_section and re.match(r'^version\s*=\s*".*"$', stripped):
@@ -111,10 +119,14 @@ if __name__ == "__main__":
     elif action == 'status':
         print('Version file:', ver_file)
         print('Current version:', cur_version)
+        print('pyproject.toml version:', find_version_from_pyproject())
         sys.exit(0)
     elif action == 'update':
         # just update the files
-        finalversion = cur_version
+        finalversion = find_version_from_pyproject()
+        if finalversion is not None:
+            update_version_file(MODULE, finalversion)
+        sys.exit(0)
     else:
         print('Unknown action:', action, file=sys.stderr)
         sys.exit(1)
