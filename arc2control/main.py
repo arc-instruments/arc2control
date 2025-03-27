@@ -3,7 +3,6 @@ from arc2control.widgets.app import App
 from arc2control.widgets.crossbarconfig_dialog import CrossbarConfigDialog
 import os.path
 import glob
-import logging
 from . import graphics
 from . import constants
 from . import createLogger
