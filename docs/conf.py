@@ -18,11 +18,11 @@
 # -- Project information -----------------------------------------------------
 
 project = 'ArC TWO Control Panel'
-copyright = '2021–2024 ArC Instruments Ltd'
+copyright = '2021–2025 ArC Instruments Ltd'
 author = 'Spyros Stathopoulos'
 
 # The full version, including alpha/beta/rc tags
-release = '0.1.1-a0'
+release = '0.2.0'
 
 
 # -- General configuration ---------------------------------------------------

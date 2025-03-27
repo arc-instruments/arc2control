@@ -12,7 +12,7 @@ experiments suitable for general and (P/R/FE)RAM devices characterisation.
 
 ### Installation
 
-If you have a recent Python installer, stable ArC2Control versions are
+If you have a recent Python installed, stable ArC2Control versions are
 available from PyPI:
 
 ```

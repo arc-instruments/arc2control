@@ -1,6 +1,6 @@
 [project]
 name = "arc2control"
-version = "0.1.1-a0"
+version = "0.2.0"
 description = "ArC TWO Control Panel"
 readme = "README.md"
 authors = [ { name = "Spyros Stathopoulos", email = "devel@arc-instruments.co.uk" }]
