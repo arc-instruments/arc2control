@@ -628,12 +628,13 @@ class App(GeneratedElements.Ui_ArC2MainWindow, QtWidgets.QMainWindow):
         raw = self._arc().read_all(voltage, BiasOrder.Cols)
         self.__finaliseOperation()
         data = np.empty(shape=(self._nbits, self._nwords))
-        for (row, channel) in enumerate(sorted(self.mapper.ch2b.keys())):
+        for (_, channel) in enumerate(sorted(self.mapper.ch2b.keys())):
             bitline = self.mapper.ch2b[channel]
             # skip bitlines > than the total number of configured bitlines
             if bitline >= self._nbits:
                 continue
-            data[bitline] = raw[row][self.mapper.word_idxs][0:self._nwords]
+            idx = (channel % (self.mapper.MAX_BITS//2)) + (channel // self.mapper.MAX_BITS) * (self.mapper.MAX_BITS//2)
+            data[bitline] = raw[idx][self.mapper.word_idxs][0:self._nwords]
 
         shape = data.shape
         actual_voltage = np.repeat([voltage], shape[0]*shape[1]).reshape(*shape)

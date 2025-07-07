@@ -25,6 +25,9 @@ class ChannelMapper:
     :return: A new :class:`~arc2control.mapper.ChannelMapper`.
     """
 
+    MAX_WORDS = 32
+    MAX_BITS = 32
+
     def __init__(self, nwords, nbits, wordarr, bitarr, ioconfs, mask, name):
 
         self._wb2ch = []
